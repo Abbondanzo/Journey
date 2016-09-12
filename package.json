@@ -1,5 +1,5 @@
 {
-  "name": "Journey",
+  "name": "JourneyR",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -7,7 +7,6 @@
   },
   "dependencies": {
     "react": "15.3.1",
-    "react-native": "0.33.0",
-    "react-native-maps": "^0.8.2"
+    "react-native": "0.33.0"
   }
 }

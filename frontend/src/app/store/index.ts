@@ -20,8 +20,8 @@ export function configureStore(history: History, initialState?: AppState): Store
     >;
 
     if (module.hot) {
-        module.hot.accept('app/reducers', () => {
-            const nextReducer = require('app/reducers');
+        module.hot.accept('@app/reducers', () => {
+            const nextReducer = require('@app/reducers');
             store.replaceReducer(nextReducer);
         });
     }

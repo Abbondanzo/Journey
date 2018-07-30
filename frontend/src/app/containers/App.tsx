@@ -1,5 +1,5 @@
 import { UserActions } from '@app/actions';
-import { AppPage } from '@app/components';
+import { AppPage } from '@app/components/AppPage';
 import { AppState } from '@app/reducers';
 import { omit } from '@app/utils';
 import * as React from 'react';

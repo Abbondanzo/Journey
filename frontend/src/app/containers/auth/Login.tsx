@@ -1,5 +1,5 @@
 import { UserActions } from '@app/actions';
-import { LoginPage } from '@app/components';
+import { LoginPage } from '@app/components/LoginPage';
 import { AppState } from '@app/reducers';
 import { omit } from '@app/utils';
 import { connect } from 'react-redux';
@@ -15,7 +15,9 @@ const mapDispatchToProps = (dispatch: Dispatch): Partial<LoginPage.Props> => {
     };
 };
 
-export default (connect(
+const Login = connect(
     mapStateToProps,
     mapDispatchToProps
-)(LoginPage) as any) as React.StatelessComponent;
+)(LoginPage);
+
+export default (Login as any) as React.StatelessComponent;

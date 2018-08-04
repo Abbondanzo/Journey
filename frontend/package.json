@@ -19,6 +19,7 @@
         "@types/react-dom": "16.0.6",
         "@types/react-redux": "6.0.2",
         "@types/react-router": "4.0.26",
+        "@types/react-router-dom": "^4.3.0",
         "@types/react-router-redux": "^5.0.15",
         "@types/redux-actions": "2.3.0",
         "@types/redux-logger": "^3.0.6",
@@ -55,8 +56,10 @@
         "classnames": "^2.2.6",
         "react": "^16.4.0",
         "react-dom": "^16.4.0",
+        "react-google-maps": "^9.4.5",
         "react-redux": "^5.0.7",
         "react-router": "^4.3.1",
+        "react-router-dom": "^4.3.1",
         "react-router-redux": "^5.0.0-alpha.9",
         "redux": "^4.0.0",
         "redux-actions": "^2.4.0"

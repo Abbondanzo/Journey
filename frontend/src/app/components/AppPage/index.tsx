@@ -1,5 +1,6 @@
 import { UserActions } from '@app/actions';
 import Login from '@app/containers/auth/Login';
+import Home from '@app/containers/Home';
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 
@@ -13,9 +14,7 @@ export class AppPage extends React.Component<AppPage.Props> {
     render() {
         return (
             <div>
-                {/* Some sort of header */}
-                {/* Some sort of alert container */}
-                {/* Router */}
+                <Home />
                 <Login />
             </div>
         );

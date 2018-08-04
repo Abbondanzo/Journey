@@ -15,4 +15,11 @@ export default class Post {
         this.likes = [];
         this.likes.push(owner);
     }
+
+    setFields(object: any) {
+        this.id = object.id;
+        this.owner = object.owner;
+        this.description = object.description;
+        this.likes = object.likes;
+    }
 }

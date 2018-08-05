@@ -1,7 +1,9 @@
 import { PostList } from '@app/components/dashboard/MapPage/PostList';
+import MapContainer from '@app/containers/dashboard/MapContainer';
 import Post from '@app/models/Post';
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
+import './style.scss';
 
 export namespace MapPage {
     export interface Props extends RouteComponentProps<void> {
@@ -15,13 +17,18 @@ export namespace MapPage {
  */
 export class MapPage extends React.Component<MapPage.Props> {
     render() {
-        const Map = this.props.googleMapsComponent;
         return (
-            <div className="row">
+            <div className="row full-height">
                 <div className="col-md-4">
                     <PostList posts={this.props.posts} />
                 </div>
-                <div className="col-md-8">{Map}</div>
+                <div className="col-md-8">
+                    <MapContainer
+                        loadingElement={<div className="map-full-height" />}
+                        containerElement={<div className="map-full-height" />}
+                        mapElement={<div className="map-full-height" />}
+                    />
+                </div>
             </div>
         );
     }

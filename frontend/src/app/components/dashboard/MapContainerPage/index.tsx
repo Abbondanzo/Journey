@@ -1,9 +1,10 @@
 import { UtilActions } from '@app/actions/util';
 import Post from '@app/models/Post';
 import * as React from 'react';
+import { GoogleMap, WithGoogleMapProps, WithScriptjsProps } from 'react-google-maps';
 
 export namespace MapContainerPage {
-    export interface Props {
+    export interface Props extends WithScriptjsProps, WithGoogleMapProps {
         posts: Post[];
         actions: UtilActions;
     }
@@ -16,10 +17,6 @@ export namespace MapContainerPage {
  * instead called to be added to the store whenever necessary.
  */
 export class MapContainerPage extends React.Component<MapContainerPage.Props> {
-    private constructor(props: MapContainerPage.Props) {
-        super(props);
-    }
-
     componentWillMount() {
         console.log('mounting');
     }
@@ -29,6 +26,10 @@ export class MapContainerPage extends React.Component<MapContainerPage.Props> {
     }
 
     render() {
-        return <div className="row">This is where my map goes</div>;
+        return (
+            <div className="row">
+                <GoogleMap defaultZoom={8} defaultCenter={{ lat: -34.397, lng: 150.644 }} />
+            </div>
+        );
     }
 }

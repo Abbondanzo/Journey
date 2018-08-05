@@ -3,11 +3,14 @@ import * as React from 'react';
 import { Action, handleActions } from 'redux-actions';
 
 export interface UtilState {
+    googleMapURL: string;
     googleMapComponent?: React.StatelessComponent;
     isMapsComponentShowing: boolean;
 }
 
 const initialState: UtilState = {
+    googleMapURL:
+        'https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places',
     isMapsComponentShowing: false
 };
 

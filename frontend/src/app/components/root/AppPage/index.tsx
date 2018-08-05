@@ -4,6 +4,7 @@ import Dashboard from '@app/containers/dashboard/Dashboard';
 import Home from '@app/containers/Home';
 import * as React from 'react';
 import { Route, RouteComponentProps, Switch } from 'react-router';
+import './style.scss';
 
 export namespace AppPage {
     export interface Props extends RouteComponentProps<void> {
@@ -14,7 +15,7 @@ export namespace AppPage {
 export class AppPage extends React.Component<AppPage.Props> {
     render() {
         return (
-            <div>
+            <div className="root">
                 {/* Navbar */}
                 <Switch>
                     <Route path="/login" component={Login} />

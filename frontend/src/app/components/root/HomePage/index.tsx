@@ -13,7 +13,7 @@ export class HomePage extends React.Component<HomePage.Props> {
     render() {
         return (
             <div>
-                <Link to="/map" />
+                <Link to="/map">Go to map</Link>
             </div>
         );
     }

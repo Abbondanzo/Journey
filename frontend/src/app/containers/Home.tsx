@@ -1,4 +1,4 @@
-import { HomePage } from '@app/components/HomePage';
+import { HomePage } from '@app/components/root/HomePage';
 import { AppState } from '@app/reducers';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';

@@ -6,7 +6,8 @@ import { Dispatch } from 'redux';
 
 const mapStateToProps = (state: AppState): Partial<MapPage.Props> => {
     return {
-        posts: state.posts.posts
+        posts: state.posts.posts,
+        googleMapsComponent: state.utils.googleMapComponent
     };
 };
 

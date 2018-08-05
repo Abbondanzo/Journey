@@ -6,6 +6,7 @@ import { RouteComponentProps } from 'react-router';
 export namespace MapPage {
     export interface Props extends RouteComponentProps<void> {
         posts: Post[];
+        googleMapsComponent: React.StatelessComponent;
     }
 }
 
@@ -14,12 +15,13 @@ export namespace MapPage {
  */
 export class MapPage extends React.Component<MapPage.Props> {
     render() {
+        const Map = this.props.googleMapsComponent;
         return (
             <div className="row">
                 <div className="col-md-4">
                     <PostList posts={this.props.posts} />
                 </div>
-                <div className="col-md-8">This is where the map goes</div>
+                <div className="col-md-8">{Map}</div>
             </div>
         );
     }

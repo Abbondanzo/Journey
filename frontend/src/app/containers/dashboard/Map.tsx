@@ -5,7 +5,9 @@ import { withRouter } from 'react-router';
 import { Dispatch } from 'redux';
 
 const mapStateToProps = (state: AppState): Partial<MapPage.Props> => {
-    return {};
+    return {
+        posts: state.posts.posts
+    };
 };
 
 const mapDispatchToProps = (dispatch: Dispatch): Partial<MapPage.Props> => {

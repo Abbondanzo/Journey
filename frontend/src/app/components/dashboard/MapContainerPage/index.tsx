@@ -1,7 +1,7 @@
 import { UtilActions } from '@app/actions/util';
 import Post from '@app/models/Post';
 import * as React from 'react';
-import { GoogleMap, WithGoogleMapProps, WithScriptjsProps } from 'react-google-maps';
+import { GoogleMap, Marker, WithGoogleMapProps, WithScriptjsProps } from 'react-google-maps';
 
 export namespace MapContainerPage {
     export interface Props extends WithScriptjsProps, WithGoogleMapProps {
@@ -33,6 +33,15 @@ export class MapContainerPage extends React.Component<MapContainerPage.Props> {
     render() {
         return (
             <GoogleMap defaultZoom={12} defaultCenter={{ lat: 42.36, lng: -71.058 }}>
+                {this.props.posts.map((post: Post) => {
+                    if (post.geocode) {
+                        const coordinates = post.geocode.geometry.location;
+                        return (
+                            <Marker position={{ lat: coordinates.lat(), lng: coordinates.lng() }} />
+                        );
+                    }
+                    return undefined;
+                })}
                 {/* <InfoBox
                     defaultPosition={{ lat: 42.3379825, lng: -71.08475909999999 }}
                     options={{ closeBoxURL: ``, enableEventPropagation: true }}

@@ -11,6 +11,7 @@ interface MapContainerProps
 
 const mapStateToProps = (state: AppState): Partial<MapContainerPage.Props> => {
     return {
+        posts: state.posts.posts,
         googleMapURL: state.utils.googleMapURL
     };
 };

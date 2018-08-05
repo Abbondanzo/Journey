@@ -1,4 +1,5 @@
 import User from '@app/models/User';
+/// <reference types="@types/googlemaps" />
 
 export default class Post {
     id: number;
@@ -7,7 +8,7 @@ export default class Post {
     description: string;
     // images: Image;
     likes: User[];
-    // geocode: LatLng;
+    geocode?: google.maps.GeocoderResult;
 
     constructor(id: number, owner: User, title: string) {
         this.id = id;

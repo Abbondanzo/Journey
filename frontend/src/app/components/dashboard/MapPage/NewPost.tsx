@@ -1,3 +1,4 @@
+import SearchBox from '@app/containers/dashboard/SearchBox';
 import Post from '@app/models/Post';
 import User from '@app/models/User';
 import * as React from 'react';
@@ -37,6 +38,10 @@ export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
         this.setState({
             newPost: post
         });
+    }
+
+    onPlacesChanged(places: google.maps.places.PlaceResult[]) {
+        console.log(places[0]);
     }
 
     stopEventPropagation(event: React.MouseEvent) {
@@ -83,6 +88,16 @@ export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
                                     className="form-control"
                                     value={this.state.newPost.description}
                                     onChange={this.onInputChange}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="post-geocode">Address</label>
+                                <SearchBox
+                                    id="post-geocode"
+                                    loadingElement={<div className="map-full-height" />}
+                                    containerElement={<div className="map-full-height" />}
+                                    mapElement={<div className="map-full-height" />}
+                                    onPlacesChanged={this.onPlacesChanged}
                                 />
                             </div>
                         </div>

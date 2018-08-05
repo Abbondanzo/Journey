@@ -8,9 +8,14 @@ export interface UtilState {
     isMapsComponentShowing: boolean;
 }
 
+const apiKey = process.env.GOOGLE_MAPS_API;
+let mapUrl = 'https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places';
+if (apiKey && process.env.NODE_ENV === 'production') {
+    mapUrl += `&key=${apiKey}`;
+}
+
 const initialState: UtilState = {
-    googleMapURL:
-        'https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places',
+    googleMapURL: mapUrl,
     isMapsComponentShowing: false
 };
 

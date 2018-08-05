@@ -10,6 +10,7 @@ var outPath = path.join(__dirname, './dist');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var MiniCssExtractPlugin = require('mini-css-extract-plugin');
 var WebpackCleanupPlugin = require('webpack-cleanup-plugin');
+const Dotenv = require('dotenv-webpack');
 
 module.exports = {
     context: sourcePath,
@@ -126,6 +127,9 @@ module.exports = {
         }),
         new HtmlWebpackPlugin({
             template: 'assets/index.html'
+        }),
+        new Dotenv({
+            safe: true
         })
     ],
     devServer: {

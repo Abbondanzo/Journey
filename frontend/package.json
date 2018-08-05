@@ -28,6 +28,8 @@
         "babel-core": "^6.26.3",
         "babel-loader": "^7.1.4",
         "css-loader": "^0.28.11",
+        "dotenv": "^6.0.0",
+        "dotenv-webpack": "^1.5.7",
         "file-loader": "^1.1.11",
         "html-loader": "^1.0.0-alpha.0",
         "html-webpack-plugin": "^4.0.0-alpha",

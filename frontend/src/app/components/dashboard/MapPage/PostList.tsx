@@ -4,6 +4,7 @@ import * as React from 'react';
 export namespace PostList {
     export interface Props {
         posts: Post[];
+        onAddPost(): void;
     }
 }
 
@@ -23,7 +24,9 @@ export class PostList extends React.Component<PostList.Props> {
                         );
                     })}
                     <li className="list-group-item">
-                        <button className="btn btn-primary w-100">Add Post</button>
+                        <button className="btn btn-primary w-100" onClick={this.props.onAddPost}>
+                            Add Post
+                        </button>
                     </li>
                 </ul>
             </div>

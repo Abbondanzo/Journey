@@ -22,6 +22,8 @@ export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
             newPost: new Post(0, new User(0, 'user'), '')
         };
         this.onInputChange = this.onInputChange.bind(this);
+        this.onPlacesChanged = this.onPlacesChanged.bind(this);
+        this.onSave = this.onSave.bind(this);
     }
 
     onInputChange(event: any) {
@@ -41,7 +43,16 @@ export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
     }
 
     onPlacesChanged(places: google.maps.places.PlaceResult[]) {
-        console.log(places[0]);
+        const post = this.state.newPost;
+        post.geocode = places[0];
+        this.setState({
+            newPost: post
+        });
+    }
+
+    onSave() {
+        this.props.onSave(this.state.newPost);
+        this.props.onClose();
     }
 
     stopEventPropagation(event: React.MouseEvent) {
@@ -110,8 +121,8 @@ export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
                             >
                                 Close
                             </button>
-                            <button type="button" className="btn btn-primary">
-                                Save changes
+                            <button type="button" className="btn btn-primary" onClick={this.onSave}>
+                                Post
                             </button>
                         </div>
                     </div>

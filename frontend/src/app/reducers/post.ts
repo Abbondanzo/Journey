@@ -1,5 +1,6 @@
+import { PostActions } from '@app/actions';
 import Post from '@app/models/Post';
-import { handleActions } from 'redux-actions';
+import { Action, handleActions } from 'redux-actions';
 
 export interface PostState {
     activePost?: Post['id'];
@@ -10,4 +11,18 @@ const initialState: PostState = {
     posts: []
 };
 
-export const postReducer = handleActions<PostState, any>({}, initialState);
+export const postReducer = handleActions<PostState, any>(
+    {
+        [PostActions.Type.ADD_POST]: (state: PostState, action: Action<Post>): PostState => {
+            const posts = state.posts;
+            if (action.payload) {
+                posts.push(action.payload);
+            }
+            return {
+                ...state,
+                posts
+            };
+        }
+    },
+    initialState
+);

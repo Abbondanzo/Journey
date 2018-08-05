@@ -19,11 +19,17 @@ export class PostList extends React.Component<PostList.Props> {
                     {this.props.posts.map((post: Post, index: number) => {
                         return (
                             <li className="list-group-item" key={index}>
-                                {post.description}
+                                <div className="w-100">
+                                    <h5 className="mb-1">{post.title}</h5>
+                                </div>
+                                <p className="mb-1">{post.description}</p>
+                                <small>
+                                    {post.geocode ? post.geocode.formatted_address : undefined}
+                                </small>
                             </li>
                         );
                     })}
-                    <li className="list-group-item">
+                    <li className="list-group-item" key="-1">
                         <button className="btn btn-primary w-100" onClick={this.props.onAddPost}>
                             Add Post
                         </button>

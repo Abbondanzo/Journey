@@ -1,3 +1,4 @@
+import { PostActions } from '@app/actions';
 import { NewPost } from '@app/components/dashboard/MapPage/NewPost';
 import { PostList } from '@app/components/dashboard/MapPage/PostList';
 import MapContainer from '@app/containers/dashboard/MapContainer';
@@ -10,6 +11,7 @@ export namespace MapPage {
     export interface Props extends RouteComponentProps<void> {
         posts: Post[];
         googleMapsComponent: React.StatelessComponent;
+        actions: PostActions;
     }
 
     export interface State {
@@ -26,9 +28,11 @@ export class MapPage extends React.Component<MapPage.Props, MapPage.State> {
         this.state = {
             showModal: false
         };
+        this.savePost = this.savePost.bind(this);
     }
+
     savePost(post: Post) {
-        console.log(post);
+        this.props.actions.addPost(post);
     }
 
     render() {

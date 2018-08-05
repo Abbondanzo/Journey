@@ -1,8 +1,10 @@
+import { PostActions } from '@app/actions';
 import { MapPage } from '@app/components/dashboard/MapPage';
 import { AppState } from '@app/reducers';
+import { omit } from '@app/utils';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import { Dispatch } from 'redux';
+import { bindActionCreators, Dispatch } from 'redux';
 
 const mapStateToProps = (state: AppState): Partial<MapPage.Props> => {
     return {
@@ -12,7 +14,9 @@ const mapStateToProps = (state: AppState): Partial<MapPage.Props> => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch): Partial<MapPage.Props> => {
-    return {};
+    return {
+        actions: bindActionCreators({ ...omit(PostActions, 'Type') }, dispatch)
+    };
 };
 
 const Map = connect(

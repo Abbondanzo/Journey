@@ -8,7 +8,7 @@ export default class Post {
     description: string;
     // images: Image;
     likes: User[];
-    geocode?: google.maps.GeocoderResult;
+    geocode?: google.maps.places.PlaceResult;
 
     constructor(id: number, owner: User, title: string) {
         this.id = id;

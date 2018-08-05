@@ -9,7 +9,7 @@ export namespace PostActions {
     }
 
     export const selectPost = createAction<Post['id']>(Type.SELECT_POST);
-    export const addPost = createAction<Post['id']>(Type.ADD_POST);
+    export const addPost = createAction<Post>(Type.ADD_POST);
     export const deletePost = createAction<Post['id']>(Type.DELETE_POST);
 }
 

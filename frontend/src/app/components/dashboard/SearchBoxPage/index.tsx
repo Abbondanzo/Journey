@@ -5,8 +5,9 @@ import './style.scss';
 
 export namespace SearchBoxPage {
     export interface Props extends WithScriptjsProps, WithGoogleMapProps {
-        onPlacesChanged(places: google.maps.places.PlaceResult[]): void;
         id?: string;
+        bounds: google.maps.LatLngBounds;
+        onPlacesChanged(places: google.maps.places.PlaceResult[]): void;
     }
     export interface State {
         searchBox: React.RefObject<any>;
@@ -40,6 +41,7 @@ export class SearchBoxPage extends React.Component<SearchBoxPage.Props, SearchBo
             <div>
                 <StandaloneSearchBox
                     ref={this.state.searchBox}
+                    bounds={this.props.bounds}
                     onPlacesChanged={this.onPlacesChanged}
                 >
                     <input

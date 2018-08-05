@@ -5,6 +5,7 @@ import { Action, handleActions } from 'redux-actions';
 export interface UtilState {
     googleMapURL: string;
     googleMapComponent?: React.StatelessComponent;
+    mapBounds: google.maps.LatLngBounds;
     isMapsComponentShowing: boolean;
 }
 
@@ -16,7 +17,8 @@ if (apiKey && process.env.NODE_ENV === 'production') {
 
 const initialState: UtilState = {
     googleMapURL: mapUrl,
-    isMapsComponentShowing: false
+    isMapsComponentShowing: false,
+    mapBounds: {} as google.maps.LatLngBounds
 };
 
 export const utilReducer = handleActions<UtilState, any>(
@@ -29,6 +31,15 @@ export const utilReducer = handleActions<UtilState, any>(
             return {
                 ...state,
                 googleMapComponent: action.payload
+            };
+        },
+        [UtilActions.Type.SET_BOUNDS]: (
+            state: UtilState,
+            action: Action<google.maps.LatLngBounds>
+        ): UtilState => {
+            return {
+                ...state,
+                mapBounds: action.payload ? action.payload : state.mapBounds
             };
         }
     },

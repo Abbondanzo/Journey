@@ -8,6 +8,10 @@ export namespace MapContainerPage {
         posts: Post[];
         actions: UtilActions;
     }
+
+    export interface State {
+        mapPage: React.RefObject<GoogleMap>;
+    }
 }
 
 /**
@@ -21,18 +25,47 @@ export namespace MapContainerPage {
  * deploy a shiny version of this app, we should consider offering some sort of "component"
  * singleton that never unmounts but is merely hidden or displayed wherever necessary.
  */
-export class MapContainerPage extends React.Component<MapContainerPage.Props> {
+export class MapContainerPage extends React.Component<
+    MapContainerPage.Props,
+    MapContainerPage.State
+> {
+    constructor(props: MapContainerPage.Props) {
+        super(props);
+        this.state = {
+            mapPage: React.createRef()
+        };
+        this.onBoundsChanged = this.onBoundsChanged.bind(this);
+    }
+
     componentWillMount() {
         console.log('mounting');
+    }
+
+    componentDidMount() {
+        this.onBoundsChanged();
     }
 
     componentWillUnmount() {
         console.log('unmounting');
     }
 
+    onBoundsChanged() {
+        const currentMap = this.state.mapPage.current;
+        if (currentMap) {
+            this.props.actions.setBounds(currentMap.getBounds());
+        }
+    }
+
     render() {
         return (
-            <GoogleMap defaultZoom={12} defaultCenter={{ lat: 42.36, lng: -71.058 }}>
+            <GoogleMap
+                ref={this.state.mapPage}
+                defaultZoom={12}
+                defaultCenter={{ lat: 42.36, lng: -71.058 }}
+                // This fires too much onBoundsChanged={this.onBoundsChanged}
+                onDragEnd={this.onBoundsChanged}
+                onZoomChanged={this.onBoundsChanged}
+            >
                 {this.props.posts.map((post: Post) => {
                     if (post.geocode) {
                         const coordinates = post.geocode.geometry.location;

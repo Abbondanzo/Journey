@@ -13,7 +13,8 @@ interface SearchBoxProps
 
 const mapStateToProps = (state: AppState): Partial<SearchBoxPage.Props> => {
     return {
-        googleMapURL: state.utils.googleMapURL
+        googleMapURL: state.utils.googleMapURL,
+        bounds: state.utils.mapBounds
     };
 };
 

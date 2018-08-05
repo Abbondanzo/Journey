@@ -49,13 +49,12 @@ module.exports = {
             },
             // css
             {
-                test: /\.css$/,
+                test: /\.(css|scss)$/,
                 use: [
                     isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
                     {
                         loader: 'css-loader',
                         query: {
-                            modules: true,
                             sourceMap: !isProduction,
                             importLoaders: 1,
                             localIdentName: isProduction ? '[hash:base64:5]' : '[local]__[hash:base64:5]'
@@ -77,6 +76,9 @@ module.exports = {
                                 })
                             ]
                         }
+                    },
+                    {
+                        loader: 'sass-loader'
                     }
                 ]
             },

@@ -1,5 +1,5 @@
 import { UserActions } from '@app/actions';
-import { LoginPage } from '@app/components/LoginPage';
+import { LoginPage } from '@app/components/auth/LoginPage';
 import { AppState } from '@app/reducers';
 import { omit } from '@app/utils';
 import { connect } from 'react-redux';

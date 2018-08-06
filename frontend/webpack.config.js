@@ -10,6 +10,7 @@ var outPath = path.join(__dirname, './dist');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var MiniCssExtractPlugin = require('mini-css-extract-plugin');
 var WebpackCleanupPlugin = require('webpack-cleanup-plugin');
+const Dotenv = require('dotenv-webpack');
 
 module.exports = {
     context: sourcePath,
@@ -49,13 +50,12 @@ module.exports = {
             },
             // css
             {
-                test: /\.css$/,
+                test: /\.(css|scss)$/,
                 use: [
                     isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
                     {
                         loader: 'css-loader',
                         query: {
-                            modules: true,
                             sourceMap: !isProduction,
                             importLoaders: 1,
                             localIdentName: isProduction ? '[hash:base64:5]' : '[local]__[hash:base64:5]'
@@ -77,6 +77,9 @@ module.exports = {
                                 })
                             ]
                         }
+                    },
+                    {
+                        loader: 'sass-loader'
                     }
                 ]
             },
@@ -124,6 +127,9 @@ module.exports = {
         }),
         new HtmlWebpackPlugin({
             template: 'assets/index.html'
+        }),
+        new Dotenv({
+            safe: true
         })
     ],
     devServer: {

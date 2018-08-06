@@ -1,13 +1,57 @@
+import { Action, handleActions } from 'redux-actions';
+
 import Post from '@app/models/Post';
-import { handleActions } from 'redux-actions';
+import { PostActions } from '@app/actions';
 
 export interface PostState {
     activePost?: Post['id'];
     posts: Post[];
 }
 
-const initialState: PostState = {
+export const initialState: PostState = {
     posts: []
 };
 
-export const postReducer = handleActions<PostState, any>({}, initialState);
+export const postReducer = handleActions<PostState, any>(
+    {
+        [PostActions.Type.ADD_POST]: (state: PostState, action: Action<Post>): PostState => {
+            const posts = state.posts;
+            if (action.payload) {
+                posts.push(action.payload);
+            }
+            return {
+                ...state,
+                posts
+            };
+        },
+        [PostActions.Type.DELETE_POST]: (
+            state: PostState,
+            action: Action<Post['id']>
+        ): PostState => {
+            let posts = state.posts;
+            if (action.payload) {
+                posts = posts.filter((post) => {
+                    return post.id !== action.payload;
+                });
+            }
+            return {
+                ...state,
+                posts
+            };
+        },
+        [PostActions.Type.FIREBASE_POST]: (
+            state: PostState,
+            action: Action<PostState>
+        ): PostState => {
+            if (action.payload) {
+                return {
+                    ...action.payload
+                };
+            }
+            return {
+                ...state
+            };
+        }
+    },
+    initialState
+);

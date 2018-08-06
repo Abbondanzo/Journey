@@ -1,11 +1,13 @@
 import { AppState, rootReducer } from '@app/reducers';
-import { History } from 'history';
-import { routerMiddleware } from 'react-router-redux';
-import { applyMiddleware, createStore, Store } from 'redux';
+import { History, createBrowserHistory } from 'history';
+import { Store, applyMiddleware, createStore } from 'redux';
+
+import FirebaseApp from '@app/middleware/firebase';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { createLogger } from 'redux-logger';
+import { routerMiddleware } from 'react-router-redux';
 
-export function configureStore(history: History, initialState?: AppState): Store<AppState> {
+function configureStore(history: History, initialState?: AppState): Store<AppState> {
     const logger = createLogger({
         collapsed: true
     });
@@ -26,5 +28,14 @@ export function configureStore(history: History, initialState?: AppState): Store
         });
     }
 
+    const firebaseApp = FirebaseApp.Instance;
+    firebaseApp.firebaseDataManager.subscribeToStore(store);
+
     return store;
 }
+
+// prepare store
+const history = createBrowserHistory();
+const store = configureStore(history);
+
+export { history, store };

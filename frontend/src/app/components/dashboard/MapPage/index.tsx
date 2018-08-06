@@ -1,11 +1,13 @@
-import { PostActions } from '@app/actions';
-import { NewPost } from '@app/components/dashboard/MapPage/NewPost';
-import { PostList } from '@app/components/dashboard/MapPage/PostList';
-import MapContainer from '@app/containers/dashboard/MapContainer';
-import Post from '@app/models/Post';
-import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
 import './style.scss';
+
+import * as React from 'react';
+
+import MapContainer from '@app/containers/dashboard/MapContainer';
+import { NewPost } from '@app/components/dashboard/MapPage/NewPost';
+import Post from '@app/models/Post';
+import { PostActions } from '@app/actions';
+import { PostList } from '@app/components/dashboard/MapPage/PostList';
+import { RouteComponentProps } from 'react-router';
 
 export namespace MapPage {
     export interface Props extends RouteComponentProps<void> {
@@ -29,10 +31,15 @@ export class MapPage extends React.Component<MapPage.Props, MapPage.State> {
             showModal: false
         };
         this.savePost = this.savePost.bind(this);
+        this.deletePost = this.deletePost.bind(this);
     }
 
     savePost(post: Post) {
         this.props.actions.addPost(post);
+    }
+
+    deletePost(postId: string) {
+        this.props.actions.deletePost(postId);
     }
 
     render() {
@@ -42,7 +49,11 @@ export class MapPage extends React.Component<MapPage.Props, MapPage.State> {
         return (
             <div className="row full-height">
                 <div className="col-md-4">
-                    <PostList posts={this.props.posts} onAddPost={toggleModal(true)} />
+                    <PostList
+                        posts={this.props.posts}
+                        onAddPost={toggleModal(true)}
+                        onDeletePost={this.deletePost}
+                    />
                 </div>
                 <div className="col-md-8">
                     <MapContainer

@@ -22,7 +22,7 @@ export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
         super(props);
         // TODO: Fix this user reference to be the logged in user
         this.state = {
-            newPost: new Post(0, new User(0, 'user'), '')
+            newPost: new Post(new User(0, 'user'), '')
         };
         this.onInputChange = this.onInputChange.bind(this);
         this.onPlacesChanged = this.onPlacesChanged.bind(this);

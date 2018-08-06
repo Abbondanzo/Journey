@@ -24,6 +24,21 @@ export const postReducer = handleActions<PostState, any>(
                 posts
             };
         },
+        [PostActions.Type.DELETE_POST]: (
+            state: PostState,
+            action: Action<Post['id']>
+        ): PostState => {
+            let posts = state.posts;
+            if (action.payload) {
+                posts = posts.filter((post) => {
+                    return post.id !== action.payload;
+                });
+            }
+            return {
+                ...state,
+                posts
+            };
+        },
         [PostActions.Type.FIREBASE_POST]: (
             state: PostState,
             action: Action<PostState>

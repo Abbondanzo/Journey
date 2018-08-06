@@ -2,7 +2,7 @@ import User from '@app/models/User';
 /// <reference types="@types/googlemaps" />
 
 export default class Post {
-    id: number;
+    id: string;
     owner: User;
     title: string;
     description: string;
@@ -10,8 +10,8 @@ export default class Post {
     likes: User[];
     geocode?: Geocode;
 
-    constructor(id: number, owner: User, title: string) {
-        this.id = id;
+    constructor(owner: User, title: string) {
+        this.id = this.guid();
         this.owner = owner;
         this.title = title;
         this.description = '';
@@ -25,6 +25,15 @@ export default class Post {
         this.title = object.title;
         this.description = object.description;
         this.likes = object.likes;
+    }
+
+    guid() {
+        const s4 = () => {
+            return Math.floor((1 + Math.random()) * 0x10000)
+                .toString(16)
+                .substring(1);
+        };
+        return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
     }
 }
 

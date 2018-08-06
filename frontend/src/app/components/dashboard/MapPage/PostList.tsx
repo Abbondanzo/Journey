@@ -1,10 +1,12 @@
-import Post from '@app/models/Post';
 import * as React from 'react';
+
+import Post from '@app/models/Post';
 
 export namespace PostList {
     export interface Props {
         posts: Post[];
         onAddPost(): void;
+        onDeletePost(postId: string): void;
     }
 }
 
@@ -13,14 +15,28 @@ export namespace PostList {
  */
 export class PostList extends React.Component<PostList.Props> {
     render() {
+        const onDeletePost = (postId: string) => {
+            return () => {
+                this.props.onDeletePost(postId);
+            };
+        };
         return (
             <div>
                 <ul className="list-group">
                     {this.props.posts.map((post: Post, index: number) => {
                         return (
                             <li className="list-group-item" key={index}>
-                                <div className="w-100">
-                                    <h5 className="mb-1">{post.title}</h5>
+                                <div className="d-flex w-100 justify-content-between">
+                                    <h5>{post.title}</h5>
+                                    <button
+                                        type="button"
+                                        className="close"
+                                        data-dismiss="modal"
+                                        aria-label="Close"
+                                        onClick={onDeletePost(post.id)}
+                                    >
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
                                 </div>
                                 <p className="mb-1">{post.description}</p>
                                 <small>

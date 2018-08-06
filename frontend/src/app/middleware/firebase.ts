@@ -1,5 +1,6 @@
-import FirebaseManager from '@app/utils/firebase';
 import * as firebase from 'firebase';
+
+import FirebaseManager from '@app/utils/firebase';
 
 export default class FirebaseApp {
     private static instance: FirebaseApp;

@@ -1,8 +1,8 @@
-import FirebaseApp from '@app/middleware/firebase';
-import { postReducer, PostState } from '@app/reducers/post';
-import { userReducer, UserState } from '@app/reducers/user';
-import { utilReducer, UtilState } from '@app/reducers/util';
-import { routerReducer, RouterState } from 'react-router-redux';
+import { PostState, postReducer } from '@app/reducers/post';
+import { RouterState, routerReducer } from 'react-router-redux';
+import { UserState, userReducer } from '@app/reducers/user';
+import { UtilState, utilReducer } from '@app/reducers/util';
+
 import { combineReducers } from 'redux';
 
 export interface AppState {
@@ -18,5 +18,3 @@ export const rootReducer = combineReducers<AppState>({
     utils: utilReducer as any,
     router: routerReducer as any
 });
-
-export const firebaseApp = FirebaseApp.Instance;

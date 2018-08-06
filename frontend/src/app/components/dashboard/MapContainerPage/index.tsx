@@ -1,7 +1,9 @@
-import { UtilActions } from '@app/actions/util';
-import Post from '@app/models/Post';
 import * as React from 'react';
+
 import { GoogleMap, Marker, WithGoogleMapProps, WithScriptjsProps } from 'react-google-maps';
+
+import Post from '@app/models/Post';
+import { UtilActions } from '@app/actions/util';
 
 export namespace MapContainerPage {
     export interface Props extends WithScriptjsProps, WithGoogleMapProps {
@@ -68,11 +70,11 @@ export class MapContainerPage extends React.Component<
             >
                 {this.props.posts.map((post: Post, index: number) => {
                     if (post.geocode) {
-                        const coordinates = post.geocode.geometry.location;
+                        const coordinates = post.geocode.coordinates;
                         return (
                             <Marker
                                 key={index}
-                                position={{ lat: coordinates.lat(), lng: coordinates.lng() }}
+                                position={{ lat: coordinates.lat, lng: coordinates.lng }}
                             />
                         );
                     }

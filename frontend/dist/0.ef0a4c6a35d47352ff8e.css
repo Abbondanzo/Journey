@@ -1,0 +1,3 @@
+.full-height,.map-full-height{height:100%}.modal{position:fixed;top:0;left:0;bottom:0;right:0;display:block;background-color:rgba(0,0,0,.2)}.modal .modal-container{background-color:#fff;padding:32px;padding:2rem}
+.searchbox{-webkit-box-sizing:border-box;box-sizing:border-box;border:1px solid transparent;width:240px;height:32px;padding:0 16px;padding:0 1rem;border-radius:3px;-webkit-box-shadow:0 2px 6px rgba(0,0,0,.3);box-shadow:0 2px 6px rgba(0,0,0,.3);font-size:14px;outline:none;text-overflow:ellipsis}.pac-container{z-index:2000}
+body,html{height:100%}body{min-height:100%;display:-webkit-box;display:-ms-flexbox;display:flex;margin:0;padding:0}#root{width:100%}.root{height:100%;overflow-x:hidden}

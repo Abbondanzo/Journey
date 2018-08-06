@@ -1,10 +1,12 @@
+import * as firebase from 'firebase';
+
 import { PostActions, UserActions } from '@app/actions';
+
 import { AppState } from '@app/reducers';
 import { PostState } from '@app/reducers/post';
 import { UserState } from '@app/reducers/user';
-import * as firebase from 'firebase';
 
-const FIREBASE_POSTS = '/posts';
+const FIREBASE_POSTS = '/postState';
 const FIREBASE_USERS = '/users';
 
 export default class FirebaseManager {
@@ -44,12 +46,13 @@ export default class FirebaseManager {
     /**
      * Subscribes to changes of the global store in order to store specific states.
      */
-    subscribeToStore() {
-        let { store } = require('../store');
+    subscribeToStore(store: any) {
         this.store = store;
+        console.log(store, require('../store'));
         this.store.subscribe(() => {
             let state: AppState = this.store.getState();
             // These will succeed and send the first time there is a valid database
+            console.log('store update');
             this.storePostsState(state.posts);
             this.storeUserState(state.users);
         });

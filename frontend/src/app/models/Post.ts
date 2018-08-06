@@ -8,7 +8,7 @@ export default class Post {
     description: string;
     // images: Image;
     likes: User[];
-    geocode?: google.maps.places.PlaceResult;
+    geocode?: Geocode;
 
     constructor(id: number, owner: User, title: string) {
         this.id = id;
@@ -27,3 +27,17 @@ export default class Post {
         this.likes = object.likes;
     }
 }
+
+interface Geocode extends Omit<google.maps.places.PlaceResult, 'geometry'> {
+    coordinates: google.maps.LatLngLiteral;
+}
+
+export const convertPlaceResultToGeocode = (
+    placeResult: google.maps.places.PlaceResult
+): Geocode => {
+    const result: any = placeResult;
+    const coordinates = placeResult.geometry.location.toJSON();
+    delete result.geometry;
+    (result as any).coordinates = coordinates;
+    return result as Geocode;
+};

@@ -1,8 +1,11 @@
-import SearchBox from '@app/containers/dashboard/SearchBox';
-import Post from '@app/models/Post';
-import User from '@app/models/User';
-import * as React from 'react';
 import './style.scss';
+
+import * as React from 'react';
+
+import Post, { convertPlaceResultToGeocode } from '@app/models/Post';
+
+import SearchBox from '@app/containers/dashboard/SearchBox';
+import User from '@app/models/User';
 
 export namespace NewPost {
     export interface Props {
@@ -44,7 +47,7 @@ export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
 
     onPlacesChanged(places: google.maps.places.PlaceResult[]) {
         const post = this.state.newPost;
-        post.geocode = places[0];
+        post.geocode = convertPlaceResultToGeocode(places[0]);
         this.setState({
             newPost: post
         });

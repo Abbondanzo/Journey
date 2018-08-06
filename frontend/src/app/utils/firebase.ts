@@ -1,10 +1,10 @@
 import * as firebase from 'firebase';
 
 import { PostActions, UserActions } from '@app/actions';
+import { PostState, initialState as initialPostState } from '@app/reducers/post';
+import { UserState, initialState as initialUserState } from '@app/reducers/user';
 
 import { AppState } from '@app/reducers';
-import { PostState } from '@app/reducers/post';
-import { UserState } from '@app/reducers/user';
 
 const FIREBASE_POSTS = '/postState';
 const FIREBASE_USERS = '/users';
@@ -13,6 +13,9 @@ export default class FirebaseManager {
     static instance: FirebaseManager | null = null;
     private store: any;
     private database?: firebase.database.Database;
+    // We use these to check for changes against the store
+    private postState: PostState = initialPostState;
+    private userState: UserState = initialUserState;
 
     /**
      * Firebase database singleton. Creates a firebase manager if there is none or returns the
@@ -48,11 +51,9 @@ export default class FirebaseManager {
      */
     subscribeToStore(store: any) {
         this.store = store;
-        console.log(store, require('../store'));
         this.store.subscribe(() => {
             let state: AppState = this.store.getState();
             // These will succeed and send the first time there is a valid database
-            console.log('store update');
             this.storePostsState(state.posts);
             this.storeUserState(state.users);
         });
@@ -92,7 +93,8 @@ export default class FirebaseManager {
     }
 
     storePostsState(state: PostState) {
-        if (this.database) {
+        if (this.database && state != this.postState) {
+            this.postState = state;
             this.database.ref(FIREBASE_POSTS).set(state);
         }
     }
@@ -113,7 +115,8 @@ export default class FirebaseManager {
      * @param state {UserState}
      */
     storeUserState(state: UserState) {
-        if (this.database) {
+        if (this.database && state != this.userState) {
+            this.userState = state;
             this.database.ref(FIREBASE_USERS).set(state);
         }
     }

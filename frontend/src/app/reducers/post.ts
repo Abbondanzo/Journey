@@ -1,13 +1,14 @@
-import { PostActions } from '@app/actions';
-import Post from '@app/models/Post';
 import { Action, handleActions } from 'redux-actions';
+
+import Post from '@app/models/Post';
+import { PostActions } from '@app/actions';
 
 export interface PostState {
     activePost?: Post['id'];
     posts: Post[];
 }
 
-const initialState: PostState = {
+export const initialState: PostState = {
     posts: []
 };
 
@@ -21,6 +22,19 @@ export const postReducer = handleActions<PostState, any>(
             return {
                 ...state,
                 posts
+            };
+        },
+        [PostActions.Type.FIREBASE_POST]: (
+            state: PostState,
+            action: Action<PostState>
+        ): PostState => {
+            if (action.payload) {
+                return {
+                    ...action.payload
+                };
+            }
+            return {
+                ...state
             };
         }
     },

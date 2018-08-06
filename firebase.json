@@ -10,15 +10,13 @@
         "source": "backend"
     },
     "hosting": {
-        "public": "frontend/public",
-        "ignore": [
-            "firebase.json",
-            "**/.*",
-            "**/node_modules/**"
-        ],
-        "rewrites": [{
-            "source": "/frontend/**",
-            "destination": "/index.html"
-        }]
+        "public": "frontend/dist",
+        "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+        "rewrites": [
+            {
+                "source": "**",
+                "destination": "/index.html"
+            }
+        ]
     }
 }

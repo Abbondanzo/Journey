@@ -38,6 +38,7 @@ export const convertPlaceResultToGeocode = (
     const result: any = placeResult;
     const coordinates = placeResult.geometry.location.toJSON();
     delete result.geometry;
+    delete result.photos;
     (result as any).coordinates = coordinates;
     return result as Geocode;
 };

@@ -1,11 +1,11 @@
 import { AppState, rootReducer } from '@app/reducers';
-import { History } from 'history';
+import { createBrowserHistory, History } from 'history';
 import { routerMiddleware } from 'react-router-redux';
 import { applyMiddleware, createStore, Store } from 'redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { createLogger } from 'redux-logger';
 
-export function configureStore(history: History, initialState?: AppState): Store<AppState> {
+function configureStore(history: History, initialState?: AppState): Store<AppState> {
     const logger = createLogger({
         collapsed: true
     });
@@ -28,3 +28,9 @@ export function configureStore(history: History, initialState?: AppState): Store
 
     return store;
 }
+
+// prepare store
+const history = createBrowserHistory();
+const store = configureStore(history);
+
+export { history, store };

@@ -66,11 +66,14 @@ export class MapContainerPage extends React.Component<
                 onDragEnd={this.onBoundsChanged}
                 onZoomChanged={this.onBoundsChanged}
             >
-                {this.props.posts.map((post: Post) => {
+                {this.props.posts.map((post: Post, index: number) => {
                     if (post.geocode) {
                         const coordinates = post.geocode.geometry.location;
                         return (
-                            <Marker position={{ lat: coordinates.lat(), lng: coordinates.lng() }} />
+                            <Marker
+                                key={index}
+                                position={{ lat: coordinates.lat(), lng: coordinates.lng() }}
+                            />
                         );
                     }
                     return undefined;

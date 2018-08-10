@@ -19,7 +19,11 @@ export class AppPage extends React.Component<AppPage.Props> {
     render() {
         return (
             <div className="root">
-                <Navbar loggedInUser={this.props.loggedInUser} actions={this.props.actions} />
+                <Navbar
+                    loggedInUser={this.props.loggedInUser}
+                    actions={this.props.actions}
+                    location={this.props.location}
+                />
                 <Switch>
                     <Route path="/login" component={Login} />
                     <Route path="/map" component={Dashboard} />

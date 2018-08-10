@@ -1,6 +1,6 @@
 @import '~@app/variables.scss';
 .navbar {
-    background-color: $secondary;
+    background: $primary;
     color: #fff;
     position: fixed;
     z-index: 9999;
@@ -11,5 +11,8 @@
     box-shadow: 0 0 1rem 0.2rem rgba(0, 0, 0, .2);
     .nav-item:not(.active) {
         font-family: 'Gotham Rounded Book', $gothamRounded;
+    }
+    .btn-login {
+        margin-left: 1rem;
     }
 }

@@ -1,4 +1,6 @@
-@import '~@app/global.scss';
+@import '~@app/variables.scss';
+// We need to do this because https://github.com/jantimon/html-webpack-plugin/issues/971
+@import './fonts/Gotham/stylesheet.css';
 #root {
     width: 100%;
 }

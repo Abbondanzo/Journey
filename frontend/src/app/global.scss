@@ -1,6 +1,4 @@
-$primary: #5bd9ba;
-$secondary: #725ac1;
-$navbarHeight: 60px;
+@import '~@app/variables.scss';
 html,
 body {
     height: 100%;
@@ -13,8 +11,19 @@ body {
     padding: 0;
 }
 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: $gothamRounded;
+}
+
 .btn {
     border-radius: 200px;
+    font-family: $gothamRounded;
+    padding: 0.75rem;
     &:focus {
         box-shadow: 0 0 0 0.2rem transparentize($color: $primary, $amount: 0.5);
     }

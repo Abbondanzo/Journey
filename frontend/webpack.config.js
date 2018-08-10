@@ -10,8 +10,8 @@ var outPath = path.join(__dirname, './dist');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var MiniCssExtractPlugin = require('mini-css-extract-plugin');
 var WebpackCleanupPlugin = require('webpack-cleanup-plugin');
-const Dotenv = require('dotenv-webpack');
-const CopyWebpackPlugin = require('copy-webpack-plugin')
+var Dotenv = require('dotenv-webpack');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     context: sourcePath,
@@ -90,7 +90,7 @@ module.exports = {
                 use: 'html-loader'
             },
             {
-                test: /\.(png|svg)$/,
+                test: /\.(png|woff|woff2|eot|ttf|svg)$/,
                 use: 'url-loader?limit=10000'
             },
             {
@@ -126,16 +126,16 @@ module.exports = {
             filename: '[contenthash].css',
             disable: !isProduction
         }),
+        // new CopyWebpackPlugin([{
+        //     from: path.resolve(__dirname, 'src/assets/fonts'),
+        //     to: path.resolve(__dirname, 'dist/assets/fonts')
+        // }]),
         new HtmlWebpackPlugin({
             template: 'assets/index.html'
         }),
         new Dotenv({
             safe: true
-        }),
-        new CopyWebpackPlugin([{
-            from: path.resolve(__dirname, 'src/assets/'),
-            to: 'dest/assets'
-        }])
+        })
     ],
     devServer: {
         contentBase: sourcePath,

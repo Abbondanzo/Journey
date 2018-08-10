@@ -1,20 +1,10 @@
-html,
-body {
-    height: 100%;
-}
-
-body {
-    min-height: 100%;
-    display: flex;
-    margin: 0;
-    padding: 0;
-}
-
+@import '~@app/global.scss';
 #root {
     width: 100%;
 }
 
 .root {
+    padding-top: $navbarHeight;
     height: 100%;
     overflow-x: hidden;
 }

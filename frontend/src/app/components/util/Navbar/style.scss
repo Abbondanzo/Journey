@@ -1,0 +1,10 @@
+@import '~@app/global.scss';
+.navbar {
+    background-color: $secondary;
+    color: #fff;
+    position: fixed;
+    z-index: 9999;
+    width: 100%;
+    top: 0;
+    height: $navbarHeight;
+}

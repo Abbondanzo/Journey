@@ -1,13 +1,11 @@
+import { PostActions, UserActions } from '@app/actions';
+import { AppState } from '@app/reducers';
+import { initialState as initialPostState, PostState } from '@app/reducers/post';
+import { initialState as initialUserState, UserState } from '@app/reducers/user';
 import * as firebase from 'firebase';
 
-import { PostActions, UserActions } from '@app/actions';
-import { PostState, initialState as initialPostState } from '@app/reducers/post';
-import { UserState, initialState as initialUserState } from '@app/reducers/user';
-
-import { AppState } from '@app/reducers';
-
-const FIREBASE_POSTS = '/postState';
-const FIREBASE_USERS = '/users';
+const FIREBASE_POSTS = process.env.NODE_ENV === 'production' ? '/post-state' : '/dev/post-state';
+const FIREBASE_USERS = process.env.NODE_ENV === 'production' ? '/users' : '/dev/users';
 
 export default class FirebaseManager {
     static instance: FirebaseManager | null = null;

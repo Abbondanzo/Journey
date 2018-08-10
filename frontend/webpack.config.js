@@ -11,6 +11,7 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var MiniCssExtractPlugin = require('mini-css-extract-plugin');
 var WebpackCleanupPlugin = require('webpack-cleanup-plugin');
 const Dotenv = require('dotenv-webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
     context: sourcePath,
@@ -130,7 +131,11 @@ module.exports = {
         }),
         new Dotenv({
             safe: true
-        })
+        }),
+        new CopyWebpackPlugin([{
+            from: path.resolve(__dirname, 'src/assets/'),
+            to: 'dest/assets'
+        }])
     ],
     devServer: {
         contentBase: sourcePath,

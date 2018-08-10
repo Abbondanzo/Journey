@@ -24,12 +24,14 @@ export class AppPage extends React.Component<AppPage.Props> {
                     actions={this.props.actions}
                     location={this.props.location}
                 />
-                <Switch>
-                    <Route path="/login" component={Login} />
-                    <Route path="/map" component={Dashboard} />
-                    {/* Home is default unless we specify exact=true */}
-                    <Route path="/" component={Home} />
-                </Switch>
+                <div className="container full-height">
+                    <Switch>
+                        <Route path="/login" component={Login} />
+                        <Route path="/map" component={Dashboard} />
+                        {/* Home is default unless we specify exact=true */}
+                        <Route path="/" component={Home} />
+                    </Switch>
+                </div>
             </div>
         );
     }

@@ -1,9 +1,7 @@
-import * as React from 'react';
-
-import { GoogleMap, Marker, WithGoogleMapProps, WithScriptjsProps } from 'react-google-maps';
-
-import Post from '@app/models/Post';
 import { UtilActions } from '@app/actions/util';
+import Post from '@app/models/Post';
+import * as React from 'react';
+import { GoogleMap, Marker, WithGoogleMapProps, WithScriptjsProps } from 'react-google-maps';
 
 export namespace MapContainerPage {
     export interface Props extends WithScriptjsProps, WithGoogleMapProps {
@@ -54,7 +52,15 @@ export class MapContainerPage extends React.Component<
     onBoundsChanged() {
         const currentMap = this.state.mapPage.current;
         if (currentMap) {
-            this.props.actions.setBounds(currentMap.getBounds());
+            let bounds = currentMap.getBounds();
+            if (!bounds || !bounds.getNorthEast()) {
+                // Set bounds to Boston by default
+                bounds = new google.maps.LatLngBounds(
+                    { lat: -71.2, lng: 42.2 },
+                    { lat: -70.9, lng: 42.5 }
+                );
+            }
+            this.props.actions.setBounds(bounds);
         }
     }
 

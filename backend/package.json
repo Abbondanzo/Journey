@@ -17,6 +17,7 @@
         "firebase-functions": "^2.0.0"
     },
     "devDependencies": {
+        "@types/googlemaps": "^3.30.11",
         "tslint": "~5.8.0",
         "typescript": "~2.8.3"
     },

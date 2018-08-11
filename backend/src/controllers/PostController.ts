@@ -1,7 +1,5 @@
 import * as functions from 'firebase-functions';
-
 import Post, { PostDocument } from '../models/Post';
-
 import { handleError } from './helper';
 
 export default class PostController {
@@ -10,6 +8,7 @@ export default class PostController {
 
     async createPost(req: functions.Request, res: functions.Response) {
         const post: PostDocument = new Post(req.body);
+        console.log('test');
         this.firestore
             .collection(this.POST_COL)
             .add(post)

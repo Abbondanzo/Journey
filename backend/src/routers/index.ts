@@ -1,5 +1,5 @@
+import * as express from 'express';
 import PostController from '../controllers/PostController';
-import express from 'express';
 
 export default class Router {
     private postController: PostController;
@@ -9,6 +9,6 @@ export default class Router {
     }
 
     private setPostMethods() {
-        this.app.route('/api/post').post(this.postController.createPost);
+        this.app.route('/post').post(this.postController.createPost);
     }
 }

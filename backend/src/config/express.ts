@@ -1,8 +1,7 @@
-import * as admin from 'firebase-admin';
 import * as cookieParser from 'cookie-parser';
-
-import cors from 'cors';
-import express from 'express';
+import * as cors from 'cors';
+import * as express from 'express';
+import * as admin from 'firebase-admin';
 
 class Express {
     public app: express.Express;
@@ -80,7 +79,7 @@ class Express {
             .verifyIdToken(idToken)
             .then((decodedIdToken) => {
                 console.log('ID Token correctly decoded', decodedIdToken);
-                req.user = decodedIdToken;
+                (req as any).user = decodedIdToken;
                 return next();
             })
             .catch((error) => {

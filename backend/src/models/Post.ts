@@ -1,4 +1,5 @@
 /// <reference types="@types/googlemaps" />
+import { Omit } from 'lodash';
 
 export default class Post {
     id: string;

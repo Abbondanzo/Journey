@@ -1,8 +1,7 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-
-import Router from './routers';
 import express from './config/express';
+import Router from './routers';
 
 admin.initializeApp(functions.config().firebase);
 

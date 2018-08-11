@@ -6,6 +6,7 @@ import Router from './routers';
 admin.initializeApp(functions.config().firebase);
 
 const firestoreInstance = admin.firestore();
-new Router(express.app, firestoreInstance);
+const authInstance = admin.auth();
+new Router(express.app, firestoreInstance, authInstance);
 
 export const api = functions.https.onRequest(express.app);

@@ -32,13 +32,4 @@ interface Geocode extends Omit<google.maps.places.PlaceResult, 'geometry'> {
     coordinates: google.maps.LatLngLiteral;
 }
 
-export const convertPlaceResultToGeocode = (
-    placeResult: google.maps.places.PlaceResult
-): Geocode => {
-    const result: any = placeResult;
-    const coordinates = placeResult.geometry.location.toJSON();
-    delete result.geometry;
-    delete result.photos;
-    (result as any).coordinates = coordinates;
-    return result as Geocode;
-};
+export interface PostDocument extends FirebaseFirestore.DocumentData, Post {}

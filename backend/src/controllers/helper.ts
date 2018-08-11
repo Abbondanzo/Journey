@@ -68,12 +68,16 @@ export const firebaseIdToken = (req: Request, res: Response, next: NextFunction)
         });
 };
 
-export const handleError = (errMessage: string, res: Response, errCode = 403) => {
+export const handleError = (errMessage: string, res: Response, err: any, errCode = 403) => {
+    const message = {
+        message: errMessage,
+        error: err.message || err
+    };
+    res.status(errCode).send(message);
+};
+
+export const handleCatchError = (errMessage: string, res: Response, errCode = 403) => {
     return (err: any) => {
-        const message = {
-            message: errMessage,
-            error: err.message || err
-        };
-        res.status(errCode).send(message);
+        handleError(errMessage, res, err, errCode);
     };
 };

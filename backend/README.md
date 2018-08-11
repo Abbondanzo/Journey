@@ -33,6 +33,16 @@ To build and compress these functions into a deployable state, you can use the `
 yarn build
 ```
 
+## Troubleshooting
+
+Did you know that Google Cloud Functions only supports Node.js v6.11.5? Even if you're running that version, serving these functions will still output this error.
+
+Requiring your service credentials will _not_ work unless you use [NVM](https://github.com/creationix/nvm) and run this version:
+
+```bash
+nvm install 6.11.5
+```
+
 ## License
 
 MIT

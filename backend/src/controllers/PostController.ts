@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
 import Post, { PostDocument } from '../models/Post';
-import { firestoreInstance, handleError } from './helper';
+import { firestoreInstance, handleCatchError } from './helper';
 
 export default class PostController {
     private static POST_COL = 'posts';
@@ -13,6 +13,6 @@ export default class PostController {
             .then((postDoc) => {
                 res.send(postDoc);
             })
-            .catch(handleError('Unable to create post', res));
+            .catch(handleCatchError('Unable to create post', res));
     }
 }

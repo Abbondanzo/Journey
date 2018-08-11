@@ -1,3 +1,4 @@
+import * as bodyParser from 'body-parser';
 import * as cookieParser from 'cookie-parser';
 import * as cors from 'cors';
 import * as express from 'express';
@@ -11,6 +12,7 @@ class Express {
 
     private init() {
         this.app = express();
+        this.app.use(bodyParser.json());
         this.app.use(cookieParser());
         this.app.use(this.cors());
     }

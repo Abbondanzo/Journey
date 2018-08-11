@@ -4,11 +4,10 @@ import User from '../models/User';
 import { handleError } from './helper';
 
 export default class UserController {
-    constructor(private auth: admin.auth.Auth) {}
-
-    async register(req: functions.Request, res: functions.Response) {
+    static async register(req: functions.Request, res: functions.Response) {
         const user: User = new User(req.body);
-        this.auth
+        admin
+            .auth()
             .createUser(user)
             .then((userRecord) => {
                 res.send(userRecord);

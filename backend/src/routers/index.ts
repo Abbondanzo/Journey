@@ -1,19 +1,19 @@
 import * as express from 'express';
-import * as admin from 'firebase-admin';
+import { firebaseIdToken } from '../controllers/helper';
 import PostController from '../controllers/PostController';
+import UserController from '../controllers/UserController';
 
 export default class Router {
-    private postController: PostController;
-    constructor(
-        private app: express.Express,
-        private firestore: FirebaseFirestore.Firestore,
-        private auth: admin.auth.Auth
-    ) {
-        this.postController = new PostController(firestore);
+    constructor(private app: express.Express) {
         this.setPostMethods();
+        this.setUserMethods();
     }
 
     private setPostMethods() {
-        this.app.route('/post').post(this.postController.createPost);
+        this.app.route('/post').post(firebaseIdToken, PostController.createPost);
+    }
+
+    private setUserMethods() {
+        this.app.route('/register').post(UserController.register);
     }
 }

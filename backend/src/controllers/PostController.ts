@@ -1,15 +1,13 @@
 import * as functions from 'firebase-functions';
 import Post, { PostDocument } from '../models/Post';
-import { handleError } from './helper';
+import { firestoreInstance, handleError } from './helper';
 
 export default class PostController {
-    private POST_COL = 'posts';
-    constructor(private firestore: FirebaseFirestore.Firestore) {}
+    private static POST_COL = 'posts';
 
-    async createPost(req: functions.Request, res: functions.Response) {
+    static async createPost(req: functions.Request, res: functions.Response) {
         const post: PostDocument = new Post(req.body);
-        console.log('test');
-        this.firestore
+        firestoreInstance
             .collection(this.POST_COL)
             .add(post)
             .then((postDoc) => {

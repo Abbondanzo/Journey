@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import * as admin from 'firebase-admin';
-import serviceAccountKey from '../config/serviceAccountKey.json';
-
-console.log('f', serviceAccountKey);
+let serviceAccountKey = require('../config/serviceAccountKey.json');
 
 const adminApp = admin.initializeApp({
     credential: admin.credential.cert(serviceAccountKey),

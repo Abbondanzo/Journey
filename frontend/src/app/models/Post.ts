@@ -3,14 +3,14 @@ import User from '@app/models/User';
 
 export default class Post {
     id: string;
-    owner: User;
+    owner: User['id'];
     title: string;
     description: string;
     // images: Image;
-    likes: User[];
+    likes: User['id'][];
     geocode?: Geocode;
 
-    constructor(owner: User, title: string) {
+    constructor(owner: User['id'], title: string) {
         this.id = this.guid();
         this.owner = owner;
         this.title = title;

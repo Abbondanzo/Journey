@@ -5,7 +5,18 @@ import { withRouter } from 'react-router';
 import { Dispatch } from 'redux';
 
 const mapStateToProps = (state: AppState): Partial<HomePage.Props> => {
-    return {};
+    let posts = state.posts.posts;
+    const loggedInUser = state.users.loggedInUser;
+    // Only filter if we're logged in
+    if (loggedInUser) {
+        posts = posts.filter((post) => {
+            // Only include posts from followed or the owner
+            loggedInUser.following.indexOf(post.owner) !== -1 || loggedInUser.id === post.owner;
+        });
+    }
+    return {
+        posts
+    };
 };
 
 const mapDispatchToProps = (dispatch: Dispatch): Partial<HomePage.Props> => {

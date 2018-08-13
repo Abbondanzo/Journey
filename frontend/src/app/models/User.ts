@@ -1,7 +1,7 @@
 export default class User {
     id: string;
     displayName: string;
-    following: User[] = [];
+    following: User['id'][] = [];
 
     constructor(id: string, displayName: string) {
         this.id = id;

@@ -1,0 +1,7 @@
+.alert-container {
+    position: absolute;
+    width: 100%;
+    &:not(.show) {
+        pointer-events: none;
+    }
+}

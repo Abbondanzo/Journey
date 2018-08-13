@@ -28,6 +28,8 @@ export class Navbar extends React.Component<Navbar.Props, Navbar.State> {
             } else {
                 this.props.history.push('/login');
             }
+        } else {
+            console.error('No history prop');
         }
     }
 

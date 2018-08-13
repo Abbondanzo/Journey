@@ -3,14 +3,11 @@ import { createAction } from 'redux-actions';
 
 export namespace UserActions {
     export enum Type {
-        SIGN_IN_WITH_USERNAME = 'SIGN_IN_WITH_USERNAME',
+        SIGN_IN = 'SIGN_IN',
         FIREBASE_USER = 'FIREBASE_USER'
     }
 
-    export const signInWithUsername = createAction<{
-        username: string;
-        password: string;
-    }>(Type.SIGN_IN_WITH_USERNAME);
+    export const signIn = createAction<{ email: string; password: string }>(Type.SIGN_IN);
     export const firebaseUser = createAction<UserState>(Type.FIREBASE_USER);
 }
 

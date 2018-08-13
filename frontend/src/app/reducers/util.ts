@@ -7,6 +7,8 @@ export interface UtilState {
     googleMapComponent?: React.StatelessComponent;
     mapBounds: google.maps.LatLngBounds;
     isMapsComponentShowing: boolean;
+    successMessage?: string;
+    errorMessage?: string;
 }
 
 const apiKey = process.env.GOOGLE_MAPS_API;
@@ -40,6 +42,31 @@ export const utilReducer = handleActions<UtilState, any>(
             return {
                 ...state,
                 mapBounds: action.payload ? action.payload : state.mapBounds
+            };
+        },
+        [UtilActions.Type.SHOW_SUCCESS]: (state: UtilState, action: Action<string>): UtilState => {
+            return {
+                ...state,
+                successMessage: action.payload
+            };
+        },
+        [UtilActions.Type.SHOW_ERROR]: (state: UtilState, action: Action<string>): UtilState => {
+            return {
+                ...state,
+                errorMessage: action.payload
+            };
+        },
+
+        [UtilActions.Type.HIDE_SUCCESS]: (state: UtilState, _: Action<any>): UtilState => {
+            return {
+                ...state,
+                successMessage: undefined
+            };
+        },
+        [UtilActions.Type.HIDE_ERROR]: (state: UtilState, _: Action<any>): UtilState => {
+            return {
+                ...state,
+                errorMessage: undefined
             };
         }
     },

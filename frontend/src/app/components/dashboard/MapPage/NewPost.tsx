@@ -1,11 +1,8 @@
-import './style.scss';
-
-import * as React from 'react';
-
-import Post, { convertPlaceResultToGeocode } from '@app/models/Post';
-
 import SearchBox from '@app/containers/dashboard/SearchBox';
+import Post, { convertPlaceResultToGeocode } from '@app/models/Post';
 import User from '@app/models/User';
+import * as React from 'react';
+import './style.scss';
 
 export namespace NewPost {
     export interface Props {
@@ -22,7 +19,7 @@ export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
         super(props);
         // TODO: Fix this user reference to be the logged in user
         this.state = {
-            newPost: new Post(new User(0, 'user'), '')
+            newPost: new Post(new User('0', 'user'), '')
         };
         this.onInputChange = this.onInputChange.bind(this);
         this.onPlacesChanged = this.onPlacesChanged.bind(this);

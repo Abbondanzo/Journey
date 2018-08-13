@@ -1,9 +1,9 @@
 export default class User {
-    id: number;
+    id: string;
     displayName: string;
     following: User[] = [];
 
-    constructor(id: number, displayName: string) {
+    constructor(id: string, displayName: string) {
         this.id = id;
         this.displayName = displayName;
     }
@@ -22,7 +22,7 @@ export class LoggedInUser extends User {
     lastName?: string;
     dateOfBirth?: Date;
 
-    constructor(id: number, displayName: string, email: string) {
+    constructor(id: string, displayName: string, email: string) {
         super(id, displayName);
         this.email = email;
     }

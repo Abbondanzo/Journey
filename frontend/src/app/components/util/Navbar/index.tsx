@@ -18,6 +18,20 @@ export class Navbar extends React.Component<Navbar.Props, Navbar.State> {
     constructor(props: Navbar.Props) {
         super(props);
         this.state = {};
+        this.loginLogout = this.loginLogout.bind(this);
+    }
+
+    loginLogout() {
+        if (this.props.history) {
+            if (this.props.loggedInUser) {
+                this.props.actions.logOut();
+                this.props.history.push('/login');
+            } else {
+                this.props.history.push('/login');
+            }
+        } else {
+            console.error('No history prop');
+        }
     }
 
     render() {
@@ -71,7 +85,10 @@ export class Navbar extends React.Component<Navbar.Props, Navbar.State> {
                                 undefined
                             )}
                         </ul>
-                        <button className="btn btn-light btn-sm btn-login">
+                        <button
+                            className="btn btn-light btn-sm btn-login"
+                            onClick={this.loginLogout}
+                        >
                             {this.props.loggedInUser ? 'Logout' : 'Login'}
                         </button>
                     </div>

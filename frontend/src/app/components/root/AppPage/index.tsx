@@ -20,6 +20,9 @@ export namespace AppPage {
 }
 
 export class AppPage extends React.Component<AppPage.Props> {
+    componentDidMount() {
+        this.props.actions.loadUser();
+    }
     render() {
         return (
             <div className="root">

@@ -24,7 +24,8 @@ export class Navbar extends React.Component<Navbar.Props, Navbar.State> {
     loginLogout() {
         if (this.props.history) {
             if (this.props.loggedInUser) {
-                // this.props.actions.logout()
+                this.props.actions.logOut();
+                this.props.history.push('/login');
             } else {
                 this.props.history.push('/login');
             }

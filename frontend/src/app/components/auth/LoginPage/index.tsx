@@ -1,10 +1,13 @@
 import { UserActions } from '@app/actions';
+import { LoggedInUser } from '@app/models';
 import * as React from 'react';
+import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
 import './style.scss';
 
 export namespace LoginPage {
-    export interface Props {
+    export interface Props extends RouteComponentProps<any> {
+        loggedInUser?: LoggedInUser;
         actions: UserActions;
     }
     export interface State {
@@ -26,6 +29,13 @@ export class LoginPage extends React.Component<LoginPage.Props, LoginPage.State>
         };
         this.handleInputChange = this.handleInputChange.bind(this);
         this.signIn = this.signIn.bind(this);
+    }
+
+    componentWillReceiveProps(props: LoginPage.Props) {
+        // Automatically redirect to profile if we're logged in
+        if (props.loggedInUser) {
+            this.props.history.replace('/profile');
+        }
     }
 
     handleInputChange(event: React.FormEvent<HTMLInputElement>) {

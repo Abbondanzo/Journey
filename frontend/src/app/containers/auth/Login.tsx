@@ -3,10 +3,13 @@ import { LoginPage } from '@app/components/auth/LoginPage';
 import { AppState } from '@app/reducers';
 import { omit } from '@app/utils';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
 const mapStateToProps = (state: AppState): Partial<LoginPage.Props> => {
-    return {};
+    return {
+        loggedInUser: state.users.loggedInUser
+    };
 };
 
 const mapDispatchToProps = (dispatch: Dispatch): Partial<LoginPage.Props> => {
@@ -20,4 +23,4 @@ const Login = connect(
     mapDispatchToProps
 )(LoginPage);
 
-export default (Login as any) as React.StatelessComponent;
+export default (withRouter(Login as any) as any) as React.StatelessComponent;

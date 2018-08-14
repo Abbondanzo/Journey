@@ -1,14 +1,17 @@
-import { UserActions } from '@app/actions';
-import User, { LoggedInUser } from '@app/models/User';
 import { Action, handleActions } from 'redux-actions';
+import User, { LoggedInUser } from '@app/models/User';
+
+import { UserActions } from '@app/actions';
 
 export interface UserState {
     users: User[];
     loggedInUser?: LoggedInUser;
+    userProfileImages: Map<string, string>;
 }
 
 export const initialState: UserState = {
-    users: []
+    users: [],
+    userProfileImages: new Map()
 };
 
 export const userReducer = handleActions<UserState, any>(
@@ -33,6 +36,19 @@ export const userReducer = handleActions<UserState, any>(
             return {
                 ...state,
                 loggedInUser: action.payload
+            };
+        },
+        [UserActions.Type.SAVE_PROFILE_IMAGE]: (
+            state: UserState,
+            action: Action<{ userId: string; url: string }>
+        ): UserState => {
+            const userProfileImages = state.userProfileImages;
+            if (action.payload) {
+                userProfileImages.set(action.payload.userId, action.payload.url);
+            }
+            return {
+                ...state,
+                userProfileImages
             };
         }
     },

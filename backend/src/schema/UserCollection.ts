@@ -8,10 +8,14 @@ export default class UserCollection {
     }
 }
 
-export interface UserDocument extends firebase.firestore.DocumentData {}
+export interface UserDocument extends firebase.firestore.DocumentData {
+    userId: string;
+}
 
 const convertModelToDocument = (user: User) => {
-    const userDocument: UserDocument = {};
+    const userDocument: UserDocument = {
+        userId: user.uid
+    };
     for (const key of Object.keys(user.profileDetails)) {
         userDocument[key] = user.profileDetails[key];
     }

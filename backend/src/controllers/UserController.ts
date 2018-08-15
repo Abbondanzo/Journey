@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import User from '../models/User';
 import UserCollection from '../schema/UserCollection';
-import { handleCatchError, handleError } from './helper';
+import { authInstance, handleCatchError, handleError } from './helper';
 
 export default class UserController {
     static async register(req: functions.Request, res: functions.Response) {
@@ -10,7 +10,15 @@ export default class UserController {
             return;
         }
         const user: User = new User(req.body);
-        UserCollection.createUser(user)
+        authInstance
+            .createUser(user)
+            .then((authUser) => {
+                const authorizedUser = Object.assign({}, user, authUser);
+                if (!authorizedUser.uid) {
+                    throw Error('Missing user ID!');
+                }
+                return UserCollection.createUser(authorizedUser);
+            })
             .then((userRecord) => {
                 res.send(userRecord);
             })

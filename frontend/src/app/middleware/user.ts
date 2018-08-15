@@ -19,10 +19,23 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                 app.auth().onAuthStateChanged((user) => {
                     if (user) {
                         const newUser = convertFirebaseToUser(user);
-                        new UserService().getProfileDetails(newUser).then((detailedUser) => {
-                            next(UserActions.saveUser(Object.assign(newUser, detailedUser)));
-                            getProfileImage((detailedUser as any).profileImage, newUser.uid, next);
-                        });
+                        new UserService()
+                            .getProfileDetails(newUser)
+                            .then((detailedUser) => {
+                                next(UserActions.saveUser(Object.assign(newUser, detailedUser)));
+                                getProfileImage(
+                                    (detailedUser as any).profileImage,
+                                    newUser.uid,
+                                    next
+                                );
+                            })
+                            .catch((err) => {
+                                next(
+                                    UtilActions.showError(
+                                        `Unable to get profile details: ${err.message || err}`
+                                    )
+                                );
+                            });
                     } else {
                         next(UserActions.saveUser(undefined));
                     }
@@ -40,14 +53,25 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                         const user = userCredential.user;
                         if (user) {
                             const newUser = convertFirebaseToUser(user);
-                            new UserService().getProfileDetails(newUser).then((detailedUser) => {
-                                next(UserActions.saveUser(Object.assign(newUser, detailedUser)));
-                                getProfileImage(
-                                    (detailedUser as any).profileImage,
-                                    newUser.uid,
-                                    next
-                                );
-                            });
+                            new UserService()
+                                .getProfileDetails(newUser)
+                                .then((detailedUser) => {
+                                    next(
+                                        UserActions.saveUser(Object.assign(newUser, detailedUser))
+                                    );
+                                    getProfileImage(
+                                        (detailedUser as any).profileImage,
+                                        newUser.uid,
+                                        next
+                                    );
+                                })
+                                .catch((err) => {
+                                    next(
+                                        UtilActions.showError(
+                                            `Unable to get profile details: ${err.message || err}`
+                                        )
+                                    );
+                                });
                         } else {
                             next(UtilActions.showError('Invalid Firebase user'));
                         }

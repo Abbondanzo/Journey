@@ -4,11 +4,13 @@ let serviceAccountKey = require('../config/serviceAccountKey.json');
 
 const adminApp = admin.initializeApp({
     credential: admin.credential.cert(serviceAccountKey),
-    databaseURL: 'https://journey-a2a8f.firebaseio.com'
+    databaseURL: 'https://journey-a2a8f.firebaseio.com',
+    storageBucket: 'journey-a2a8f.appspot.com'
 });
 
 export const firestoreInstance = adminApp.firestore();
 export const authInstance = adminApp.auth();
+export const storageInstance = adminApp.storage();
 
 /**
  * Special thanks to Firebase for providing this function sample:

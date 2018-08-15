@@ -1,10 +1,9 @@
-import { AnyAction, Dispatch, Middleware } from 'redux';
-import User, { LoggedInUser } from '@app/models/User';
-
-// import { AppState } from '@app/reducers';
-import FirebaseApp from '@app/utils/firebase';
 import { UserActions } from '@app/actions';
 import { UtilActions } from '@app/actions/util';
+import { LoggedInUser } from '@app/models/User';
+// import { AppState } from '@app/reducers';
+import FirebaseApp from '@app/utils/firebase';
+import { AnyAction, Dispatch, Middleware } from 'redux';
 
 export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>) => (
     action: AnyAction
@@ -102,32 +101,42 @@ const getProfileImage = (profileImage: string, userId: string, next: Dispatch<An
 };
 
 class UserService {
-    private USER_COLLECTION = '/users';
-    getProfileDetails(userId: string) {
-        return new Promise((resolve: (user: User) => void, reject: any) => {
-            FirebaseApp.Instance.addActionToQueue((app: firebase.app.App) => {
-                app.firestore()
-                    .collection(this.USER_COLLECTION)
-                    .where('id', '==', userId)
-                    .get()
-                    .then(
-                        this.resolveUser((users) => {
-                            resolve(users[0]);
-                        })
-                    )
-                    .catch(reject);
-            });
-        });
-    }
+    private baseConfig = {
+        baseURL:
+            process.env.NODE_ENV === 'production'
+                ? 'https://us-central1-journey-a2a8f.cloudfunctions.net'
+                : 'http://localhost:5000/journey-a2a8f/us-central1',
+        withCredentials: true,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
 
-    private resolveUser(resolve: (users: User[]) => void) {
-        return (snapshot: firebase.firestore.QuerySnapshot) => {
-            const users: User[] = [];
-            snapshot.forEach((doc) => {
-                const user = Object.assign({}, new User('', ''), doc.data());
-                users.push(user);
-            });
-            resolve(users);
-        };
-    }
+    // getProfileDetails(userId: string) {
+    //     return new Promise((resolve: (user: User) => void, reject: any) => {
+    //         FirebaseApp.Instance.addActionToQueue((app: firebase.app.App) => {
+    //             app.firestore()
+    //                 .collection(this.USER_COLLECTION)
+    //                 .where('id', '==', userId)
+    //                 .get()
+    //                 .then(
+    //                     this.resolveUser((users) => {
+    //                         resolve(users[0]);
+    //                     })
+    //                 )
+    //                 .catch(reject);
+    //         });
+    //     });
+    // }
+
+    // private resolveUser(resolve: (users: User[]) => void) {
+    //     return (snapshot: firebase.firestore.QuerySnapshot) => {
+    //         const users: User[] = [];
+    //         snapshot.forEach((doc) => {
+    //             const user = Object.assign({}, new User('', ''), doc.data());
+    //             users.push(user);
+    //         });
+    //         resolve(users);
+    //     };
+    // }
 }

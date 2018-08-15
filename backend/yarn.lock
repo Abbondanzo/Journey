@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@firebase/app-types@0.3.2":
+"@firebase/app-types@0.3.2", "@firebase/app-types@^0.3.2":
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/@firebase/app-types/-/app-types-0.3.2.tgz#a92dc544290e2893bd8c02a81e684dae3d8e7c85"
 
@@ -170,6 +170,26 @@
     lodash.merge "^4.6.1"
     pkg-up "^2.0.0"
     through2 "^2.0.3"
+
+"@google-cloud/firestore@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@google-cloud/firestore/-/firestore-0.16.0.tgz#1b39469b41625430ffc2d25b1c1d5696e5381c42"
+  dependencies:
+    "@google-cloud/projectify" "^0.3.0"
+    bun "^0.0.12"
+    deep-equal "^1.0.1"
+    extend "^3.0.1"
+    functional-red-black-tree "^1.0.1"
+    google-gax "^0.17.1"
+    google-proto-files "^0.16.1"
+    is "^3.2.1"
+    lodash.merge "^4.6.1"
+    pkg-up "^2.0.0"
+    through2 "^2.0.3"
+
+"@google-cloud/projectify@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@google-cloud/projectify/-/projectify-0.3.0.tgz#adb984ac61f7ec855558ef677621b2488c50d05d"
 
 "@google-cloud/storage@^1.6.0":
   version "1.7.0"

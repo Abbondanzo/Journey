@@ -12,9 +12,11 @@
     },
     "license": "MIT",
     "devDependencies": {
+        "@firebase/app-types": "^0.3.2",
         "@types/classnames": "2.2.4",
         "@types/googlemaps": "^3.30.11",
         "@types/history": "4.6.2",
+        "@types/markerclustererplus": "^2.1.29",
         "@types/node": "10.3.2",
         "@types/react": "16.3.17",
         "@types/react-dom": "16.0.6",
@@ -61,6 +63,7 @@
     },
     "dependencies": {
         "@google/maps": "^0.5.5",
+        "axios": "^0.18.0",
         "classnames": "^2.2.6",
         "firebase": "^5.3.1",
         "googlemaps": "^1.12.0",

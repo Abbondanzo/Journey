@@ -8,7 +8,7 @@ const adminApp = admin.initializeApp({
     storageBucket: 'journey-a2a8f.appspot.com'
 });
 
-export const firestoreInstance = adminApp.firestore();
+export const firestoreInstance: firebase.firestore.Firestore = adminApp.firestore();
 export const authInstance = adminApp.auth();
 export const storageInstance = adminApp.storage();
 

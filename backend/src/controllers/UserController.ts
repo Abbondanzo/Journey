@@ -1,6 +1,6 @@
-import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import User from '../models/User';
+import UserCollection from '../schema/UserCollection';
 import { handleCatchError, handleError } from './helper';
 
 export default class UserController {
@@ -10,9 +10,7 @@ export default class UserController {
             return;
         }
         const user: User = new User(req.body);
-        admin
-            .auth()
-            .createUser(user)
+        UserCollection.createUser(user)
             .then((userRecord) => {
                 res.send(userRecord);
             })

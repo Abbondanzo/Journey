@@ -32,5 +32,3 @@ export default class Post {
 interface Geocode extends Omit<google.maps.places.PlaceResult, 'geometry'> {
     coordinates: google.maps.LatLngLiteral;
 }
-
-export interface PostDocument extends FirebaseFirestore.DocumentData, Post {}

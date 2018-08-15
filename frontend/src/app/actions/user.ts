@@ -1,4 +1,4 @@
-import { LoggedInUser } from '@app/models/User';
+import { User } from '@app/models';
 import { UserState } from '@app/reducers/user';
 import { createAction } from 'redux-actions';
 
@@ -12,7 +12,7 @@ export namespace UserActions {
         FIREBASE_USER = 'FIREBASE_USER'
     }
     export const loadUser = createAction(Type.LOAD_USER);
-    export const saveUser = createAction<LoggedInUser | undefined>(Type.SAVE_USER);
+    export const saveUser = createAction<User | undefined>(Type.SAVE_USER);
     export const signIn = createAction<{ email: string; password: string }>(Type.SIGN_IN);
     export const logOut = createAction(Type.LOG_OUT);
     export const saveProfileImage = createAction<{ userId: string; url: string }>(

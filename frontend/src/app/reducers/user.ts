@@ -1,11 +1,11 @@
 import { Action, handleActions } from 'redux-actions';
-import User, { LoggedInUser } from '@app/models/User';
 
+import { User } from '@app/models';
 import { UserActions } from '@app/actions';
 
 export interface UserState {
     users: User[];
-    loggedInUser?: LoggedInUser;
+    loggedInUser?: User;
     userProfileImages: Map<string, string>;
 }
 
@@ -29,10 +29,7 @@ export const userReducer = handleActions<UserState, any>(
                 ...state
             };
         },
-        [UserActions.Type.SAVE_USER]: (
-            state: UserState,
-            action: Action<LoggedInUser>
-        ): UserState => {
+        [UserActions.Type.SAVE_USER]: (state: UserState, action: Action<User>): UserState => {
             return {
                 ...state,
                 loggedInUser: action.payload

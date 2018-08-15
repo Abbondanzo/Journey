@@ -1,19 +1,22 @@
-import { UserActions } from '@app/actions';
-import { UtilActions } from '@app/actions/util';
+import './style.scss';
+
+import * as React from 'react';
+
+import { Route, RouteComponentProps, Switch } from 'react-router';
+
 import { Alert } from '@app/components/util/Alert';
-import { Navbar } from '@app/components/util/Navbar';
-import Login from '@app/containers/auth/Login';
-import Profile from '@app/containers/auth/Profile';
 import Dashboard from '@app/containers/dashboard/Dashboard';
 import Home from '@app/containers/Home';
-import { LoggedInUser } from '@app/models';
-import * as React from 'react';
-import { Route, RouteComponentProps, Switch } from 'react-router';
-import './style.scss';
+import Login from '@app/containers/auth/Login';
+import { Navbar } from '@app/components/util/Navbar';
+import Profile from '@app/containers/auth/Profile';
+import { User } from '@app/models';
+import { UserActions } from '@app/actions';
+import { UtilActions } from '@app/actions/util';
 
 export namespace AppPage {
     export interface Props extends RouteComponentProps<void> {
-        loggedInUser?: LoggedInUser;
+        loggedInUser?: User;
         successMessage?: string;
         errorMessage?: string;
         actions: UserActions & UtilActions;

@@ -1,9 +1,11 @@
-import { UserActions } from '@app/actions';
-import { UtilActions } from '@app/actions/util';
-import { LoggedInUser } from '@app/models/User';
+import { AnyAction, Dispatch, Middleware } from 'redux';
+import axios, { AxiosResponse } from 'axios';
+
 // import { AppState } from '@app/reducers';
 import FirebaseApp from '@app/utils/firebase';
-import { AnyAction, Dispatch, Middleware } from 'redux';
+import { User } from '@app/models';
+import { UserActions } from '@app/actions';
+import { UtilActions } from '@app/actions/util';
 
 export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>) => (
     action: AnyAction
@@ -17,9 +19,9 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                 app.auth().onAuthStateChanged((user) => {
                     if (user) {
                         const newUser = convertFirebaseToUser(user);
-                        new UserService().getProfileDetails(newUser.id).then((detailedUser) => {
+                        new UserService().getProfileDetails(newUser).then((detailedUser) => {
                             next(UserActions.saveUser(Object.assign(newUser, detailedUser)));
-                            getProfileImage((detailedUser as any).profileImage, newUser.id, next);
+                            getProfileImage((detailedUser as any).profileImage, newUser.uid, next);
                         });
                     } else {
                         next(UserActions.saveUser(undefined));
@@ -38,11 +40,11 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                         const user = userCredential.user;
                         if (user) {
                             const newUser = convertFirebaseToUser(user);
-                            new UserService().getProfileDetails(newUser.id).then((detailedUser) => {
+                            new UserService().getProfileDetails(newUser).then((detailedUser) => {
                                 next(UserActions.saveUser(Object.assign(newUser, detailedUser)));
                                 getProfileImage(
                                     (detailedUser as any).profileImage,
-                                    newUser.id,
+                                    newUser.uid,
                                     next
                                 );
                             });
@@ -77,7 +79,7 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
 };
 
 const convertFirebaseToUser = (user: firebase.User) => {
-    return new LoggedInUser(user.uid, user.displayName || '', user.email || '');
+    return new User(user);
 };
 
 const getProfileImage = (profileImage: string, userId: string, next: Dispatch<AnyAction>) => {
@@ -112,31 +114,22 @@ class UserService {
         }
     };
 
-    // getProfileDetails(userId: string) {
-    //     return new Promise((resolve: (user: User) => void, reject: any) => {
-    //         FirebaseApp.Instance.addActionToQueue((app: firebase.app.App) => {
-    //             app.firestore()
-    //                 .collection(this.USER_COLLECTION)
-    //                 .where('id', '==', userId)
-    //                 .get()
-    //                 .then(
-    //                     this.resolveUser((users) => {
-    //                         resolve(users[0]);
-    //                     })
-    //                 )
-    //                 .catch(reject);
-    //         });
-    //     });
-    // }
+    getProfileDetails(user: User) {
+        return new Promise((resolve: (user: User) => void, reject: any) => {
+            axios({
+                method: 'get',
+                url: `/api/user-profile/${user.uid}`,
+                ...this.baseConfig
+            })
+                .then(this.resolveUser(resolve, user))
+                .catch(reject);
+        });
+    }
 
-    // private resolveUser(resolve: (users: User[]) => void) {
-    //     return (snapshot: firebase.firestore.QuerySnapshot) => {
-    //         const users: User[] = [];
-    //         snapshot.forEach((doc) => {
-    //             const user = Object.assign({}, new User('', ''), doc.data());
-    //             users.push(user);
-    //         });
-    //         resolve(users);
-    //     };
-    // }
+    private resolveUser(resolve: (user: User) => void, user?: User) {
+        return (response: AxiosResponse<any>) => {
+            const newUser = new User(Object.assign({}, user, response.data));
+            resolve(newUser);
+        };
+    }
 }

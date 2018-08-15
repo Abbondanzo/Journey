@@ -1,12 +1,13 @@
-import { UserActions } from '@app/actions';
-import { ProfilePane } from '@app/components/auth/ProfilePage/ProfilePane';
-import { LoggedInUser } from '@app/models';
 import * as React from 'react';
+
+import { ProfilePane } from '@app/components/auth/ProfilePage/ProfilePane';
 import { RouteComponentProps } from 'react-router';
+import { User } from '@app/models';
+import { UserActions } from '@app/actions';
 
 export namespace ProfilePage {
     export interface Props extends RouteComponentProps<any> {
-        loggedInUser?: LoggedInUser;
+        loggedInUser?: User;
         userImage: string;
         actions: UserActions;
     }

@@ -1,38 +1,45 @@
-export default class User {
-    id: string;
-    displayName: string;
-    following: User['id'][] = [];
+import { UserInfo } from 'firebase';
 
-    constructor(id: string, displayName: string) {
-        this.id = id;
-        this.displayName = displayName;
-    }
+export class User implements UserInfo {
+    // Firebase Auth
+    displayName: string | null;
+    email: string | null;
+    phoneNumber: string | null;
+    photoURL: string | null;
+    providerId: string;
+    uid: string;
+    profileDetails: {
+        following: User['uid'][];
+        profileImage?: string;
+        [key: string]: any;
+    };
 
-    setFields(object: any) {
-        this.id = object.id;
-        this.displayName = object.displayName;
-        this.following = object.following;
-        return this;
-    }
-}
-
-export class LoggedInUser extends User {
-    email: string;
-    firstName?: string;
-    lastName?: string;
-    dateOfBirth?: Date;
-
-    constructor(id: string, displayName: string, email: string) {
-        super(id, displayName);
-        this.email = email;
-    }
-
-    setFields(object: any) {
-        super.setFields(object);
-        this.email = object.email;
-        this.firstName = object.firstName;
-        this.lastName = object.lastName;
-        this.dateOfBirth = object.dateOfBirth;
-        return this;
+    constructor(data: {
+        displayName: string | null;
+        email: string | null;
+        phoneNumber: string | null;
+        photoURL: string | null;
+        providerId: string;
+        uid: string;
+        profileDetails?: {
+            following: User['uid'][];
+            profileImage?: string;
+            [key: string]: any;
+        };
+    }) {
+        this.displayName = data.displayName;
+        this.email = data.email;
+        this.phoneNumber = data.phoneNumber;
+        this.photoURL = data.photoURL;
+        this.providerId = data.providerId;
+        this.uid = data.uid;
+        this.displayName = data.displayName;
+        this.profileDetails = data.profileDetails || {
+            following: []
+        };
+        this.profileDetails.following =
+            data.profileDetails && data.profileDetails.following
+                ? data.profileDetails.following
+                : [];
     }
 }

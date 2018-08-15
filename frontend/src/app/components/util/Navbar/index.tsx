@@ -1,13 +1,15 @@
-import { UserActions } from '@app/actions';
-import { LoggedInUser } from '@app/models/User';
-import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
-import { Link } from 'react-router-dom';
 import './style.scss';
+
+import * as React from 'react';
+
+import { Link } from 'react-router-dom';
+import { RouteComponentProps } from 'react-router';
+import { User } from '@app/models/User';
+import { UserActions } from '@app/actions';
 
 export namespace Navbar {
     export interface Props extends Partial<RouteComponentProps<void>> {
-        loggedInUser?: LoggedInUser;
+        loggedInUser?: User;
         actions: UserActions;
     }
 

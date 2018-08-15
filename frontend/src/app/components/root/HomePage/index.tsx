@@ -1,7 +1,7 @@
 import Post from '@app/models/Post';
 import * as React from 'react';
 
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
 export namespace HomePage {

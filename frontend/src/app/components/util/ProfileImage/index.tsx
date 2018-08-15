@@ -1,12 +1,12 @@
 import * as React from 'react';
 
-import { LoggedInUser } from '@app/models/User';
 import { RouteComponentProps } from 'react-router';
+import { User } from '@app/models';
 import { UserActions } from '@app/actions';
 
 export namespace ProfileImage {
     export interface Props extends Partial<RouteComponentProps<void>> {
-        loggedInUser?: LoggedInUser;
+        loggedInUser?: User;
         profileImage: string;
         actions: UserActions;
     }

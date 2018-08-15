@@ -1,9 +1,10 @@
-import { LoggedInUser } from '@app/models';
 import * as React from 'react';
+
+import { User } from '@app/models';
 
 export namespace ProfilePane {
     export interface Props {
-        loggedInUser: LoggedInUser;
+        loggedInUser: User;
         userImage: string;
     }
 }

@@ -10,7 +10,6 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
     action: AnyAction
 ) => {
     // const state: AppState = store.getState();
-    const instance = FirebaseApp.Instance;
     switch (action.type) {
         case UserActions.Type.LOAD_AUTH_USER:
             // Sets subscriber
@@ -23,10 +22,16 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                             .getProfileDetails(newUser)
                             .then((detailedUser) => {
                                 next(UserActions.saveUser(Object.assign(newUser, detailedUser)));
-                                getProfileImage(
-                                    detailedUser.profileDetails.profileImage,
-                                    newUser.uid,
-                                    next
+                                return new FirebaseService().getProfileImage(
+                                    detailedUser.profileDetails.profileImage
+                                );
+                            })
+                            .then((profileImageUrl) => {
+                                next(
+                                    UserActions.saveProfileImage({
+                                        userId: user.uid,
+                                        url: profileImageUrl
+                                    })
                                 );
                             })
                             .catch((err) => {
@@ -45,58 +50,47 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
             break;
         case UserActions.Type.SIGN_IN:
             const payload: { email: string; password: string } = action.payload;
-            if (instance.firebaseApp) {
-                instance.firebaseApp
-                    .auth()
-                    .signInWithEmailAndPassword(payload.email, payload.password)
-                    .then((userCredential) => {
-                        const user = userCredential.user;
-                        if (user) {
-                            const newUser = convertFirebaseToUser(user);
-                            new UserService()
-                                .getProfileDetails(newUser)
-                                .then((detailedUser) => {
-                                    next(
-                                        UserActions.saveUser(Object.assign(newUser, detailedUser))
-                                    );
-                                    getProfileImage(
-                                        detailedUser.profileDetails.profileImage,
-                                        newUser.uid,
-                                        next
-                                    );
+            const firebaseService = new FirebaseService();
+            firebaseService
+                .signIn(payload.email, payload.password)
+                .then((user) => {
+                    new UserService()
+                        .getProfileDetails(user)
+                        .then((detailedUser) => {
+                            next(UserActions.saveUser(Object.assign(user, detailedUser)));
+                            return firebaseService.getProfileImage(
+                                detailedUser.profileDetails.profileImage
+                            );
+                        })
+                        .then((profileImageUrl) => {
+                            next(
+                                UserActions.saveProfileImage({
+                                    userId: user.uid,
+                                    url: profileImageUrl
                                 })
-                                .catch((err) => {
-                                    next(
-                                        UtilActions.showError(
-                                            `Unable to get profile details: ${err.message || err}`
-                                        )
-                                    );
-                                });
-                        } else {
-                            next(UtilActions.showError('Invalid Firebase user'));
-                        }
-                    })
-                    .catch((err) => {
-                        next(UtilActions.showError(err.message || err));
-                    });
-            } else {
-                next(UtilActions.showError('Authentication network is down'));
-            }
+                            );
+                        })
+                        .catch((err) => {
+                            next(
+                                UtilActions.showError(
+                                    `Unable to get profile details: ${err.message || err}`
+                                )
+                            );
+                        });
+                })
+                .catch((err) => {
+                    next(UtilActions.showError(`Unable to sign in: ${err.message || err}`));
+                });
             break;
         case UserActions.Type.LOG_OUT:
-            if (instance.firebaseApp) {
-                instance.firebaseApp
-                    .auth()
-                    .signOut()
-                    .then(() => {
-                        next(UserActions.logOut());
-                    })
-                    .catch((err) => {
-                        next(UtilActions.showError(err.message || err));
-                    });
-            } else {
-                next(UtilActions.showError('Authentication network is down'));
-            }
+            new FirebaseService()
+                .logOut()
+                .then(() => {
+                    next(UserActions.logOut());
+                })
+                .catch((err) => {
+                    next(UtilActions.showError(`Error logging out: ${err.message || err}`));
+                });
         default:
             next(action);
     }
@@ -104,30 +98,6 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
 
 const convertFirebaseToUser = (user: firebase.User) => {
     return new User(user);
-};
-
-const getProfileImage = (
-    profileImage: string | undefined,
-    userId: string,
-    next: Dispatch<AnyAction>
-) => {
-    const defaultImage = 'default/profile.jpg';
-    FirebaseApp.Instance.addActionToQueue((app: firebase.app.App) => {
-        app.storage()
-            .ref(`${profileImage ? profileImage : defaultImage}`)
-            .getDownloadURL()
-            .then((downloadUrl) => {
-                next(
-                    UserActions.saveProfileImage({
-                        userId: userId,
-                        url: downloadUrl
-                    })
-                );
-            })
-            .catch((err) => {
-                next(UtilActions.showError(`Unable to load profile image: ${err.message || err}`));
-            });
-    });
 };
 
 class UserService {
@@ -159,5 +129,58 @@ class UserService {
             const newUser = new User(Object.assign({}, user, response.data));
             resolve(newUser);
         };
+    }
+}
+
+class FirebaseService {
+    private app = FirebaseApp.Instance.firebaseApp;
+
+    signIn(email: string, password: string) {
+        return new Promise((resolve: (user: User) => void, reject: any) => {
+            if (this.app) {
+                this.app
+                    .auth()
+                    .signInWithEmailAndPassword(email, password)
+                    .then((userCredentials) => {
+                        const user = userCredentials.user;
+                        if (user) {
+                            resolve(convertFirebaseToUser(user));
+                        } else {
+                            reject(new Error('Unable to sign in as this user'));
+                        }
+                    });
+            } else {
+                reject(new Error('Authentication network is down'));
+            }
+        });
+    }
+
+    logOut() {
+        return new Promise((resolve: () => void, reject: any) => {
+            if (this.app) {
+                this.app
+                    .auth()
+                    .signOut()
+                    .then(resolve);
+            } else {
+                reject(new Error('Authentication network is down'));
+            }
+        });
+    }
+
+    getProfileImage(profileImage: string | undefined) {
+        return new Promise((resolve: (profileImageUrl: string) => void, reject: any) => {
+            if (this.app) {
+                const defaultImage = 'default/profile.jpg';
+                this.app
+                    .storage()
+                    .ref(`${profileImage ? profileImage : defaultImage}`)
+                    .getDownloadURL()
+                    .then(resolve)
+                    .catch(reject);
+            } else {
+                reject(new Error('Storage network is down or connection not created'));
+            }
+        });
     }
 }

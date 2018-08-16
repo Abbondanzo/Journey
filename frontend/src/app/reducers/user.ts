@@ -3,13 +3,13 @@ import { User } from '@app/models';
 import { Action, handleActions } from 'redux-actions';
 
 export interface UserState {
-    users: User[];
+    users: Map<User['uid'], User>;
     loggedInUser?: User['uid'];
     userProfileImages: Map<string, string>;
 }
 
 export const initialState: UserState = {
-    users: [],
+    users: new Map(),
     userProfileImages: new Map()
 };
 
@@ -42,13 +42,21 @@ export const userReducer = handleActions<UserState, any>(
                 ...state,
                 userProfileImages
             };
+        },
+        [UserActions.Type.SAVE_USER]: (state: UserState, action: Action<User>): UserState => {
+            const userMap = state.users;
+            if (action.payload) {
+                userMap.set(action.payload.uid, action.payload);
+            }
+            return {
+                ...state,
+                users: userMap
+            };
         }
     },
     initialState
 );
 
 export const getUserById = (userId: string | undefined, state: UserState): User | undefined => {
-    return state.users.filter((user) => {
-        return user.uid === userId;
-    })[0];
+    return userId ? state.users.get(userId) : undefined;
 };

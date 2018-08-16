@@ -1,18 +1,15 @@
-import './style.scss';
-
-import * as React from 'react';
-
-import { Route, RouteComponentProps, Switch } from 'react-router';
-
-import { Alert } from '@app/components/util/Alert';
-import Dashboard from '@app/containers/dashboard/Dashboard';
-import Home from '@app/containers/Home';
-import Login from '@app/containers/auth/Login';
-import { Navbar } from '@app/components/util/Navbar';
-import Profile from '@app/containers/auth/Profile';
-import { User } from '@app/models';
 import { UserActions } from '@app/actions';
 import { UtilActions } from '@app/actions/util';
+import { Alert } from '@app/components/util/Alert';
+import { Navbar } from '@app/components/util/Navbar';
+import Login from '@app/containers/auth/Login';
+import Profile from '@app/containers/auth/Profile';
+import Dashboard from '@app/containers/dashboard/Dashboard';
+import Home from '@app/containers/Home';
+import { User } from '@app/models';
+import * as React from 'react';
+import { Route, RouteComponentProps, Switch } from 'react-router';
+import './style.scss';
 
 export namespace AppPage {
     export interface Props extends RouteComponentProps<void> {
@@ -25,7 +22,7 @@ export namespace AppPage {
 
 export class AppPage extends React.Component<AppPage.Props> {
     componentDidMount() {
-        this.props.actions.loadUser();
+        this.props.actions.getLoggedInUser();
     }
     render() {
         return (

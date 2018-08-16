@@ -1,11 +1,10 @@
-import { Action, handleActions } from 'redux-actions';
-
-import { User } from '@app/models';
 import { UserActions } from '@app/actions';
+import { User } from '@app/models';
+import { Action, handleActions } from 'redux-actions';
 
 export interface UserState {
     users: User[];
-    loggedInUser?: User;
+    loggedInUser?: User['uid'];
     userProfileImages: Map<string, string>;
 }
 
@@ -16,23 +15,19 @@ export const initialState: UserState = {
 
 export const userReducer = handleActions<UserState, any>(
     {
-        [UserActions.Type.FIREBASE_USER]: (
+        [UserActions.Type.SAVE_AUTH_USER]: (
             state: UserState,
-            action: Action<UserState>
+            action: Action<User['uid']>
         ): UserState => {
-            if (action.payload) {
-                return {
-                    ...action.payload
-                };
-            }
-            return {
-                ...state
-            };
-        },
-        [UserActions.Type.SAVE_USER]: (state: UserState, action: Action<User>): UserState => {
             return {
                 ...state,
                 loggedInUser: action.payload
+            };
+        },
+        [UserActions.Type.LOG_OUT]: (state: UserState, _: Action<void>): UserState => {
+            return {
+                ...state,
+                loggedInUser: undefined
             };
         },
         [UserActions.Type.SAVE_PROFILE_IMAGE]: (
@@ -51,3 +46,9 @@ export const userReducer = handleActions<UserState, any>(
     },
     initialState
 );
+
+export const getUserById = (userId: string | undefined, state: UserState): User | undefined => {
+    return state.users.filter((user) => {
+        return user.uid === userId;
+    })[0];
+};

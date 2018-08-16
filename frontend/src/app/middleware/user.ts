@@ -1,11 +1,10 @@
-import { AnyAction, Dispatch, Middleware } from 'redux';
-import axios, { AxiosResponse } from 'axios';
-
-// import { AppState } from '@app/reducers';
-import FirebaseApp from '@app/utils/firebase';
-import { User } from '@app/models';
 import { UserActions } from '@app/actions';
 import { UtilActions } from '@app/actions/util';
+import { User } from '@app/models';
+// import { AppState } from '@app/reducers';
+import FirebaseApp from '@app/utils/firebase';
+import axios, { AxiosResponse } from 'axios';
+import { AnyAction, Dispatch, Middleware } from 'redux';
 
 export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>) => (
     action: AnyAction
@@ -13,18 +12,19 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
     // const state: AppState = store.getState();
     const instance = FirebaseApp.Instance;
     switch (action.type) {
-        case UserActions.Type.LOAD_USER:
+        case UserActions.Type.LOAD_AUTH_USER:
             // Sets subscriber
             const doOnAppLoad = (app: firebase.app.App) => {
                 app.auth().onAuthStateChanged((user) => {
                     if (user) {
                         const newUser = convertFirebaseToUser(user);
+                        next(UserActions.setLoggedInUser(newUser.uid));
                         new UserService()
                             .getProfileDetails(newUser)
                             .then((detailedUser) => {
                                 next(UserActions.saveUser(Object.assign(newUser, detailedUser)));
                                 getProfileImage(
-                                    (detailedUser as any).profileImage,
+                                    detailedUser.profileDetails.profileImage,
                                     newUser.uid,
                                     next
                                 );
@@ -37,7 +37,7 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                                 );
                             });
                     } else {
-                        next(UserActions.saveUser(undefined));
+                        next(UserActions.setLoggedInUser(undefined));
                     }
                 });
             };
@@ -60,7 +60,7 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                                         UserActions.saveUser(Object.assign(newUser, detailedUser))
                                     );
                                     getProfileImage(
-                                        (detailedUser as any).profileImage,
+                                        detailedUser.profileDetails.profileImage,
                                         newUser.uid,
                                         next
                                     );
@@ -89,7 +89,7 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                     .auth()
                     .signOut()
                     .then(() => {
-                        next(UserActions.saveUser(undefined));
+                        next(UserActions.logOut());
                     })
                     .catch((err) => {
                         next(UtilActions.showError(err.message || err));
@@ -106,7 +106,11 @@ const convertFirebaseToUser = (user: firebase.User) => {
     return new User(user);
 };
 
-const getProfileImage = (profileImage: string, userId: string, next: Dispatch<AnyAction>) => {
+const getProfileImage = (
+    profileImage: string | undefined,
+    userId: string,
+    next: Dispatch<AnyAction>
+) => {
     const defaultImage = 'default/profile.jpg';
     FirebaseApp.Instance.addActionToQueue((app: firebase.app.App) => {
         app.storage()

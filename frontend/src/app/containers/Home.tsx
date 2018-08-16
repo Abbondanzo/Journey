@@ -1,12 +1,13 @@
-import { AppState } from '@app/reducers';
-import { Dispatch } from 'redux';
 import { HomePage } from '@app/components/root/HomePage';
+import { AppState } from '@app/reducers';
+import { getUserById } from '@app/reducers/user';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
+import { Dispatch } from 'redux';
 
 const mapStateToProps = (state: AppState): Partial<HomePage.Props> => {
     let posts = state.posts.posts;
-    const loggedInUser = state.users.loggedInUser;
+    const loggedInUser = getUserById(state.users.loggedInUser, state.users);
     // Only filter if we're logged in
     if (loggedInUser) {
         posts = posts.filter((post) => {

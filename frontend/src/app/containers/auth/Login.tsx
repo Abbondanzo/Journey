@@ -1,6 +1,7 @@
 import { UserActions } from '@app/actions';
 import { LoginPage } from '@app/components/auth/LoginPage';
 import { AppState } from '@app/reducers';
+import { getUserById } from '@app/reducers/user';
 import { omit } from '@app/utils';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
@@ -8,7 +9,7 @@ import { bindActionCreators, Dispatch } from 'redux';
 
 const mapStateToProps = (state: AppState): Partial<LoginPage.Props> => {
     return {
-        loggedInUser: state.users.loggedInUser
+        loggedInUser: getUserById(state.users.loggedInUser, state.users)
     };
 };
 

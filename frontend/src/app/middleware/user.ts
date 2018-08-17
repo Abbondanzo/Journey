@@ -139,7 +139,7 @@ class UserService {
         return new Promise((resolve: (user: User) => void, reject: any) => {
             axios({
                 method: 'get',
-                url: `/api/user-profile/${user.uid}`,
+                url: `/api/user/${user.uid}`,
                 ...this.baseConfig
             })
                 .then(this.resolveUser(resolve, user))

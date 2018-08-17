@@ -16,5 +16,6 @@ export default class Router {
     private setUserMethods() {
         this.app.route('/register').post(UserController.register);
         this.app.route('/user').get(UserController.getAllUsers);
+        this.app.route('/user/:userId').get(UserController.getUserById);
     }
 }

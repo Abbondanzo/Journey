@@ -1,3 +1,4 @@
+import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import User from '../models/User';
 import UserCollection from '../schema/UserCollection';
@@ -23,6 +24,26 @@ export default class UserController {
                 res.send(userRecord);
             })
             .catch(handleCatchError('Could not create user', res));
+    }
+
+    static async getUserById(req: functions.Request, res: functions.Response) {
+        const userId = req.params.userId;
+        UserCollection.findUserById(userId)
+            .then((userRecords) => {
+                const user = userRecords.docs[0];
+                res.send(user);
+            })
+            .catch(handleCatchError('Could not find user', res));
+    }
+
+    static async saveUserById(req: functions.Request, res: functions.Response) {
+        const userId = req.params.userId;
+        const token: admin.auth.DecodedIdToken = (req as any).user;
+        if (userId !== token.uid) {
+            res.status(401).send('Unauthorized');
+        } else {
+            // Do update
+        }
     }
 
     static async getAllUsers(_: functions.Request, res: functions.Response) {

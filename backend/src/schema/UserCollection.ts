@@ -11,6 +11,13 @@ export default class UserCollection {
         // separate from profile data
         return firestoreInstance.collection(this.USER_COLLECTION).get();
     }
+    static findUserById(id: string) {
+        return firestoreInstance
+            .collection(this.USER_COLLECTION)
+            .where('uid', '==', id)
+            .limit(1)
+            .get();
+    }
 }
 
 export interface UserDocument extends firebase.firestore.DocumentData {

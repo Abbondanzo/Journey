@@ -22,7 +22,8 @@ class Express {
      */
     private cors() {
         return cors({
-            origin: true
+            origin: true,
+            credentials: true
         });
     }
 }

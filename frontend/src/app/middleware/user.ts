@@ -10,6 +10,8 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
     action: AnyAction
 ) => {
     // const state: AppState = store.getState();
+    const userService = new UserService();
+    const firebaseService = new FirebaseService();
     switch (action.type) {
         case UserActions.Type.LOAD_AUTH_USER:
             // Sets subscriber
@@ -18,7 +20,7 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                     if (user) {
                         const newUser = convertFirebaseToUser(user);
                         next(UserActions.setLoggedInUser(newUser.uid));
-                        new UserService()
+                        userService
                             .getProfileDetails(newUser)
                             .then((detailedUser) => {
                                 next(UserActions.saveUser(Object.assign(newUser, detailedUser)));
@@ -48,9 +50,18 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
             };
             FirebaseApp.Instance.addActionToQueue(doOnAppLoad);
             break;
+        case UserActions.Type.LOAD_ALL_USERS:
+            userService
+                .getAllProfiles()
+                .then((users) => {
+                    next(UserActions.saveAllUsers(users));
+                })
+                .catch((err) => {
+                    next(UtilActions.showError(`Unable to get load users: ${err.message || err}`));
+                });
+            break;
         case UserActions.Type.SIGN_IN:
             const payload: { email: string; password: string } = action.payload;
-            const firebaseService = new FirebaseService();
             firebaseService
                 .signIn(payload.email, payload.password)
                 .then((user) => {
@@ -112,6 +123,18 @@ class UserService {
         }
     };
 
+    getAllProfiles() {
+        return new Promise((resolve: (users: User[]) => void, reject: any) => {
+            axios({
+                method: 'get',
+                url: `/api/user`,
+                ...this.baseConfig
+            })
+                .then(this.resolveUsers(resolve))
+                .catch(reject);
+        });
+    }
+
     getProfileDetails(user: User) {
         return new Promise((resolve: (user: User) => void, reject: any) => {
             axios({
@@ -128,6 +151,18 @@ class UserService {
         return (response: AxiosResponse<any>) => {
             const newUser = new User(Object.assign({}, user, response.data));
             resolve(newUser);
+        };
+    }
+
+    private resolveUsers(resolve: (users: User[]) => void) {
+        return (response: AxiosResponse<any>) => {
+            const users = [];
+            const userObjects = response.data || [];
+            for (const userObject of userObjects) {
+                const newUser = new User(userObject);
+                users.push(newUser);
+            }
+            resolve(users);
         };
     }
 }

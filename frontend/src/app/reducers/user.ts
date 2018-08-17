@@ -52,6 +52,19 @@ export const userReducer = handleActions<UserState, any>(
                 ...state,
                 users: userMap
             };
+        },
+        [UserActions.Type.SAVE_ALL_USERS]: (
+            state: UserState,
+            action: Action<User[]>
+        ): UserState => {
+            const userMap: Map<string, User> = new Map();
+            for (const user of action.payload || []) {
+                userMap.set(user.uid, user);
+            }
+            return {
+                ...state,
+                users: userMap
+            };
         }
     },
     initialState

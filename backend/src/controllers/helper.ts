@@ -7,8 +7,12 @@ const adminApp = admin.initializeApp({
     databaseURL: 'https://journey-a2a8f.firebaseio.com',
     storageBucket: 'journey-a2a8f.appspot.com'
 });
+const firestoreSettings: FirebaseFirestore.Settings = {
+    timestampsInSnapshots: true
+};
 
 export const firestoreInstance: FirebaseFirestore.Firestore = adminApp.firestore();
+firestoreInstance.settings(firestoreSettings);
 export const authInstance = adminApp.auth();
 export const storageInstance = adminApp.storage();
 

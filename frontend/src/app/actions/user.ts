@@ -4,7 +4,9 @@ import { createAction } from 'redux-actions';
 export namespace UserActions {
     export enum Type {
         LOAD_USER = 'LOAD_USER',
+        LOAD_ALL_USERS = 'LOAD_ALL_USERS',
         SAVE_USER = 'SAVE_USER',
+        SAVE_ALL_USERS = 'SAVE_ALL_USERS',
         SAVE_PROFILE_IMAGE = 'SAVE_PROFILE_IMAGE',
         LOAD_AUTH_USER = 'LOAD_AUTH_USER',
         SAVE_AUTH_USER = 'SAVE_AUTH_USER',
@@ -23,9 +25,17 @@ export namespace UserActions {
      */
     export const loadUser = createAction<User['uid']>(Type.LOAD_USER);
     /**
+     * Loads profile details of every user stored in the database.
+     */
+    export const loadAllUsers = createAction(Type.LOAD_ALL_USERS);
+    /**
      * Saves the user's profile details.
      */
     export const saveUser = createAction<User>(Type.SAVE_USER);
+    /**
+     * Overwrites the existing user list with this new list of users.
+     */
+    export const saveAllUsers = createAction<User[]>(Type.SAVE_ALL_USERS);
     /**
      * Associates the given url with a user ID in the profile image container.
      */

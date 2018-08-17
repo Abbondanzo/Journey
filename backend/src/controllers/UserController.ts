@@ -24,4 +24,19 @@ export default class UserController {
             })
             .catch(handleCatchError('Could not create user', res));
     }
+
+    static async getAllUsers(_: functions.Request, res: functions.Response) {
+        authInstance
+            .listUsers()
+            .then((usersResult) => {
+                const ids = usersResult.users.map((userRecord) => {
+                    return userRecord.uid;
+                });
+                return UserCollection.findUsersByIds(ids);
+            })
+            .then((snapshot) => {
+                res.send(snapshot.docs);
+            })
+            .catch(handleCatchError('Could not find list of users', res));
+    }
 }

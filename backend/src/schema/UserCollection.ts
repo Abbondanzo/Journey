@@ -6,6 +6,11 @@ export default class UserCollection {
     static createUser(user: User) {
         return firestoreInstance.collection(this.USER_COLLECTION).add(convertModelToDocument(user));
     }
+    static findUsersByIds(ids: User['uid'][]) {
+        // We are effectively tossing these IDs out until we decide to store user auth data
+        // separate from profile data
+        return firestoreInstance.collection(this.USER_COLLECTION).get();
+    }
 }
 
 export interface UserDocument extends firebase.firestore.DocumentData {

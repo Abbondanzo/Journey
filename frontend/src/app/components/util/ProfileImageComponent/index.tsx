@@ -15,15 +15,10 @@ export class ProfileImageComponent extends React.Component<ProfileImageComponent
         super(props);
     }
 
-    componentWillReceiveProps(newProps: ProfileImageComponent.Props) {
-        console.log(newProps);
-    }
-
     render() {
         const profileImageUrl =
             this.props.profileImages.get(this.props.userId) ||
             this.props.profileImages.get('default');
-        console.log(profileImageUrl);
         return (
             <img
                 className={'profile-img' + (this.props.className ? ' ' + this.props.className : '')}

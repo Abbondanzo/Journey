@@ -7,7 +7,6 @@ const mapStateToProps = (
     state: AppState,
     ownProps: ProfileImageComponent.Props
 ): Partial<ProfileImageComponent.Props> => {
-    console.log(state.users.userProfileImages);
     return {
         userId: ownProps.userId,
         profileImages: state.users.userProfileImages

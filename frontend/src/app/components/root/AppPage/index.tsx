@@ -23,8 +23,7 @@ export namespace AppPage {
 
 export class AppPage extends React.Component<AppPage.Props> {
     componentDidMount() {
-        this.props.actions.getLoggedInUser();
-        this.props.actions.loadAllUsers();
+        this.props.actions.loadApp();
     }
     render() {
         return (

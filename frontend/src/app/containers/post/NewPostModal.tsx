@@ -7,7 +7,8 @@ import { bindActionCreators, Dispatch } from 'redux';
 
 const mapStateToProps = (state: AppState): Partial<NewPostModalPage.Props> => {
     return {
-        isShowing: state.posts.isAddingPost
+        isShowing: state.posts.isAddingPost,
+        loggedInUser: state.users.loggedInUser
     };
 };
 

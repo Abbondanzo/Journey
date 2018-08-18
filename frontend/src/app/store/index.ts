@@ -1,4 +1,4 @@
-import { authMiddleware } from '@app/middleware';
+import { authMiddleware, loader } from '@app/middleware';
 import { AppState, rootReducer } from '@app/reducers';
 import FirebaseApp from '@app/utils/firebase';
 import { createBrowserHistory, History } from 'history';
@@ -11,7 +11,7 @@ function configureStore(history: History, initialState?: AppState): Store<AppSta
     const logger = createLogger({
         collapsed: true
     });
-    let middleware = applyMiddleware(authMiddleware, routerMiddleware(history), logger);
+    let middleware = applyMiddleware(loader, authMiddleware, routerMiddleware(history), logger);
 
     if (process.env.NODE_ENV !== 'production') {
         middleware = composeWithDevTools(middleware);

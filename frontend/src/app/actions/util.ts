@@ -2,6 +2,7 @@ import { createAction } from 'redux-actions';
 
 export namespace UtilActions {
     export enum Type {
+        LOAD_APP = 'LOAD_APP',
         SHOW_MAP = 'SHOW_MAP',
         HIDE_MAP = 'HIDE_MAP',
         LOAD_MAP = 'LOAD_MAP',
@@ -12,6 +13,7 @@ export namespace UtilActions {
         HIDE_ERROR = 'HIDE_ERROR'
     }
 
+    export const loadApp = createAction(Type.LOAD_APP);
     export const showMap = createAction(Type.SHOW_MAP);
     export const hideMap = createAction(Type.HIDE_MAP);
     export const loadMap = createAction<React.Component>(Type.LOAD_MAP);

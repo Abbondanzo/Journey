@@ -23,5 +23,5 @@ const ProfileImage = connect(
 )(ProfileImageComponent);
 
 export default (ProfileImage as any) as React.ComponentClass<
-    Pick<ProfileImageComponent.Props, 'userId'>
+    PartialPick<ProfileImageComponent.Props, 'userId'>
 >;

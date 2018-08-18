@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
 import './style.scss';
 
 export namespace ProfileImageComponent {
-    export interface Props extends Partial<RouteComponentProps<void>> {
+    export interface Props {
         className?: string;
         userId: string;
         profileImages: Map<string, string>;
@@ -20,10 +19,20 @@ export class ProfileImageComponent extends React.Component<ProfileImageComponent
             this.props.profileImages.get(this.props.userId) ||
             this.props.profileImages.get('default');
         return (
-            <img
-                className={'profile-img' + (this.props.className ? ' ' + this.props.className : '')}
-                src={profileImageUrl}
-            />
+            <div className="profile-img-container">
+                {profileImageUrl ? (
+                    <img
+                        className={
+                            'profile-img' +
+                            (profileImageUrl ? ' profile-img-loaded ' : '') +
+                            (this.props.className ? ' ' + this.props.className : '')
+                        }
+                        src={profileImageUrl}
+                    />
+                ) : (
+                    undefined
+                )}
+            </div>
         );
     }
 }

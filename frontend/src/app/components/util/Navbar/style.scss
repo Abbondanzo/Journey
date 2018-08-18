@@ -15,4 +15,16 @@
     .btn-login {
         margin-left: 1rem;
     }
+    .nav-profile-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .nav-image {
+            border-width: 2px;
+            box-shadow: none;
+            height: 30px;
+            width: 30px;
+            margin-right: 4px;
+        }
+    }
 }

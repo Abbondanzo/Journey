@@ -1,11 +1,10 @@
-import './style.scss';
-
-import * as React from 'react';
-
-import { Link } from 'react-router-dom';
-import { RouteComponentProps } from 'react-router';
-import { User } from '@app/models/User';
 import { UserActions } from '@app/actions';
+import ProfileImage from '@app/containers/util/ProfileImage';
+import { User } from '@app/models/User';
+import * as React from 'react';
+import { RouteComponentProps } from 'react-router';
+import { Link } from 'react-router-dom';
+import './style.scss';
 
 export namespace Navbar {
     export interface Props extends Partial<RouteComponentProps<void>> {
@@ -79,7 +78,11 @@ export class Navbar extends React.Component<Navbar.Props, Navbar.State> {
                                             : 'nav-item'
                                     }
                                 >
-                                    <Link to="/profile" className="nav-link">
+                                    <Link to="/profile" className="nav-link nav-profile-container ">
+                                        <ProfileImage
+                                            userId={this.props.loggedInUser.uid}
+                                            className="nav-image"
+                                        />
                                         Profile
                                     </Link>
                                 </li>

@@ -12,8 +12,8 @@
     .nav-item:not(.active) {
         font-family: 'Gotham Rounded Book', $gothamRounded;
     }
-    .btn-login {
-        margin-left: 1rem;
+    .btn-add-post {
+        margin-right: 1rem;
     }
     .nav-profile-container {
         display: flex;
@@ -26,5 +26,9 @@
             width: 30px;
             margin-right: 4px;
         }
+    }
+    .valign {
+        display: flex;
+        align-items: center;
     }
 }

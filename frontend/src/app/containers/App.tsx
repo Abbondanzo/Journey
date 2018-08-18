@@ -1,4 +1,4 @@
-import { UserActions } from '@app/actions';
+import { PostActions, UserActions } from '@app/actions';
 import { UtilActions } from '@app/actions/util';
 import { AppPage } from '@app/components/root/AppPage';
 import { AppState } from '@app/reducers';
@@ -19,7 +19,11 @@ const mapStateToProps = (state: AppState): Partial<AppPage.Props> => {
 const mapDispatchToProps = (dispatch: Dispatch): Partial<AppPage.Props> => {
     return {
         actions: bindActionCreators(
-            { ...omit(UserActions, 'Type'), ...omit(UtilActions, 'Type') },
+            {
+                ...omit(PostActions, 'Type'),
+                ...omit(UserActions, 'Type'),
+                ...omit(UtilActions, 'Type')
+            },
             dispatch
         )
     };

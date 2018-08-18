@@ -1,4 +1,4 @@
-import { UserActions } from '@app/actions';
+import { PostActions, UserActions } from '@app/actions';
 import { UtilActions } from '@app/actions/util';
 import { Alert } from '@app/components/util/Alert';
 import { Navbar } from '@app/components/util/Navbar';
@@ -6,6 +6,7 @@ import Login from '@app/containers/auth/Login';
 import Profile from '@app/containers/auth/Profile';
 import Dashboard from '@app/containers/dashboard/Dashboard';
 import Home from '@app/containers/Home';
+import NewPostModal from '@app/containers/post/NewPostModal';
 import { User } from '@app/models';
 import * as React from 'react';
 import { Route, RouteComponentProps, Switch } from 'react-router';
@@ -16,7 +17,7 @@ export namespace AppPage {
         loggedInUser?: User;
         successMessage?: string;
         errorMessage?: string;
-        actions: UserActions & UtilActions;
+        actions: PostActions & UserActions & UtilActions;
     }
 }
 
@@ -44,6 +45,7 @@ export class AppPage extends React.Component<AppPage.Props> {
                     location={this.props.location}
                     history={this.props.history}
                 />
+                <NewPostModal />
                 <div className="container full-height">
                     <Switch>
                         <Route path="/profile" component={Profile} />

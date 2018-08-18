@@ -5,6 +5,7 @@ import Post from '@app/models/Post';
 export namespace PostList {
     export interface Props {
         posts: Post[];
+        searchPost: string;
         onAddPost(): void;
         onDeletePost(postId: string): void;
     }
@@ -14,16 +15,37 @@ export namespace PostList {
  * This is the page that gets displayed to users who haven't logged in yet. Mostly static content.
  */
 export class PostList extends React.Component<PostList.Props> {
+    // constructor(props: PostList.Props) {
+    //     super(props);
+    //     this.state = {
+    //         searchPost: ''
+    //     }
+    // }
+
     render() {
         const onDeletePost = (postId: string) => {
             return () => {
                 this.props.onDeletePost(postId);
             };
         };
+        // const searchPost = (search: any) => {
+        //     console.log(search.value);
+        // };
         return (
             <div>
-                <ul className="list-group">
+                {/*<input type="text"*/}
+                       {/*className="form-control"*/}
+                       {/*ref={node=>search=node}*/}
+                       {/*placeholder="Search"*/}
+                       {/*onChange={() => searchPost(search)}/>*/}
+                <ul className="list-group" onClick={() => console.log(this.props.searchPost)}>
                     {this.props.posts.map((post: Post, index: number) => {
+                        if(this.props.searchPost != null) {
+                            console.log(this.props.searchPost);
+                            if(!post.title.includes(this.props.searchPost)) {
+                                return;
+                            }
+                        }
                         return (
                             <li className="list-group-item" key={index}>
                                 <div className="d-flex w-100 justify-content-between">

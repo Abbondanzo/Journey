@@ -18,8 +18,11 @@ export namespace MapPage {
 
     export interface State {
         showModal: boolean;
+        postSearch: string;
     }
 }
+
+let searchPost = '';
 
 /**
  * This is the page that gets displayed to users who haven't logged in yet. Mostly static content.
@@ -28,7 +31,8 @@ export class MapPage extends React.Component<MapPage.Props, MapPage.State> {
     constructor(props: MapPage.Props) {
         super(props);
         this.state = {
-            showModal: false
+            showModal: false,
+            postSearch: '',
         };
         this.savePost = this.savePost.bind(this);
         this.deletePost = this.deletePost.bind(this);
@@ -42,6 +46,11 @@ export class MapPage extends React.Component<MapPage.Props, MapPage.State> {
         this.props.actions.deletePost(postId);
     }
 
+    updateSearch = () => {
+        this.setState({postSearch: searchPost});
+        console.log(this.state.postSearch);
+    };
+
     render() {
         const toggleModal = (shouldShow: boolean) => () => {
             this.setState({ showModal: shouldShow });
@@ -49,8 +58,14 @@ export class MapPage extends React.Component<MapPage.Props, MapPage.State> {
         return (
             <div className="row full-height">
                 <div className="col-md-4">
+                    <input type="text"
+                           className="form-control"
+                           ref={node=>node==null ? searchPost='' : searchPost=node.value}
+                           onChange={() => this.updateSearch()}
+                           placeholder="Search"/>
                     <PostList
                         posts={this.props.posts}
+                        searchPost={searchPost}
                         onAddPost={toggleModal(true)}
                         onDeletePost={this.deletePost}
                     />

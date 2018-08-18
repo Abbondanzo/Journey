@@ -34,7 +34,7 @@ export const userReducer = handleActions<UserState, any>(
             state: UserState,
             action: Action<{ userId: string; url: string }>
         ): UserState => {
-            const userProfileImages = state.userProfileImages;
+            const userProfileImages = new Map(state.userProfileImages);
             if (action.payload) {
                 userProfileImages.set(action.payload.userId, action.payload.url);
             }

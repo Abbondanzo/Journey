@@ -1,0 +1,28 @@
+import { ProfileImageComponent } from '@app/components/util/ProfileImageComponent';
+import { AppState } from '@app/reducers';
+import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
+
+const mapStateToProps = (
+    state: AppState,
+    ownProps: ProfileImageComponent.Props
+): Partial<ProfileImageComponent.Props> => {
+    console.log(state.users.userProfileImages);
+    return {
+        userId: ownProps.userId,
+        profileImages: state.users.userProfileImages
+    };
+};
+
+const mapDispatchToProps = (dispatch: Dispatch): Partial<ProfileImageComponent.Props> => {
+    return {};
+};
+
+const ProfileImage = connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(ProfileImageComponent);
+
+export default (ProfileImage as any) as React.ComponentClass<
+    Pick<ProfileImageComponent.Props, 'userId'>
+>;

@@ -12,4 +12,12 @@ export default class PostController {
             })
             .catch(handleCatchError('Unable to create post', res));
     }
+
+    static async getAllPosts(_: functions.Request, res: functions.Response) {
+        PostCollection.getPosts()
+            .then((postDocs) => {
+                res.send(postDocs);
+            })
+            .catch(handleCatchError('Unable to get posts', res));
+    }
 }

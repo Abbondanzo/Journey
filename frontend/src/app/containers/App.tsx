@@ -9,7 +9,6 @@ import { connect } from 'react-redux';
 import { bindActionCreators, Dispatch } from 'redux';
 
 const mapStateToProps = (state: AppState): Partial<AppPage.Props> => {
-    console.log(getUserById(state.users.loggedInUser, state.users));
     return {
         loggedInUser: getUserById(state.users.loggedInUser, state.users),
         successMessage: state.utils.successMessage,

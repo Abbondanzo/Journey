@@ -10,7 +10,10 @@ export default class Router {
     }
 
     private setPostMethods() {
-        this.app.route('/post').post(firebaseIdToken, PostController.createPost);
+        this.app
+            .route('/post')
+            .post(firebaseIdToken, PostController.createPost)
+            .get(PostController.getAllPosts);
     }
 
     private setUserMethods() {

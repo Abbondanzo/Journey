@@ -28,6 +28,25 @@ export default class FirebaseApp {
         }
     }
 
+    public getBearerToken() {
+        return new Promise((resolve: (token: string) => void, reject: any) => {
+            if (this.firebaseApp) {
+                const user = this.firebaseApp.auth().currentUser;
+                if (user) {
+                    user.getIdToken()
+                        .then((idToken) => {
+                            resolve(`Bearer ${idToken}`);
+                        })
+                        .catch(reject);
+                } else {
+                    reject(new Error('Not logged in'));
+                }
+            } else {
+                return reject(new Error('Authorization service is now'));
+            }
+        });
+    }
+
     private initialize() {
         try {
             // If we import firebase, check that we use the correct initialization

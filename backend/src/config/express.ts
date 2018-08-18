@@ -23,7 +23,8 @@ class Express {
     private cors() {
         return cors({
             origin: true,
-            credentials: true
+            credentials: true,
+            allowedHeaders: ['Content-Type', 'Authorization']
         });
     }
 }

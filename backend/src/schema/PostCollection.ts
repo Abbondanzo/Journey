@@ -1,5 +1,5 @@
 import { firestoreInstance } from '../controllers/helper';
-import Post from '../models/Post';
+import { Post } from '../models/Post';
 
 export default class PostCollection {
     private static POST_COLLECTION = '/posts';

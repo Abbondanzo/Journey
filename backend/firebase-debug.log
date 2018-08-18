@@ -1,0 +1,44 @@
+[debug] [2018-08-18T13:49:20.041Z] ----------------------------------------------------------------------
+[debug] [2018-08-18T13:49:20.044Z] Command:       /usr/local/bin/node /usr/local/bin/firebase serve
+[debug] [2018-08-18T13:49:20.045Z] CLI Version:   4.1.2
+[debug] [2018-08-18T13:49:20.045Z] Platform:      linux
+[debug] [2018-08-18T13:49:20.045Z] Node Version:  v10.8.0
+[debug] [2018-08-18T13:49:20.337Z] Time:          Sat Aug 18 2018 08:49:20 GMT-0500 (GMT-05:00)
+[debug] [2018-08-18T13:49:20.337Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2018-08-18T13:49:20.350Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2018-08-18T13:49:20.351Z] > authorizing via signed-in user
+[debug] [2018-08-18T13:49:20.353Z] > refreshing access token with scopes: ["email","https://www.googleapis.com/auth/cloud-platform","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","openid"]
+[debug] [2018-08-18T13:49:20.353Z] >>> HTTP REQUEST POST https://www.googleapis.com/oauth2/v3/token  
+
+[debug] [2018-08-18T13:49:20.650Z] <<< HTTP RESPONSE 200
+[debug] [2018-08-18T13:49:20.662Z] >>> HTTP REQUEST GET https://admin.firebase.com/v1/projects/journey-a2a8f  
+ 
+[debug] [2018-08-18T13:49:21.147Z] <<< HTTP RESPONSE 200
+[debug] [2018-08-18T13:49:21.149Z] >>> HTTP REQUEST GET https://cloudresourcemanager.googleapis.com/v1/projects/journey-a2a8f  
+ 
+[debug] [2018-08-18T13:49:21.522Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Serving from '/mnt/c/Users/User/Documents/NEU Summer 2 2018/Web Development/Journey'...
+[info] 
+[info] i  functions: Preparing to emulate functions.
+[debug] [2018-08-18T13:49:26.701Z] Fetching environment
+[debug] [2018-08-18T13:49:26.708Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/945509412272:getServerAppConfig  
+ 
+[debug] [2018-08-18T13:49:26.708Z] >>> HTTP REQUEST GET https://mobilesdk-pa.googleapis.com/v1/projects/945509412272/clients/_:getWebAppConfig  
+ 
+[debug] [2018-08-18T13:49:27.225Z] <<< HTTP RESPONSE 200
+[debug] [2018-08-18T13:49:27.226Z] Starting @google-cloud/functions-emulator
+[debug] [2018-08-18T13:49:27.285Z] <<< HTTP RESPONSE 200
+[info] i  hosting: Serving hosting files from: frontend/dist
+[info] ✔  hosting: Local server: http://localhost:5000
+
+[debug] [2018-08-18T13:49:30.343Z] Parsing function triggers
+[warn] ⚠  functions: Failed to load functions source code. Ensure that you have the latest SDK by running npm i --save firebase-functions inside the functions directory.
+[debug] [2018-08-18T13:49:30.521Z] Error during trigger parsing:  Error parsing triggers: Cannot find module '/mnt/c/Users/User/Documents/NEU Summer 2 2018/Web Development/Journey/backend'
+
+Try running "npm install" in your functions directory before deploying.
+[warn] ⚠  functions: Error from emulator. Error parsing triggers: Cannot find module '/mnt/c/Users/User/Documents/NEU Summer 2 2018/Web Development/Journey/backend'
+
+Try running "npm install" in your functions directory before deploying.
+[debug] [2018-08-18T13:49:30.539Z] 

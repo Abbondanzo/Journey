@@ -1,22 +1,18 @@
-import { PostActions } from '@app/actions';
-import { AppState } from '@app/reducers';
-import { initialState as initialPostState, PostState } from '@app/reducers/post';
 // import { initialState as initialUserState, UserState } from '@app/reducers/user';
 import * as firebase from 'firebase';
 
-const FIREBASE_POSTS = process.env.NODE_ENV === 'production' ? '/post-state' : '/dev/post-state';
 // const FIREBASE_USERS = process.env.NODE_ENV === 'production' ? '/users' : '/dev/users';
 
 export default class FirebaseApp {
     private static instance: FirebaseApp;
     public firebaseApp?: firebase.app.App;
-    public firebaseDataManager: FirebaseManager;
+    // public firebaseDataManager: FirebaseManager;
     private actionQueue: ((app: firebase.app.App) => void)[];
 
     private constructor() {
         this.firebaseApp = undefined;
         this.actionQueue = [];
-        this.firebaseDataManager = FirebaseManager.getInstance();
+        // this.firebaseDataManager = FirebaseManager.getInstance();
         this.initialize();
     }
 
@@ -50,7 +46,7 @@ export default class FirebaseApp {
                     storageBucket: 'journey-a2a8f.appspot.com'
                 });
                 this.firebaseApp = app;
-                this.firebaseDataManager.setDatabase(this.firebaseApp.database());
+                // this.firebaseDataManager.setDatabase(this.firebaseApp.database());
                 this.actionQueue.map((action) => {
                     action(app);
                 });
@@ -73,10 +69,9 @@ export default class FirebaseApp {
 
 export class FirebaseManager {
     static instance: FirebaseManager | null = null;
-    private store: any;
+    // private store: any;
     private database?: firebase.database.Database;
     // We use these to check for changes against the store
-    private postState: PostState = initialPostState;
     // private userState: UserState = initialUserState;
 
     /**
@@ -112,30 +107,19 @@ export class FirebaseManager {
      * Subscribes to changes of the global store in order to store specific states.
      */
     subscribeToStore(store: any) {
-        this.store = store;
-        this.store.subscribe(() => {
-            let state: AppState = this.store.getState();
-            // These will succeed and send the first time there is a valid database
-            this.storePostsState(state.posts);
-            // this.storeUserState(state.users);
-        });
-        this.subscribeToFirebase();
+        // this.store = store;
+        // this.store.subscribe(() => {
+        //     let state: AppState = this.store.getState();
+        //     // These will succeed and send the first time there is a valid database
+        //     // this.storeUserState(state.users);
+        // });
+        // this.subscribeToFirebase();
     }
 
     /**
      * Subscribes to changes from the Firebase database references to update specific states.
      */
     subscribeToFirebase() {
-        const postsStateGetter = this.getPostsState();
-        if (postsStateGetter) {
-            postsStateGetter.on('value', (snapshot: firebase.database.DataSnapshot | null) => {
-                const newItemState: PostState = snapshot ? snapshot.val() : undefined;
-                if (snapshot) {
-                    this.store.dispatch(PostActions.firebasePost(newItemState));
-                }
-            });
-        }
-
         // const userStateGetter = this.getUserState();
         // if (userStateGetter) {
         //     userStateGetter.on('value', (snapshot: firebase.database.DataSnapshot | null) => {
@@ -145,20 +129,6 @@ export class FirebaseManager {
         //         }
         //     });
         // }
-    }
-
-    getPostsState(): firebase.database.Reference | null {
-        if (this.database) {
-            return this.database.ref(FIREBASE_POSTS);
-        }
-        return null;
-    }
-
-    storePostsState(state: PostState) {
-        if (this.database && state != this.postState) {
-            this.postState = state;
-            this.database.ref(FIREBASE_POSTS).set(state);
-        }
     }
 
     /**

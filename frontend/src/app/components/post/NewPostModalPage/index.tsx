@@ -30,6 +30,14 @@ export class NewPostModalPage extends React.Component<
         this.onSave = this.onSave.bind(this);
     }
 
+    componentDidUpdate(prevProps: NewPostModalPage.Props) {
+        if (prevProps.loggedInUser !== this.props.loggedInUser) {
+            this.setState({
+                newPost: new Post(this.props.loggedInUser, this.state.newPost.title)
+            });
+        }
+    }
+
     onInputChange(event: any) {
         const target = event.target;
         const post = this.state.newPost;

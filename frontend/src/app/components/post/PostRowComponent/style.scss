@@ -1,0 +1,13 @@
+@import '~@app/variables.scss';
+.post-row-img {
+    height: auto;
+    max-width: 100%;
+    min-width: 24px;
+    border-width: 2px !important;
+}
+
+.post-row-username {
+    font-size: 14px;
+    font-family: $gothamRounded;
+    opacity: 0.8;
+}

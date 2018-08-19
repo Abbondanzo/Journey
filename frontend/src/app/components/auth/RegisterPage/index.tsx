@@ -11,25 +11,38 @@ export namespace RegisterPage {
         actions: UserActions;
     }
     export interface State {
-        email: string;
-        emailError: string;
-        password: string;
-        passwordError: string;
-        verifyPassword: string;
-        verifyPasswordError: string;
+        email: FieldError;
+        username: FieldError;
+        password: FieldError;
+        verifyPassword: FieldError;
     }
+}
+
+interface FieldError {
+    field: string;
+    error: string;
 }
 
 export class RegisterPage extends React.Component<RegisterPage.Props, RegisterPage.State> {
     constructor(props: RegisterPage.Props) {
         super(props);
         this.state = {
-            email: '',
-            emailError: '',
-            password: '',
-            passwordError: '',
-            verifyPassword: '',
-            verifyPasswordError: ''
+            email: {
+                field: '',
+                error: ''
+            },
+            username: {
+                field: '',
+                error: ''
+            },
+            password: {
+                field: '',
+                error: ''
+            },
+            verifyPassword: {
+                field: '',
+                error: ''
+            }
         };
         this.handleInputChange = this.handleInputChange.bind(this);
         this.register = this.register.bind(this);
@@ -48,48 +61,80 @@ export class RegisterPage extends React.Component<RegisterPage.Props, RegisterPa
         switch (name) {
             case 'email-field':
                 this.setState({
-                    email: value,
-                    emailError: ''
+                    email: {
+                        field: value,
+                        error: ''
+                    }
+                });
+                break;
+            case 'username-field':
+                this.setState({
+                    username: {
+                        field: value,
+                        error: ''
+                    }
                 });
                 break;
             case 'password-field':
                 this.setState({
-                    password: value,
-                    passwordError: ''
+                    password: {
+                        field: value,
+                        error: ''
+                    }
                 });
                 break;
             case 'verify-password-field':
                 this.setState({
-                    verifyPassword: value,
-                    verifyPasswordError: ''
+                    verifyPassword: {
+                        field: value,
+                        error: ''
+                    }
                 });
                 break;
         }
     }
 
     register() {
-        let emailError = this.state.emailError;
-        let passwordError = this.state.passwordError;
-        let verifyPasswordError = this.state.verifyPasswordError;
-        if (!this.state.email) {
+        let nameError = this.state.username.error;
+        let emailError = this.state.email.error;
+        let passwordError = this.state.password.error;
+        let verifyPasswordError = this.state.verifyPassword.error;
+        if (!this.state.username.field) {
+            nameError = 'Please register with your name';
+        }
+        if (!this.state.email.field) {
             emailError = 'Please use a valid email';
         }
-        if (!this.state.password) {
+        if (!this.state.password.field) {
             passwordError = 'Please use a valid password';
         }
-        if (this.state.password !== this.state.verifyPassword) {
+        if (this.state.password.field !== this.state.verifyPassword.field) {
             verifyPasswordError = 'Password fields do not match. Please try again';
         }
         if (emailError || passwordError || verifyPasswordError) {
             this.setState({
-                emailError,
-                passwordError,
-                verifyPasswordError
+                username: {
+                    field: this.state.username.field,
+                    error: nameError
+                },
+                email: {
+                    field: this.state.email.field,
+                    error: emailError
+                },
+                password: {
+                    field: this.state.password.field,
+                    error: passwordError
+                },
+                verifyPassword: {
+                    field: this.state.verifyPassword.field,
+                    error: verifyPasswordError
+                }
             });
         } else {
             this.props.actions.register({
-                email: this.state.email,
-                password: this.state.password
+                username: this.state.username.field,
+                email: this.state.email.field,
+                password: this.state.password.field
             });
         }
     }
@@ -100,6 +145,23 @@ export class RegisterPage extends React.Component<RegisterPage.Props, RegisterPa
                 <div className="list-group-item">
                     <h2 className="form-title">Register</h2>
                     <div className="form-group">
+                        <label htmlFor="username-field">Name</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            name="username-field"
+                            id="username-field"
+                            placeholder="First and Last Name"
+                            value={this.state.username.field}
+                            onChange={this.handleInputChange}
+                        />
+                        {this.state.username.error ? (
+                            <div className="alert alert-danger">{this.state.username.error}</div>
+                        ) : (
+                            undefined
+                        )}
+                    </div>
+                    <div className="form-group">
                         <label htmlFor="email-field">Email Address</label>
                         <input
                             type="text"
@@ -107,11 +169,11 @@ export class RegisterPage extends React.Component<RegisterPage.Props, RegisterPa
                             name="email-field"
                             id="email-field"
                             placeholder="Email Address"
-                            value={this.state.email}
+                            value={this.state.email.field}
                             onChange={this.handleInputChange}
                         />
-                        {this.state.emailError ? (
-                            <div className="alert alert-danger">{this.state.emailError}</div>
+                        {this.state.email.error ? (
+                            <div className="alert alert-danger">{this.state.email.error}</div>
                         ) : (
                             undefined
                         )}
@@ -124,11 +186,11 @@ export class RegisterPage extends React.Component<RegisterPage.Props, RegisterPa
                             name="password-field"
                             id="password-field"
                             placeholder="Password"
-                            value={this.state.password}
+                            value={this.state.password.field}
                             onChange={this.handleInputChange}
                         />
-                        {this.state.passwordError ? (
-                            <div className="alert alert-danger">{this.state.passwordError}</div>
+                        {this.state.password.error ? (
+                            <div className="alert alert-danger">{this.state.password.error}</div>
                         ) : (
                             undefined
                         )}
@@ -141,12 +203,12 @@ export class RegisterPage extends React.Component<RegisterPage.Props, RegisterPa
                             name="verify-password-field"
                             id="verify-password-field"
                             placeholder="Password"
-                            value={this.state.verifyPassword}
+                            value={this.state.verifyPassword.field}
                             onChange={this.handleInputChange}
                         />
-                        {this.state.verifyPasswordError ? (
+                        {this.state.verifyPassword.error ? (
                             <div className="alert alert-danger">
-                                {this.state.verifyPasswordError}
+                                {this.state.verifyPassword.error}
                             </div>
                         ) : (
                             undefined
@@ -156,9 +218,9 @@ export class RegisterPage extends React.Component<RegisterPage.Props, RegisterPa
                         className="btn btn-lg btn-primary btn-block"
                         onClick={this.register}
                         disabled={
-                            this.state.emailError !== '' ||
-                            this.state.passwordError !== '' ||
-                            this.state.verifyPasswordError !== ''
+                            this.state.email.error !== '' ||
+                            this.state.password.error !== '' ||
+                            this.state.verifyPassword.error !== ''
                         }
                     >
                         Register

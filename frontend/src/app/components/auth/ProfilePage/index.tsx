@@ -1,15 +1,17 @@
-import * as React from 'react';
-
+import { PostActions, UserActions } from '@app/actions';
 import { ProfilePane } from '@app/components/auth/ProfilePage/ProfilePane';
-import { RouteComponentProps } from 'react-router';
+import PostRow from '@app/containers/post/PostRow';
 import { User } from '@app/models';
-import { UserActions } from '@app/actions';
+import Post from '@app/models/Post';
+import * as React from 'react';
+import { RouteComponentProps } from 'react-router';
 
 export namespace ProfilePage {
     export interface Props extends RouteComponentProps<any> {
         loggedInUser?: User;
         userImage: string;
-        actions: UserActions;
+        posts: Post[];
+        actions: UserActions & PostActions;
     }
 }
 
@@ -36,7 +38,13 @@ export class ProfilePage extends React.Component<ProfilePage.Props> {
                                 userImage={this.props.userImage}
                             />
                         </div>
-                        <div className="col-md-8">Posts</div>
+                        <div className="col-md-8">
+                            <ul className="list-group">
+                                {this.props.posts.map((post: Post, index: number) => {
+                                    return <PostRow post={post} key={index} />;
+                                })}
+                            </ul>
+                        </div>
                     </div>
                 ) : (
                     undefined

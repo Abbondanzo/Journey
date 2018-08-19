@@ -32,7 +32,7 @@ export default class User implements Partial<firebase.UserInfo>, UserExtended {
     }) {
         this.uid = data.uid;
         this.email = data.email;
-        this.displayName = data.displayName || '';
+        this.displayName = data.displayName;
         this.emailVerified = data.emailVerified;
         this.password = data.password;
         this.disabled = data.disabled;

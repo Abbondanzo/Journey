@@ -94,9 +94,14 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                 });
             break;
         case UserActions.Type.REGISTER_USER:
-            const registerPayload: { email: string; password: string } = action.payload;
+            const registerPayload: { email: string; password: string; username: string } =
+                action.payload;
             userService
-                .registerUser(registerPayload.email, registerPayload.password)
+                .registerUser(
+                    registerPayload.email,
+                    registerPayload.password,
+                    registerPayload.username
+                )
                 .then((_) => {
                     return firebaseService.signIn(registerPayload.email, registerPayload.password);
                 })
@@ -167,14 +172,15 @@ class UserService {
         });
     }
 
-    registerUser(email: string, password: string) {
+    registerUser(email: string, password: string, displayName: string) {
         return new Promise((resolve: (user: User) => void, reject: any) => {
             axios({
                 method: 'post',
                 url: `/api/register`,
                 data: {
                     email,
-                    password
+                    password,
+                    displayName
                 },
                 ...this.baseConfig
             })

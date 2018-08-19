@@ -1,6 +1,6 @@
+import PostRow from '@app/containers/post/PostRow';
 import Post from '@app/models/Post';
 import * as React from 'react';
-
 // import { Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
 
@@ -20,11 +20,7 @@ export class HomePage extends React.Component<HomePage.Props> {
                 <ul className="list-group">
                     {this.props.posts.length ? (
                         this.props.posts.map((post, index) => {
-                            return (
-                                <div className="list-group-item list-group-item-action" key={index}>
-                                    {post.title}
-                                </div>
-                            );
+                            return <PostRow post={post} key={index} />;
                         })
                     ) : (
                         <li className="list-group-item">

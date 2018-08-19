@@ -16,7 +16,7 @@ export const initialState: PostState = {
 export const postReducer = handleActions<PostState, any>(
     {
         [PostActions.Type.ADD_POST]: (state: PostState, action: Action<Post>): PostState => {
-            const posts = state.posts;
+            const posts = [...state.posts];
             if (action.payload) {
                 posts.push(action.payload);
             }
@@ -29,7 +29,7 @@ export const postReducer = handleActions<PostState, any>(
             state: PostState,
             action: Action<Post['id']>
         ): PostState => {
-            let posts = state.posts;
+            let posts = [...state.posts];
             if (action.payload) {
                 posts = posts.filter((post) => {
                     return post.id !== action.payload;

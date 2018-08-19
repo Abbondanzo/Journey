@@ -65,7 +65,9 @@ export namespace UserActions {
     /**
      * Creates a new user with the given email and password credentials.
      */
-    export const register = createAction<{ email: string; password: string }>(Type.REGISTER_USER);
+    export const register = createAction<{ username: string; email: string; password: string }>(
+        Type.REGISTER_USER
+    );
     /**
      * Logs the current user out from the auth service.
      */

@@ -2,6 +2,7 @@ import { PostActions } from '@app/actions';
 import { PostRowComponent } from '@app/components/post/PostRowComponent';
 import Post from '@app/models/Post';
 import { AppState } from '@app/reducers';
+import { PermissionsManager } from '@app/reducers/user';
 import { omit } from '@app/utils';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
@@ -19,7 +20,12 @@ const mapStateToProps = (
     return {
         post: ownProps.post,
         postOwner: owner,
-        loggedInUser: state.users.loggedInUser
+        loggedInUser: state.users.loggedInUser,
+        canDeletePost: PermissionsManager.canDeletePost(
+            state.users,
+            state.users.loggedInUser || '',
+            ownProps.post
+        )
     };
 };
 

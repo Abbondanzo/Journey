@@ -12,6 +12,7 @@ export namespace PostRowComponent {
         post: Post;
         postOwner: User | undefined;
         loggedInUser?: User['uid'];
+        canDeletePost: boolean;
         actions: PostActions;
     }
 }
@@ -22,13 +23,15 @@ export class PostRowComponent extends React.Component<PostRowComponent.Props> {
             this.props.actions.deletePost(this.props.post.id);
         };
         return (
-            <div className="list-group-item">
+            <div className="post-row list-group-item">
                 <div className="row">
                     <div className="col-1">
-                        <ProfileImage
-                            className="post-row-img"
-                            userId={this.props.postOwner ? this.props.postOwner.uid : ''}
-                        />
+                        <Link to={`/profile/${this.props.post.owner}`}>
+                            <ProfileImage
+                                className="post-row-img"
+                                userId={this.props.postOwner ? this.props.postOwner.uid : ''}
+                            />
+                        </Link>
                     </div>
                     <div className="col-11">
                         <Link to={`/profile/${this.props.post.owner}`}>
@@ -40,8 +43,7 @@ export class PostRowComponent extends React.Component<PostRowComponent.Props> {
                         </Link>
                         <div className="d-flex w-100 justify-content-between">
                             <h5>{this.props.post.title}</h5>
-                            {this.props.loggedInUser &&
-                            this.props.loggedInUser === this.props.post.owner ? (
+                            {this.props.canDeletePost ? (
                                 <button
                                     type="button"
                                     className="close"

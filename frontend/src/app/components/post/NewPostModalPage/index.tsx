@@ -80,7 +80,7 @@ export class NewPostModalPage extends React.Component<
                     <div className="modal-content" onClick={this.preventCallback}>
                         <div className="modal-header">
                             <h5 className="modal-title" id="exampleModalLabel">
-                                Add a post {this.props.loggedInUser}
+                                Add a post
                             </h5>
                             <button
                                 type="button"

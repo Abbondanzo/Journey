@@ -1,5 +1,6 @@
 import { UserActions } from '@app/actions';
-import { User } from '@app/models';
+import { User, UserRole } from '@app/models';
+import Post from '@app/models/Post';
 import { Action, handleActions } from 'redux-actions';
 
 export interface UserState {
@@ -73,3 +74,14 @@ export const userReducer = handleActions<UserState, any>(
 export const getUserById = (userId: string | undefined, state: UserState): User | undefined => {
     return userId ? state.users.get(userId) : undefined;
 };
+
+export class PermissionsManager {
+    static canDeletePost(state: UserState, userId: string, post: Post) {
+        const user = state.users.get(userId);
+        const hasAuthority =
+            user &&
+            (user.profileDetails.role === UserRole.MODERATOR ||
+                user.profileDetails.role === UserRole.ADMINISTRATOR);
+        return post.owner === userId || hasAuthority;
+    }
+}

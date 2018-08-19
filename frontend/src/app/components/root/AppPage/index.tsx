@@ -4,6 +4,7 @@ import { Alert } from '@app/components/util/Alert';
 import { Navbar } from '@app/components/util/Navbar';
 import Login from '@app/containers/auth/Login';
 import Profile from '@app/containers/auth/Profile';
+import Register from '@app/containers/auth/Register';
 import Dashboard from '@app/containers/dashboard/Dashboard';
 import Home from '@app/containers/Home';
 import NewPostModal from '@app/containers/post/NewPostModal';
@@ -48,6 +49,7 @@ export class AppPage extends React.Component<AppPage.Props> {
                 <div className="container full-height">
                     <Switch>
                         <Route path="/profile" component={Profile} />
+                        <Route path="/register" component={Register} />
                         <Route path="/login" component={Login} />
                         <Route path="/map" component={Dashboard} />
                         {/* Home is default unless we specify exact=true */}

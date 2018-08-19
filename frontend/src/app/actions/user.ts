@@ -11,6 +11,7 @@ export namespace UserActions {
         LOAD_AUTH_USER = 'LOAD_AUTH_USER',
         SAVE_AUTH_USER = 'SAVE_AUTH_USER',
         SIGN_IN = 'SIGN_IN',
+        REGISTER_USER = 'REGISTER_USER',
         LOG_OUT = 'LOG_OUT'
     }
     /**
@@ -61,6 +62,10 @@ export namespace UserActions {
      * Attempts to sign in to a user with the given email and password credentials.
      */
     export const signIn = createAction<{ email: string; password: string }>(Type.SIGN_IN);
+    /**
+     * Creates a new user with the given email and password credentials.
+     */
+    export const register = createAction<{ email: string; password: string }>(Type.REGISTER_USER);
     /**
      * Logs the current user out from the auth service.
      */

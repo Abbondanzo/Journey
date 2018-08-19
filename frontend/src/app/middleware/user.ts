@@ -1,7 +1,7 @@
 import { UserActions } from '@app/actions';
 import { UtilActions } from '@app/actions/util';
 import { User } from '@app/models';
-// import { AppState } from '@app/reducers';
+import { AppState } from '@app/reducers';
 import FirebaseApp from '@app/utils/firebase';
 import axios, { AxiosResponse } from 'axios';
 import { AnyAction, Dispatch, Middleware } from 'redux';
@@ -9,7 +9,7 @@ import { AnyAction, Dispatch, Middleware } from 'redux';
 export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>) => (
     action: AnyAction
 ) => {
-    // const state: AppState = store.getState();
+    const state: AppState = store.getState();
     const userService = new UserService();
     const firebaseService = new FirebaseService();
     switch (action.type) {
@@ -65,7 +65,7 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
             firebaseService
                 .signIn(payload.email, payload.password)
                 .then((user) => {
-                    new UserService()
+                    userService
                         .getProfileDetails(user)
                         .then((detailedUser) => {
                             next(UserActions.saveUser(Object.assign(user, detailedUser)));
@@ -93,8 +93,28 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                     next(UtilActions.showError(`Unable to sign in: ${err.message || err}`));
                 });
             break;
+        case UserActions.Type.REGISTER_USER:
+            const registerPayload: { email: string; password: string } = action.payload;
+            userService
+                .registerUser(registerPayload.email, registerPayload.password)
+                .then((_) => {
+                    return firebaseService.signIn(registerPayload.email, registerPayload.password);
+                })
+                .then((loggedInUser) => {
+                    next(UserActions.saveUser(loggedInUser));
+                    next(
+                        UserActions.saveProfileImage({
+                            userId: loggedInUser.uid,
+                            url: state.users.userProfileImages.get('default') || ''
+                        })
+                    );
+                })
+                .catch((err) => {
+                    next(UtilActions.showError(`Unable to register: ${err.message || err}`));
+                });
+            break;
         case UserActions.Type.LOG_OUT:
-            new FirebaseService()
+            firebaseService
                 .logOut()
                 .then(() => {
                     next(UserActions.logOut());
@@ -131,7 +151,7 @@ class UserService {
                 ...this.baseConfig
             })
                 .then(this.resolveUsers(resolve))
-                .catch(reject);
+                .catch(this.rejectForbiddenError(reject));
         });
     }
 
@@ -143,8 +163,35 @@ class UserService {
                 ...this.baseConfig
             })
                 .then(this.resolveUser(resolve, user))
-                .catch(reject);
+                .catch(this.rejectForbiddenError(reject));
         });
+    }
+
+    registerUser(email: string, password: string) {
+        return new Promise((resolve: (user: User) => void, reject: any) => {
+            axios({
+                method: 'post',
+                url: `/api/register`,
+                data: {
+                    email,
+                    password
+                },
+                ...this.baseConfig
+            })
+                .then(this.resolveUser(resolve))
+                .catch(this.rejectForbiddenError(reject));
+        });
+    }
+
+    private rejectForbiddenError(reject: any) {
+        return (err: any) => {
+            if (err.response) {
+                const data = err.response.data;
+                reject(data.error || data.message || data);
+            } else {
+                reject(err);
+            }
+        };
     }
 
     private resolveUser(resolve: (user: User) => void, user?: User) {

@@ -1,12 +1,9 @@
 import * as firebase from 'firebase';
-export default class User implements firebase.UserInfo, UserExtended {
+export default class User implements Partial<firebase.UserInfo>, UserExtended {
     // UserInfo
     uid: string;
     email: string;
     displayName: string | null;
-    phoneNumber: string | null;
-    photoURL: string | null;
-    providerId: string;
     // Firebase Auth details
     emailVerified?: boolean;
     password: string;
@@ -18,9 +15,6 @@ export default class User implements firebase.UserInfo, UserExtended {
         uid: string;
         email: string;
         displayName: string | null;
-        phoneNumber: string | null;
-        photoURL: string | null;
-        providerId: string;
         emailVerified?: boolean;
         password: string;
         disabled?: boolean;
@@ -28,14 +22,11 @@ export default class User implements firebase.UserInfo, UserExtended {
     }) {
         this.uid = data.uid;
         this.email = data.email;
-        this.displayName = data.displayName;
-        this.phoneNumber = data.phoneNumber;
-        this.photoURL = data.photoURL;
-        this.providerId = data.providerId;
+        this.displayName = data.displayName || '';
         this.emailVerified = data.emailVerified;
         this.password = data.password;
         this.disabled = data.disabled;
-        this.profileDetails = data.profileDetails;
+        this.profileDetails = data.profileDetails || {};
     }
 }
 

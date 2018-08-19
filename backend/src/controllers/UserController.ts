@@ -14,7 +14,8 @@ export default class UserController {
         authInstance
             .createUser(user)
             .then((authUser) => {
-                const authorizedUser = Object.assign({}, user, authUser);
+                const authorizedUser = new User(Object.assign({}, user, authUser));
+                console.log(authorizedUser);
                 if (!authorizedUser.uid) {
                     throw Error('Missing user ID!');
                 }

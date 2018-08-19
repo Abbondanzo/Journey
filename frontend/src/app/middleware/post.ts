@@ -19,6 +19,26 @@ export const postMiddleware: Middleware = (store) => (next) => (action: AnyActio
                     next(UtilActions.showError(`Unable to create post: ${err.message || err}`));
                 });
             break;
+        case PostActions.Type.DELETE_POST:
+            postService
+                .deletePost(action.payload)
+                .then(() => {
+                    next(PostActions.deletePost(action.payload));
+                })
+                .catch((err) => {
+                    next(UtilActions.showError(`Unable to delete post: ${err.message || err}`));
+                });
+            break;
+        case PostActions.Type.LOAD_ALL_POSTS:
+            postService
+                .getAllPosts()
+                .then((posts) => {
+                    next(PostActions.saveAllPosts(posts));
+                })
+                .catch((err) => {
+                    next(UtilActions.showError(`Unable to load posts: ${err.message || err}`));
+                });
+            break;
         default:
             next(action);
     }
@@ -49,8 +69,47 @@ class PostService {
                     });
                 })
                 .then(this.resolvePost(resolve))
-                .catch(reject);
+                .catch(this.rejectForbiddenError(reject));
         });
+    }
+
+    deletePost(postId: string) {
+        return new Promise((resolve: () => void, reject: any) => {
+            FirebaseApp.Instance.getBearerToken()
+                .then((bearerToken) => {
+                    return axios({
+                        ...this.baseConfig,
+                        method: 'delete',
+                        url: `/api/post/${postId}`,
+                        headers: { Authorization: bearerToken, 'Content-Type': 'application/json' }
+                    });
+                })
+                .then(resolve)
+                .catch(this.rejectForbiddenError(reject));
+        });
+    }
+
+    getAllPosts() {
+        return new Promise((resolve: (posts: Post[]) => void, reject: any) => {
+            axios({
+                ...this.baseConfig,
+                method: 'get',
+                url: `/api/post`
+            })
+                .then(this.resolvePosts(resolve))
+                .catch(this.rejectForbiddenError(reject));
+        });
+    }
+
+    private rejectForbiddenError(reject: any) {
+        return (err: any) => {
+            if (err.response) {
+                const data = err.response.data;
+                reject(data.error || data.message || data);
+            } else {
+                reject(err);
+            }
+        };
     }
 
     private resolvePost(resolve: (post: Post) => void) {
@@ -60,15 +119,15 @@ class PostService {
         };
     }
 
-    // private resolvePosts(resolve: (posts: Post[]) => void) {
-    //     return (response: AxiosResponse<any>) => {
-    //         const posts = [];
-    //         const postObjects = response.data || [];
-    //         for (const postObject of postObjects) {
-    //             const newPost = Object.assign(new Post('', ''), postObject);
-    //             posts.push(newPost);
-    //         }
-    //         resolve(posts);
-    //     };
-    // }
+    private resolvePosts(resolve: (posts: Post[]) => void) {
+        return (response: AxiosResponse<any>) => {
+            const posts = [];
+            const postObjects = response.data || [];
+            for (const postObject of postObjects) {
+                const newPost = Object.assign(new Post('', ''), postObject);
+                posts.push(newPost);
+            }
+            resolve(posts);
+        };
+    }
 }

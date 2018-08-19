@@ -14,6 +14,7 @@ export default class Router {
             .route('/post')
             .post(firebaseIdToken, PostController.createPost)
             .get(PostController.getAllPosts);
+        this.app.route('/post/:postId').delete(firebaseIdToken, PostController.deletePost);
     }
 
     private setUserMethods() {

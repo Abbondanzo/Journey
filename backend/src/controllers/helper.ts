@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import * as admin from 'firebase-admin';
+import { UserRole } from '../models/User';
+import UserCollection from '../schema/UserCollection';
 let serviceAccountKey = require('../config/serviceAccountKey.json');
 
 const adminApp = admin.initializeApp({
@@ -87,3 +89,21 @@ export const handleCatchError = (errMessage: string, res: Response, errCode = 40
         handleError(errMessage, res, err, errCode);
     };
 };
+
+export class PermissionsManager {
+    static async canEditAllPosts(req: Request) {
+        return this.getUser(req).then((user) => {
+            const role = user.profileDetails.role;
+            return role === UserRole.MODERATOR || role === UserRole.ADMINISTRATOR;
+        });
+    }
+
+    static getToken(req: Request) {
+        return (req as any).user as admin.auth.DecodedIdToken;
+    }
+
+    private static getUser(req: Request) {
+        const token = this.getToken(req);
+        return UserCollection.findUserById(token.uid);
+    }
+}

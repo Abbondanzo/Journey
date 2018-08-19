@@ -52,17 +52,13 @@ export const postReducer = handleActions<PostState, any>(
                 isAddingPost: false
             };
         },
-        [PostActions.Type.FIREBASE_POST]: (
+        [PostActions.Type.SAVE_ALL_POSTS]: (
             state: PostState,
-            action: Action<PostState>
+            action: Action<Post[]>
         ): PostState => {
-            if (action.payload) {
-                return {
-                    ...action.payload
-                };
-            }
             return {
-                ...state
+                ...state,
+                posts: action.payload || []
             };
         }
     },

@@ -9,6 +9,7 @@ import { RouteComponentProps } from 'react-router';
 export namespace ProfilePage {
     export interface Props extends RouteComponentProps<any> {
         loggedInUser?: User;
+        userProfile?: User;
         userImage: string;
         posts: Post[];
         actions: UserActions & PostActions;
@@ -30,11 +31,12 @@ export class ProfilePage extends React.Component<ProfilePage.Props> {
     render() {
         return (
             <div className="profile-container">
-                {this.props.loggedInUser ? (
+                {this.props.userProfile && this.props.loggedInUser ? (
                     <div className="row">
                         <div className="col-md-4">
                             <ProfilePane
                                 loggedInUser={this.props.loggedInUser}
+                                userProfile={this.props.userProfile}
                                 userImage={this.props.userImage}
                             />
                         </div>

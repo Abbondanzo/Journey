@@ -48,7 +48,7 @@ export class AppPage extends React.Component<AppPage.Props> {
                 <NewPostModal />
                 <div className="container full-height">
                     <Switch>
-                        <Route path="/profile" component={Profile} />
+                        <Route path="/profile/:userId" component={Profile} />
                         <Route path="/register" component={Register} />
                         <Route path="/login" component={Login} />
                         <Route path="/map" component={Dashboard} />

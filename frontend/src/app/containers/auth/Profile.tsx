@@ -7,14 +7,20 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { bindActionCreators, Dispatch } from 'redux';
 
-const mapStateToProps = (state: AppState): Partial<ProfilePage.Props> => {
+const mapStateToProps = (
+    state: AppState,
+    ownProps: ProfilePage.Props
+): Partial<ProfilePage.Props> => {
+    const userId = ownProps.match.params.userId || state.users.loggedInUser;
     const loggedInUser = getUserById(state.users.loggedInUser, state.users);
+    const userProfile = getUserById(userId, state.users);
     const posts = state.posts.posts.filter((post) => {
-        return loggedInUser && post.owner === loggedInUser.uid;
+        return userProfile && post.owner === userProfile.uid;
     });
-    console.log(loggedInUser);
+    console.log(userProfile);
     return {
         loggedInUser,
+        userProfile,
         posts
     };
 };

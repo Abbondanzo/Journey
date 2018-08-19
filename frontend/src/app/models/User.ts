@@ -11,6 +11,7 @@ export class User implements UserInfo {
     profileDetails: {
         following: User['uid'][];
         profileImage?: string;
+        role?: UserRole;
         [key: string]: any;
     };
 
@@ -24,6 +25,7 @@ export class User implements UserInfo {
         profileDetails?: {
             following: User['uid'][];
             profileImage?: string;
+            role?: UserRole;
             [key: string]: any;
         };
     }) {
@@ -42,4 +44,10 @@ export class User implements UserInfo {
                 ? data.profileDetails.following
                 : [];
     }
+}
+
+export enum UserRole {
+    USER = 'user',
+    MODERATOR = 'mod',
+    ADMINISTRATOR = 'admin'
 }

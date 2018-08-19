@@ -9,7 +9,12 @@ export default class User implements Partial<firebase.UserInfo>, UserExtended {
     password: string;
     disabled?: boolean;
     // Custom data
-    profileDetails: { [key: string]: any };
+    profileDetails: {
+        following: User['uid'][];
+        profileImage?: string;
+        role?: UserRole;
+        [key: string]: any;
+    };
 
     constructor(data: {
         uid: string;
@@ -18,7 +23,12 @@ export default class User implements Partial<firebase.UserInfo>, UserExtended {
         emailVerified?: boolean;
         password: string;
         disabled?: boolean;
-        profileDetails: { [key: string]: any };
+        profileDetails: {
+            following: User['uid'][];
+            profileImage?: string;
+            role?: UserRole;
+            [key: string]: any;
+        };
     }) {
         this.uid = data.uid;
         this.email = data.email;
@@ -26,10 +36,26 @@ export default class User implements Partial<firebase.UserInfo>, UserExtended {
         this.emailVerified = data.emailVerified;
         this.password = data.password;
         this.disabled = data.disabled;
-        this.profileDetails = data.profileDetails || {};
+        this.profileDetails = data.profileDetails || {
+            following: []
+        };
+        this.profileDetails.following =
+            data.profileDetails && data.profileDetails.following
+                ? data.profileDetails.following
+                : [];
+        this.profileDetails.role =
+            data.profileDetails && data.profileDetails.role
+                ? data.profileDetails.role
+                : UserRole.USER;
     }
 }
 
 export interface UserExtended {
     profileDetails: { [key: string]: any };
+}
+
+export enum UserRole {
+    USER = 'user',
+    MODERATOR = 'mod',
+    ADMINISTRATOR = 'admin'
 }

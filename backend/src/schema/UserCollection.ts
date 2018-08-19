@@ -1,22 +1,41 @@
+import * as admin from 'firebase-admin';
 import { firestoreInstance } from '../controllers/helper';
 import User from '../models/User';
 
 export default class UserCollection {
     private static USER_COLLECTION = '/users';
     static createUser(user: User) {
-        return firestoreInstance.collection(this.USER_COLLECTION).add(convertModelToDocument(user));
+        return firestoreInstance
+            .collection(this.USER_COLLECTION)
+            .add(convertModelToDocument(user))
+            .then((reference) => {
+                return reference.get();
+            })
+            .then((snapshot) => {
+                return convertDocumentToModel(snapshot);
+            });
     }
-    static findUsersByIds(ids: User['uid'][]) {
-        // We are effectively tossing these IDs out until we decide to store user auth data
-        // separate from profile data
-        return firestoreInstance.collection(this.USER_COLLECTION).get();
+    static findAllUsers() {
+        return firestoreInstance
+            .collection(this.USER_COLLECTION)
+            .get()
+            .then((snapshot: admin.firestore.QuerySnapshot) => {
+                const docs: User[] = [];
+                for (const doc of snapshot.docs) {
+                    docs.push(convertDocumentToModel(doc));
+                }
+                return docs;
+            });
     }
     static findUserById(id: string) {
         return firestoreInstance
             .collection(this.USER_COLLECTION)
-            .where('uid', '==', id)
+            .where('userId', '==', id)
             .limit(1)
-            .get();
+            .get()
+            .then((snapshot: admin.firestore.QuerySnapshot) => {
+                return convertDocumentToModel(snapshot.docs[0]);
+            });
     }
 }
 
@@ -32,4 +51,21 @@ const convertModelToDocument = (user: User) => {
         userDocument[key] = user.profileDetails[key];
     }
     return userDocument;
+};
+
+const convertDocumentToModel = (document: admin.firestore.DocumentData) => {
+    const data = document.data();
+    const profileDetails = {
+        following: []
+    };
+    for (const key of Object.keys(data)) {
+        if (key !== 'userId') {
+            profileDetails[key] = data[key];
+        }
+    }
+    const userStructure: Partial<User> = {
+        uid: data.userId,
+        profileDetails
+    };
+    return new User(userStructure as any);
 };

@@ -21,8 +21,8 @@ export default class UserController {
                 }
                 return UserCollection.createUser(authorizedUser);
             })
-            .then((userRecord) => {
-                res.send(userRecord);
+            .then((user) => {
+                res.send(user);
             })
             .catch(handleCatchError('Could not create user', res));
     }
@@ -30,8 +30,7 @@ export default class UserController {
     static async getUserById(req: functions.Request, res: functions.Response) {
         const userId = req.params.userId;
         UserCollection.findUserById(userId)
-            .then((userRecords) => {
-                const user = userRecords.docs[0];
+            .then((user) => {
                 res.send(user);
             })
             .catch(handleCatchError('Could not find user', res));
@@ -48,16 +47,17 @@ export default class UserController {
     }
 
     static async getAllUsers(_: functions.Request, res: functions.Response) {
-        authInstance
-            .listUsers()
+        Promise.all([authInstance.listUsers(), UserCollection.findAllUsers()])
             .then((usersResult) => {
-                const ids = usersResult.users.map((userRecord) => {
-                    return userRecord.uid;
+                const users = usersResult[0].users.map((userRecord) => {
+                    const collectionUser = usersResult[1].filter((user) => {
+                        return user.uid === userRecord.uid;
+                    })[0];
+                    return new User(Object.assign({}, userRecord, {
+                        profileDetails: collectionUser ? collectionUser.profileDetails : {}
+                    }) as any);
                 });
-                return UserCollection.findUsersByIds(ids);
-            })
-            .then((snapshot) => {
-                res.send(snapshot.docs);
+                res.send(users);
             })
             .catch(handleCatchError('Could not find list of users', res));
     }

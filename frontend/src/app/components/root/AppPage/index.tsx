@@ -46,7 +46,6 @@ export class AppPage extends React.Component<AppPage.Props> {
                     <Switch>
                         <Route path="/login" component={Login} />
                         <Route path="/map" component={Dashboard} />
-                        {/* Home is default unless we specify exact=true */}
                         <Route path="/" component={Home} />
                     </Switch>
                 </div>

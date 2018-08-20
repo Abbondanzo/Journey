@@ -62,7 +62,7 @@ export class Navbar extends React.Component<Navbar.Props, Navbar.State> {
                                         : 'nav-item'
                                 }
                             >
-                                <Link to="/map" className="nav-link">
+                                <Link to="/map" className="nav-link active">
                                     Map
                                 </Link>
                             </li>

@@ -114,7 +114,12 @@ export class AdminPage extends React.Component<AdminPage.Props, AdminPage.State>
 
     getEditRole() {
         const onChange = (event: any) => {
-            console.log(event.target);
+            const activeEdit = { ...this.state.activeEdit } as User;
+            const value = event.target.value;
+            activeEdit.profileDetails.role = UserRole.convertStringToEnum(value);
+            this.setState({
+                activeEdit
+            });
         };
         return (
             <select

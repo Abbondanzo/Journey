@@ -59,7 +59,11 @@ export default class UserController {
                 }
                 UserCollection.createUser(authorizedUser)
                     .then((newUser) => {
-                        res.send(Object.assign(authorizedUser, newUser));
+                        res.send(
+                            Object.assign(authorizedUser, {
+                                profileDetails: newUser.profileDetails
+                            })
+                        );
                     })
                     .catch(handleCatchError('Could not create user', res));
             })
@@ -89,7 +93,6 @@ export default class UserController {
                 }
             })
             .then(() => {
-                console.log(user);
                 return UserCollection.updateUserById(userId, user);
             })
             .then((user) => {

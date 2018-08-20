@@ -107,11 +107,8 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
             break;
         case UserActions.Type.UPDATE_USER:
             const user: User = action.payload;
-            firebaseService
-                .saveProfile(user)
-                .then((user) => {
-                    return userService.saveUser(user);
-                })
+            userService
+                .saveUser(user)
                 .then((newUser) => {
                     next(UserActions.saveUser(newUser));
                 })

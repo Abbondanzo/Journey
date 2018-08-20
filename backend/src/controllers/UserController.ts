@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import User from '../models/User';
 import UserCollection from '../schema/UserCollection';
-import { authInstance, handleCatchError, handleError } from './helper';
+import { authInstance, handleCatchError, handleError, PermissionsManager } from './helper';
 
 export default class UserController {
     static async register(req: functions.Request, res: functions.Response) {
@@ -40,15 +40,23 @@ export default class UserController {
         const userId = req.params.userId;
         const token: admin.auth.DecodedIdToken = (req as any).user;
         const user: User = new User(req.body);
-        if (userId !== token.uid) {
-            res.status(401).send('Unauthorized');
-        } else {
-            UserCollection.updateUserById(userId, user)
-                .then((user) => {
-                    res.send(user);
-                })
-                .catch(handleCatchError('Could not save user', res));
-        }
+        PermissionsManager.canEditAllUsers(req)
+            .then((canEdit) => {
+                if (userId === token.uid || canEdit) {
+                    return authInstance.updateUser(userId, Object.assign({}, user));
+                } else {
+                    res.status(401);
+                    throw Error('Unauthorized');
+                }
+            })
+            .then(() => {
+                console.log(user);
+                return UserCollection.updateUserById(userId, user);
+            })
+            .then((user) => {
+                res.send(user);
+            })
+            .catch(handleCatchError('Could not save user', res));
     }
 
     static async getAllUsers(_: functions.Request, res: functions.Response) {

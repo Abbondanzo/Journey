@@ -1,29 +1,41 @@
+import { PostActions } from '@app/actions';
 import SearchBox from '@app/containers/dashboard/SearchBox';
-import Post, { convertPlaceResultToGeocode } from '@app/models/Post';
-import User from '@app/models/User';
+import { convertPlaceResultToGeocode, User } from '@app/models';
+import Post from '@app/models/Post';
 import * as React from 'react';
 import './style.scss';
 
-export namespace NewPost {
+export namespace NewPostModalPage {
     export interface Props {
-        onSave(post: Post): void;
-        onClose(): void;
+        isShowing: boolean;
+        loggedInUser: User['uid'];
+        actions: PostActions;
     }
     export interface State {
         newPost: Post;
     }
 }
 
-export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
-    constructor(props: NewPost.Props) {
+export class NewPostModalPage extends React.Component<
+    NewPostModalPage.Props,
+    NewPostModalPage.State
+> {
+    constructor(props: NewPostModalPage.Props) {
         super(props);
-        // TODO: Fix this user reference to be the logged in user
         this.state = {
-            newPost: new Post(new User('0', 'user'), '')
+            newPost: new Post(this.props.loggedInUser, '')
         };
         this.onInputChange = this.onInputChange.bind(this);
         this.onPlacesChanged = this.onPlacesChanged.bind(this);
         this.onSave = this.onSave.bind(this);
+    }
+
+    componentDidUpdate(prevProps: NewPostModalPage.Props) {
+        if (prevProps.loggedInUser !== this.props.loggedInUser) {
+            this.setState({
+                newPost: new Post(this.props.loggedInUser, this.state.newPost.title)
+            });
+        }
     }
 
     onInputChange(event: any) {
@@ -43,7 +55,7 @@ export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
     }
 
     onPlacesChanged(places: google.maps.places.PlaceResult[]) {
-        const post = this.state.newPost;
+        const post = Object.assign({}, this.state.newPost);
         post.geocode = convertPlaceResultToGeocode(places[0]);
         this.setState({
             newPost: post
@@ -51,20 +63,21 @@ export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
     }
 
     onSave() {
-        this.props.onSave(this.state.newPost);
-        this.props.onClose();
+        this.props.actions.addPost(this.state.newPost);
+        this.props.actions.hidePostModal();
     }
 
-    stopEventPropagation(event: React.MouseEvent) {
-        event.stopPropagation();
+    preventCallback(event: React.MouseEvent<any>) {
         event.preventDefault();
+        event.stopPropagation();
+        return false;
     }
 
     render() {
-        return (
-            <div className="modal" onClick={this.props.onClose}>
-                <div className="modal-dialog" role="document" onClick={this.stopEventPropagation}>
-                    <div className="modal-content">
+        return this.props.isShowing ? (
+            <div className="post-modal-container modal" onClick={this.props.actions.hidePostModal}>
+                <div className="post-modal modal-dialog">
+                    <div className="modal-content" onClick={this.preventCallback}>
                         <div className="modal-header">
                             <h5 className="modal-title" id="exampleModalLabel">
                                 Add a post
@@ -74,7 +87,7 @@ export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
                                 className="close"
                                 data-dismiss="modal"
                                 aria-label="Close"
-                                onClick={this.props.onClose}
+                                onClick={this.props.actions.hidePostModal}
                             >
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -117,7 +130,7 @@ export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
                                 type="button"
                                 className="btn btn-secondary"
                                 data-dismiss="modal"
-                                onClick={this.props.onClose}
+                                onClick={this.props.actions.hidePostModal}
                             >
                                 Close
                             </button>
@@ -128,6 +141,6 @@ export class NewPost extends React.Component<NewPost.Props, NewPost.State> {
                     </div>
                 </div>
             </div>
-        );
+        ) : null;
     }
 }

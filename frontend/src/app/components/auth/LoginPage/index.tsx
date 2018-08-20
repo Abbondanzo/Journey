@@ -1,13 +1,15 @@
-import { UserActions } from '@app/actions';
-import { LoggedInUser } from '@app/models';
-import * as React from 'react';
-import { RouteComponentProps } from 'react-router';
-import { Link } from 'react-router-dom';
 import './style.scss';
+
+import * as React from 'react';
+
+import { Link } from 'react-router-dom';
+import { RouteComponentProps } from 'react-router';
+import { User } from '@app/models';
+import { UserActions } from '@app/actions';
 
 export namespace LoginPage {
     export interface Props extends RouteComponentProps<any> {
-        loggedInUser?: LoggedInUser;
+        loggedInUser?: User;
         actions: UserActions;
     }
     export interface State {

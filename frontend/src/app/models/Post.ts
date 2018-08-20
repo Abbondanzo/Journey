@@ -1,16 +1,16 @@
-import User from '@app/models/User';
+import { User } from '@app/models';
 /// <reference types="@types/googlemaps" />
 
 export default class Post {
     id: string;
-    owner: User;
+    owner: User['uid'];
     title: string;
     description: string;
     // images: Image;
-    likes: User[];
+    likes: User['uid'][];
     geocode?: Geocode;
 
-    constructor(owner: User, title: string) {
+    constructor(owner: User['uid'], title: string) {
         this.id = this.guid();
         this.owner = owner;
         this.title = title;

@@ -1,9 +1,13 @@
+import PostRow from '@app/containers/post/PostRow';
+import Post from '@app/models/Post';
 import * as React from 'react';
+// import { Link } from 'react-router-dom';
 import { RouteComponentProps } from 'react-router';
-import { Link } from 'react-router-dom';
 
 export namespace HomePage {
-    export interface Props extends RouteComponentProps<void> {}
+    export interface Props extends RouteComponentProps<void> {
+        posts: Post[];
+    }
 }
 
 /**
@@ -13,7 +17,17 @@ export class HomePage extends React.Component<HomePage.Props> {
     render() {
         return (
             <div>
-                <Link to="/map">Go to map</Link>
+                <ul className="list-group">
+                    {this.props.posts.length ? (
+                        this.props.posts.map((post, index) => {
+                            return <PostRow post={post} key={index} />;
+                        })
+                    ) : (
+                        <li className="list-group-item">
+                            No posts by users you follow. Create a post now!
+                        </li>
+                    )}
+                </ul>
             </div>
         );
     }

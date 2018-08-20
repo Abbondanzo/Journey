@@ -1,6 +1,7 @@
-import { authMiddleware } from '@app/middleware';
+import { authMiddleware, loader } from '@app/middleware';
+import { postMiddleware } from '@app/middleware/post';
 import { AppState, rootReducer } from '@app/reducers';
-import FirebaseApp from '@app/utils/firebase';
+// import FirebaseApp from '@app/utils/firebase';
 import { createBrowserHistory, History } from 'history';
 import { routerMiddleware } from 'react-router-redux';
 import { applyMiddleware, createStore, Store } from 'redux';
@@ -11,7 +12,13 @@ function configureStore(history: History, initialState?: AppState): Store<AppSta
     const logger = createLogger({
         collapsed: true
     });
-    let middleware = applyMiddleware(authMiddleware, routerMiddleware(history), logger);
+    let middleware = applyMiddleware(
+        loader,
+        authMiddleware,
+        postMiddleware,
+        routerMiddleware(history),
+        logger
+    );
 
     if (process.env.NODE_ENV !== 'production') {
         middleware = composeWithDevTools(middleware);
@@ -28,8 +35,8 @@ function configureStore(history: History, initialState?: AppState): Store<AppSta
         });
     }
 
-    const firebaseApp = FirebaseApp.Instance;
-    firebaseApp.firebaseDataManager.subscribeToStore(store);
+    // const firebaseApp = FirebaseApp.Instance;
+    // firebaseApp.firebaseDataManager.subscribeToStore(store);
 
     return store;
 }

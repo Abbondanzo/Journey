@@ -1,5 +1,6 @@
-import { UserActions } from '@app/actions';
-import { LoggedInUser } from '@app/models/User';
+import { PostActions, UserActions } from '@app/actions';
+import ProfileImage from '@app/containers/util/ProfileImage';
+import { User } from '@app/models/User';
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
@@ -7,8 +8,8 @@ import './style.scss';
 
 export namespace Navbar {
     export interface Props extends Partial<RouteComponentProps<void>> {
-        loggedInUser?: LoggedInUser;
-        actions: UserActions;
+        loggedInUser?: User;
+        actions: UserActions & PostActions;
     }
 
     export interface State {}
@@ -69,6 +70,18 @@ export class Navbar extends React.Component<Navbar.Props, Navbar.State> {
                         </ul>
                         <ul className="navbar-nav ml-auto">
                             {this.props.loggedInUser ? (
+                                <li className="nav-item valign">
+                                    <button
+                                        className="btn btn-light btn-sm btn-add-post"
+                                        onClick={this.props.actions.showPostModal}
+                                    >
+                                        Add Post
+                                    </button>
+                                </li>
+                            ) : (
+                                undefined
+                            )}
+                            {this.props.loggedInUser ? (
                                 <li
                                     className={
                                         this.props.location &&
@@ -77,7 +90,11 @@ export class Navbar extends React.Component<Navbar.Props, Navbar.State> {
                                             : 'nav-item'
                                     }
                                 >
-                                    <Link to="/profile" className="nav-link">
+                                    <Link to="/profile" className="nav-link nav-profile-container ">
+                                        <ProfileImage
+                                            userId={this.props.loggedInUser.uid}
+                                            className="nav-image"
+                                        />
                                         Profile
                                     </Link>
                                 </li>
@@ -85,10 +102,7 @@ export class Navbar extends React.Component<Navbar.Props, Navbar.State> {
                                 undefined
                             )}
                         </ul>
-                        <button
-                            className="btn btn-light btn-sm btn-login"
-                            onClick={this.loginLogout}
-                        >
+                        <button className="btn btn-outline-light btn-sm" onClick={this.loginLogout}>
                             {this.props.loggedInUser ? 'Logout' : 'Login'}
                         </button>
                     </div>

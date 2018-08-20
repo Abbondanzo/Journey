@@ -6,7 +6,7 @@
 }
 
 .root {
-    padding-top: $navbarHeight;
-    height: 100%;
+    margin-top: $navbarHeight;
     overflow-x: hidden;
+    overflow-y: auto;
 }

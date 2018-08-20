@@ -1,27 +1,30 @@
-import { UserActions } from '@app/actions';
+import { PostActions, UserActions } from '@app/actions';
 import { UtilActions } from '@app/actions/util';
 import { Alert } from '@app/components/util/Alert';
 import { Navbar } from '@app/components/util/Navbar';
 import Login from '@app/containers/auth/Login';
+import Profile from '@app/containers/auth/Profile';
+import Register from '@app/containers/auth/Register';
 import Dashboard from '@app/containers/dashboard/Dashboard';
 import Home from '@app/containers/Home';
-import { LoggedInUser } from '@app/models';
+import NewPostModal from '@app/containers/post/NewPostModal';
+import { User } from '@app/models';
 import * as React from 'react';
 import { Route, RouteComponentProps, Switch } from 'react-router';
 import './style.scss';
 
 export namespace AppPage {
     export interface Props extends RouteComponentProps<void> {
-        loggedInUser?: LoggedInUser;
+        loggedInUser?: User;
         successMessage?: string;
         errorMessage?: string;
-        actions: UserActions & UtilActions;
+        actions: PostActions & UserActions & UtilActions;
     }
 }
 
 export class AppPage extends React.Component<AppPage.Props> {
     componentDidMount() {
-        this.props.actions.loadUser();
+        this.props.actions.loadApp();
     }
     render() {
         return (
@@ -42,8 +45,12 @@ export class AppPage extends React.Component<AppPage.Props> {
                     location={this.props.location}
                     history={this.props.history}
                 />
+                <NewPostModal />
                 <div className="container full-height">
                     <Switch>
+                        <Route path="/profile/:userId" component={Profile} />
+                        <Route path="/profile" component={Profile} />
+                        <Route path="/register" component={Register} />
                         <Route path="/login" component={Login} />
                         <Route path="/map" component={Dashboard} />
                         {/* Home is default unless we specify exact=true */}

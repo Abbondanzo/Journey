@@ -1,14 +1,22 @@
 import { NextFunction, Request, Response } from 'express';
 import * as admin from 'firebase-admin';
+import { UserRole } from '../models/User';
+import UserCollection from '../schema/UserCollection';
 let serviceAccountKey = require('../config/serviceAccountKey.json');
 
 const adminApp = admin.initializeApp({
     credential: admin.credential.cert(serviceAccountKey),
-    databaseURL: 'https://journey-a2a8f.firebaseio.com'
+    databaseURL: 'https://journey-a2a8f.firebaseio.com',
+    storageBucket: 'journey-a2a8f.appspot.com'
 });
+const firestoreSettings: FirebaseFirestore.Settings = {
+    timestampsInSnapshots: true
+};
 
-export const firestoreInstance = adminApp.firestore();
+export const firestoreInstance: FirebaseFirestore.Firestore = adminApp.firestore();
+firestoreInstance.settings(firestoreSettings);
 export const authInstance = adminApp.auth();
+export const storageInstance = adminApp.storage();
 
 /**
  * Special thanks to Firebase for providing this function sample:
@@ -81,3 +89,21 @@ export const handleCatchError = (errMessage: string, res: Response, errCode = 40
         handleError(errMessage, res, err, errCode);
     };
 };
+
+export class PermissionsManager {
+    static async canEditAllPosts(req: Request) {
+        return this.getUser(req).then((user) => {
+            const role = user.profileDetails.role;
+            return role === UserRole.MODERATOR || role === UserRole.ADMINISTRATOR;
+        });
+    }
+
+    static getToken(req: Request) {
+        return (req as any).user as admin.auth.DecodedIdToken;
+    }
+
+    private static getUser(req: Request) {
+        const token = this.getToken(req);
+        return UserCollection.findUserById(token.uid);
+    }
+}

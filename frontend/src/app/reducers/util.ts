@@ -20,7 +20,7 @@ if (apiKey && process.env.NODE_ENV === 'production') {
 const initialState: UtilState = {
     googleMapURL: mapUrl,
     isMapsComponentShowing: false,
-    mapBounds: {} as google.maps.LatLngBounds
+    mapBounds: {} as google.maps.LatLngBounds // TODO:
 };
 
 export const utilReducer = handleActions<UtilState, any>(

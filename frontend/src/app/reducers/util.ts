@@ -9,6 +9,7 @@ export interface UtilState {
     isMapsComponentShowing: boolean;
     successMessage?: string;
     errorMessage?: string;
+    isLoading: boolean;
 }
 
 const apiKey = process.env.GOOGLE_MAPS_API;
@@ -20,7 +21,8 @@ if (apiKey && process.env.NODE_ENV === 'production') {
 const initialState: UtilState = {
     googleMapURL: mapUrl,
     isMapsComponentShowing: false,
-    mapBounds: {} as google.maps.LatLngBounds // TODO:
+    mapBounds: {} as google.maps.LatLngBounds, // TODO:
+    isLoading: false
 };
 
 export const utilReducer = handleActions<UtilState, any>(
@@ -56,7 +58,6 @@ export const utilReducer = handleActions<UtilState, any>(
                 errorMessage: action.payload
             };
         },
-
         [UtilActions.Type.HIDE_SUCCESS]: (state: UtilState, _: Action<any>): UtilState => {
             return {
                 ...state,
@@ -67,6 +68,18 @@ export const utilReducer = handleActions<UtilState, any>(
             return {
                 ...state,
                 errorMessage: undefined
+            };
+        },
+        [UtilActions.Type.SHOW_LOADING]: (state: UtilState, _: Action<any>): UtilState => {
+            return {
+                ...state,
+                isLoading: true
+            };
+        },
+        [UtilActions.Type.HIDE_LOADING]: (state: UtilState, _: Action<any>): UtilState => {
+            return {
+                ...state,
+                isLoading: false
             };
         }
     },

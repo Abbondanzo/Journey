@@ -1,4 +1,4 @@
-import { User } from '@app/models';
+import { User, UserRole } from '@app/models';
 import { createAction } from 'redux-actions';
 
 export namespace UserActions {
@@ -8,6 +8,8 @@ export namespace UserActions {
         SAVE_USER = 'SAVE_USER',
         SAVE_ALL_USERS = 'SAVE_ALL_USERS',
         SAVE_PROFILE_IMAGE = 'SAVE_PROFILE_IMAGE',
+        CREATE_USER = 'CREATE_USER',
+        DELETE_USER = 'DELETE_USER',
         UPDATE_USER = 'UPDATE_USER',
         UPLOAD_PROFILE_IMAGE = 'UPLOAD_PROFILE_IMAGE',
         LOAD_AUTH_USER = 'LOAD_AUTH_USER',
@@ -32,7 +34,7 @@ export namespace UserActions {
     /**
      * Loads profile details of every user stored in the database.
      */
-    export const loadAllUsers = createAction(Type.LOAD_ALL_USERS);
+    export const loadAllUsers = createAction<() => void | undefined>(Type.LOAD_ALL_USERS);
     /**
      * Saves the user's profile details.
      */
@@ -57,7 +59,7 @@ export namespace UserActions {
     /**
      * Attempts to load a user that has been authorized by the authorization service.
      */
-    export const getLoggedInUser = createAction(Type.LOAD_AUTH_USER);
+    export const getLoggedInUser = createAction<() => void | undefined>(Type.LOAD_AUTH_USER);
     /**
      * Uses the given user ID and sets the logged in user.
      */
@@ -80,6 +82,19 @@ export namespace UserActions {
      * Updates the user with a new profile image that gets sent to the storage bucket.
      */
     export const uploadProfileImage = createAction<File>(Type.UPLOAD_PROFILE_IMAGE);
+    /**
+     * Creates a new user with set credentials. Meant for administrators.
+     */
+    export const createUser = createAction<{
+        displayName: string;
+        email: string;
+        password: string;
+        role: UserRole;
+    }>(Type.CREATE_USER);
+    /**
+     * Removes a user by its given ID from both authorization and firestore.
+     */
+    export const deleteUser = createAction<User['uid']>(Type.DELETE_USER);
     /**
      * Tells the firestore to update the given user.
      */

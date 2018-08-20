@@ -66,6 +66,19 @@ export const userReducer = handleActions<UserState, any>(
                 ...state,
                 users: userMap
             };
+        },
+        [UserActions.Type.DELETE_USER]: (
+            state: UserState,
+            action: Action<User['uid']>
+        ): UserState => {
+            const userMap = state.users;
+            if (action.payload) {
+                userMap.delete(action.payload);
+            }
+            return {
+                ...state,
+                users: userMap
+            };
         }
     },
     initialState

@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import User from '../models/User';
+import User, { UserRole } from '../models/User';
 import UserCollection from '../schema/UserCollection';
 import { authInstance, handleCatchError, handleError, PermissionsManager } from './helper';
 
@@ -15,7 +15,6 @@ export default class UserController {
             .createUser(user)
             .then((authUser) => {
                 const authorizedUser = new User(Object.assign({}, user, authUser));
-                console.log(authorizedUser);
                 if (!authorizedUser.uid) {
                     throw Error('Missing user ID!');
                 }
@@ -23,6 +22,46 @@ export default class UserController {
             })
             .then((user) => {
                 res.send(user);
+            })
+            .catch(handleCatchError('Could not create user', res));
+    }
+
+    static async createUser(req: functions.Request, res: functions.Response) {
+        if (!req.body.email) {
+            handleError('Invalid request body', res, Error('Missing user email'));
+            return;
+        }
+        if (!req.body.password) {
+            handleError('Invalid request body', res, Error('Missing user password'));
+            return;
+        }
+        const request: { displayName: string; email: string; password: string; role: UserRole } =
+            req.body;
+        const user: admin.auth.CreateRequest = {
+            displayName: request.displayName,
+            email: request.email,
+            password: request.password
+        };
+        authInstance
+            .createUser(user)
+            .then((authUser) => {
+                const authorizedUser = new User(
+                    Object.assign({}, authUser, {
+                        password: request.password,
+                        profileDetails: {
+                            following: [],
+                            role: request.role
+                        }
+                    })
+                );
+                if (!authorizedUser.uid) {
+                    throw Error('Missing user ID!');
+                }
+                UserCollection.createUser(authorizedUser)
+                    .then((newUser) => {
+                        res.send(Object.assign(authorizedUser, newUser));
+                    })
+                    .catch(handleCatchError('Could not create user', res));
             })
             .catch(handleCatchError('Could not create user', res));
     }
@@ -73,5 +112,28 @@ export default class UserController {
                 res.send(users);
             })
             .catch(handleCatchError('Could not find list of users', res));
+    }
+
+    static async deleteUserById(req: functions.Request, res: functions.Response) {
+        const userId = req.params.userId;
+        const token: admin.auth.DecodedIdToken = (req as any).user;
+        PermissionsManager.canEditAllUsers(req)
+            .then((canEdit) => {
+                if (userId === token.uid || canEdit) {
+                    return Promise.all([
+                        authInstance.deleteUser(userId),
+                        UserCollection.deleteUserById(userId)
+                    ]);
+                } else {
+                    res.status(401);
+                    throw Error('Unauthorized');
+                }
+            })
+            .then(() => {
+                res.send({
+                    message: 'Deleted user successfully'
+                });
+            })
+            .catch(handleCatchError('Could not delete user', res));
     }
 }

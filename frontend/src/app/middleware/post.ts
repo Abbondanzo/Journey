@@ -34,9 +34,17 @@ export const postMiddleware: Middleware = (store) => (next) => (action: AnyActio
                 .getAllPosts()
                 .then((posts) => {
                     next(PostActions.saveAllPosts(posts));
+                    // Resolve
+                    if (action.payload) {
+                        action.payload();
+                    }
                 })
                 .catch((err) => {
                     next(UtilActions.showError(`Unable to load posts: ${err.message || err}`));
+                    // Resolve
+                    if (action.payload) {
+                        action.payload();
+                    }
                 });
             break;
         default:

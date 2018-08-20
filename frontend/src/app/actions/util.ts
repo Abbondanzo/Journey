@@ -10,7 +10,9 @@ export namespace UtilActions {
         SHOW_SUCCESS = 'SHOW_SUCCESS',
         HIDE_SUCCESS = 'HIDE_SUCCESS',
         SHOW_ERROR = 'SHOW_ERROR',
-        HIDE_ERROR = 'HIDE_ERROR'
+        HIDE_ERROR = 'HIDE_ERROR',
+        SHOW_LOADING = 'SHOW_LOADING',
+        HIDE_LOADING = 'HIDE_LOADING'
     }
 
     export const loadApp = createAction(Type.LOAD_APP);
@@ -22,6 +24,8 @@ export namespace UtilActions {
     export const hideSuccess = createAction(Type.HIDE_SUCCESS);
     export const showError = createAction<string>(Type.SHOW_ERROR);
     export const hideError = createAction(Type.HIDE_ERROR);
+    export const showLoading = createAction(Type.SHOW_LOADING);
+    export const hideLoading = createAction(Type.HIDE_LOADING);
 }
 
 export type UtilActions = Omit<typeof UtilActions, 'Type'>;

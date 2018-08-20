@@ -51,6 +51,18 @@ export default class UserCollection {
                 return user;
             });
     }
+
+    static deleteUserById(userId: string) {
+        return firestoreInstance
+            .collection(this.USER_COLLECTION)
+            .where('userId', '==', userId)
+            .get()
+            .then((snapshot) => {
+                snapshot.forEach((doc) => {
+                    doc.ref.delete();
+                });
+            });
+    }
 }
 
 export interface UserDocument extends firebase.firestore.DocumentData {

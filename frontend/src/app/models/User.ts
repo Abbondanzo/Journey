@@ -51,3 +51,16 @@ export enum UserRole {
     MODERATOR = 'mod',
     ADMINISTRATOR = 'admin'
 }
+
+export namespace UserRole {
+    export function convertStringToEnum(string: string) {
+        switch (string) {
+            case 'mod':
+                return UserRole.MODERATOR;
+            case 'admin':
+                return UserRole.ADMINISTRATOR;
+            default:
+                return UserRole.USER;
+        }
+    }
+}

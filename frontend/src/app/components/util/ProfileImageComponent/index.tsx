@@ -19,16 +19,15 @@ export class ProfileImageComponent extends React.Component<ProfileImageComponent
             this.props.profileImages.get(this.props.userId) ||
             this.props.profileImages.get('default');
         return (
-            <div className="profile-img-container">
+            <div
+                className={
+                    'profile-img-container' +
+                    (profileImageUrl ? ' profile-img-loaded' : '') +
+                    (this.props.className ? ' ' + this.props.className : '')
+                }
+            >
                 {profileImageUrl ? (
-                    <img
-                        className={
-                            'profile-img' +
-                            (profileImageUrl ? ' profile-img-loaded ' : '') +
-                            (this.props.className ? ' ' + this.props.className : '')
-                        }
-                        src={profileImageUrl}
-                    />
+                    <img className="profile-img" src={profileImageUrl} />
                 ) : (
                     undefined
                 )}

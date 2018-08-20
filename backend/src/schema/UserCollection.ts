@@ -37,6 +37,20 @@ export default class UserCollection {
                 return convertDocumentToModel(snapshot.docs[0]);
             });
     }
+    static updateUserById(id: string, user: User) {
+        return firestoreInstance
+            .collection(this.USER_COLLECTION)
+            .where('userId', '==', id)
+            .limit(1)
+            .get()
+            .then((snapshot) => {
+                const doc = snapshot.docs[0];
+                return doc.ref.set(convertModelToDocument(user));
+            })
+            .then(() => {
+                return user;
+            });
+    }
 }
 
 export interface UserDocument extends firebase.firestore.DocumentData {

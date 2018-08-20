@@ -17,7 +17,6 @@ const mapStateToProps = (
     const posts = state.posts.posts.filter((post) => {
         return userProfile && post.owner === userProfile.uid;
     });
-    console.log(userProfile);
     return {
         loggedInUser,
         userProfile,

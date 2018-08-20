@@ -38,6 +38,7 @@ export class ProfilePage extends React.Component<ProfilePage.Props> {
                                 loggedInUser={this.props.loggedInUser}
                                 userProfile={this.props.userProfile}
                                 userImage={this.props.userImage}
+                                actions={this.props.actions}
                             />
                         </div>
                         <div className="col-md-8">

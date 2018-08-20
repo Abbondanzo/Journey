@@ -8,6 +8,8 @@ export namespace UserActions {
         SAVE_USER = 'SAVE_USER',
         SAVE_ALL_USERS = 'SAVE_ALL_USERS',
         SAVE_PROFILE_IMAGE = 'SAVE_PROFILE_IMAGE',
+        UPDATE_USER = 'UPDATE_USER',
+        UPLOAD_PROFILE_IMAGE = 'UPLOAD_PROFILE_IMAGE',
         LOAD_AUTH_USER = 'LOAD_AUTH_USER',
         SAVE_AUTH_USER = 'SAVE_AUTH_USER',
         SIGN_IN = 'SIGN_IN',
@@ -43,6 +45,14 @@ export namespace UserActions {
     export const saveProfileImage = createAction<{ userId: string; url: string }>(
         Type.SAVE_PROFILE_IMAGE
     );
+    /**
+     * Updates the user with a new profile image that gets sent to the storage bucket.
+     */
+    export const uploadProfileImage = createAction<File>(Type.UPLOAD_PROFILE_IMAGE);
+    /**
+     * Tells the firestore to update the given user.
+     */
+    export const updateUser = createAction<User>(Type.UPDATE_USER);
 
     /**
      * ================================

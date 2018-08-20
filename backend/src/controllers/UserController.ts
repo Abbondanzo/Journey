@@ -39,10 +39,15 @@ export default class UserController {
     static async saveUserById(req: functions.Request, res: functions.Response) {
         const userId = req.params.userId;
         const token: admin.auth.DecodedIdToken = (req as any).user;
+        const user: User = new User(req.body);
         if (userId !== token.uid) {
             res.status(401).send('Unauthorized');
         } else {
-            // Do update
+            UserCollection.updateUserById(userId, user)
+                .then((user) => {
+                    res.send(user);
+                })
+                .catch(handleCatchError('Could not save user', res));
         }
     }
 

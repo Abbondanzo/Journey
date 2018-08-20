@@ -2,6 +2,7 @@ import { UserActions } from '@app/actions';
 import { UtilActions } from '@app/actions/util';
 import { User } from '@app/models';
 import { AppState } from '@app/reducers';
+import { getUserById } from '@app/reducers/user';
 import FirebaseApp from '@app/utils/firebase';
 import axios, { AxiosResponse } from 'axios';
 import { AnyAction, Dispatch, Middleware } from 'redux';
@@ -24,7 +25,7 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                             .getProfileDetails(newUser)
                             .then((detailedUser) => {
                                 next(UserActions.saveUser(Object.assign(newUser, detailedUser)));
-                                return new FirebaseService().getProfileImage(
+                                return firebaseService.getProfileImage(
                                     detailedUser.profileDetails.profileImage
                                 );
                             })
@@ -50,6 +51,50 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
             };
             FirebaseApp.Instance.addActionToQueue(doOnAppLoad);
             break;
+        case UserActions.Type.UPLOAD_PROFILE_IMAGE:
+            const userId = state.users.loggedInUser;
+            if (userId) {
+                firebaseService
+                    .saveProfileImage(userId, action.payload)
+                    .then((snapshot: firebase.storage.UploadTaskSnapshot) => {
+                        const user = getUserById(userId, state.users);
+                        if (user) {
+                            user.profileDetails.profileImage = snapshot.metadata.fullPath;
+                            return userService.saveUser(user);
+                        } else {
+                            throw new Error('Unable to find user to update');
+                        }
+                    })
+                    .then((newUser) => {
+                        const existingUser = getUserById(newUser.uid, state.users);
+                        next(
+                            UserActions.saveUser(
+                                Object.assign(existingUser, {
+                                    profileDetails: newUser.profileDetails
+                                })
+                            )
+                        );
+                        return firebaseService.getProfileImage(newUser.profileDetails.profileImage);
+                    })
+                    .then((profileImageUrl) => {
+                        next(
+                            UserActions.saveProfileImage({
+                                userId: userId,
+                                url: profileImageUrl
+                            })
+                        );
+                    })
+                    .catch((err) => {
+                        next(
+                            UtilActions.showError(
+                                `Unable to save profile picture: ${err.message || err}`
+                            )
+                        );
+                    });
+            } else {
+                next(UtilActions.showError(`Must be logged in to change profile image`));
+            }
+            break;
         case UserActions.Type.LOAD_ALL_USERS:
             userService
                 .getAllProfiles()
@@ -58,6 +103,20 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                 })
                 .catch((err) => {
                     next(UtilActions.showError(`Unable to get load users: ${err.message || err}`));
+                });
+            break;
+        case UserActions.Type.UPDATE_USER:
+            const user: User = action.payload;
+            firebaseService
+                .saveProfile(user)
+                .then((user) => {
+                    return userService.saveUser(user);
+                })
+                .then((newUser) => {
+                    next(UserActions.saveUser(newUser));
+                })
+                .catch((err) => {
+                    next(UtilActions.showError(`Unable to save user: ${err.message || err}`));
                 });
             break;
         case UserActions.Type.SIGN_IN:
@@ -189,6 +248,23 @@ class UserService {
         });
     }
 
+    saveUser(user: User) {
+        return new Promise((resolve: (user: User) => void, reject: any) => {
+            FirebaseApp.Instance.getBearerToken()
+                .then((bearerToken) => {
+                    return axios({
+                        method: 'put',
+                        url: `/api/user/${user.uid}`,
+                        data: user,
+                        ...this.baseConfig,
+                        headers: { Authorization: bearerToken, 'Content-Type': 'application/json' }
+                    });
+                })
+                .then(this.resolveUser(resolve, user))
+                .catch(this.rejectForbiddenError(reject));
+        });
+    }
+
     private rejectForbiddenError(reject: any) {
         return (err: any) => {
             if (err.response) {
@@ -256,6 +332,29 @@ class FirebaseService {
         });
     }
 
+    saveProfile(user: User) {
+        return new Promise((resolve: (user: User) => void, reject: any) => {
+            if (this.app) {
+                const auth = this.app.auth();
+                const currentUser = auth.currentUser;
+                if (currentUser) {
+                    currentUser
+                        .updateProfile({
+                            displayName: user.displayName,
+                            photoURL: user.photoURL
+                        })
+                        .then(() => {
+                            resolve(user);
+                        });
+                } else {
+                    reject(new Error('Not logged in'));
+                }
+            } else {
+                reject(new Error('Authentication network is down'));
+            }
+        });
+    }
+
     getProfileImage(profileImage: string | undefined) {
         return new Promise((resolve: (profileImageUrl: string) => void, reject: any) => {
             if (this.app) {
@@ -270,5 +369,21 @@ class FirebaseService {
                 reject(new Error('Storage network is down or connection not created'));
             }
         });
+    }
+
+    saveProfileImage(userId: string, file: File) {
+        return new Promise(
+            (resolve: (snapshot: firebase.storage.UploadTaskSnapshot) => void, reject: any) => {
+                if (this.app) {
+                    this.app
+                        .storage()
+                        .ref(`${userId}/${file.name}`)
+                        .put(file)
+                        .then(resolve);
+                } else {
+                    reject(new Error('Storage network is down or connection not created'));
+                }
+            }
+        );
     }
 }

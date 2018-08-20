@@ -1,6 +1,9 @@
-.profile-img {
-    height: 100px;
-    width: auto;
+.profile-img-container {
+    overflow: hidden;
+    .profile-img {
+        height: 100%;
+        width: auto;
+    }
     &.profile-img-loaded {
         border: 4px white solid;
         border-radius: 100px;

@@ -42,8 +42,20 @@ export class ProfilePane extends React.Component<ProfilePane.Props, ProfilePane.
                     this.props.userProfile.uid
                 ) !== -1
             ) {
+                buttonFunction.action = () => {
+                    this.props.actions.unfollowUser({
+                        follower: this.props.loggedInUser.uid,
+                        following: this.props.userProfile.uid
+                    });
+                };
                 buttonFunction.text = 'Unfollow';
             } else {
+                buttonFunction.action = () => {
+                    this.props.actions.followUser({
+                        follower: this.props.loggedInUser.uid,
+                        following: this.props.userProfile.uid
+                    });
+                };
                 buttonFunction.text = 'Follow';
             }
         } else {

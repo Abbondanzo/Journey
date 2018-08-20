@@ -100,6 +100,18 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                 .getAllProfiles()
                 .then((users) => {
                     next(UserActions.saveAllUsers(users));
+                    for (const user of users) {
+                        firebaseService
+                            .getProfileImage(user.profileDetails.profileImage)
+                            .then((profileImageUrl) => {
+                                next(
+                                    UserActions.saveProfileImage({
+                                        userId: user.uid,
+                                        url: profileImageUrl
+                                    })
+                                );
+                            });
+                    }
                 })
                 .catch((err) => {
                     next(UtilActions.showError(`Unable to get load users: ${err.message || err}`));
@@ -183,6 +195,34 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                 .catch((err) => {
                     next(UtilActions.showError(`Error logging out: ${err.message || err}`));
                 });
+        case UserActions.Type.FOLLOW_USER:
+        case UserActions.Type.UNFOLLOW_USER:
+            const followPayload: { follower: User['uid']; following: User['uid'] } = action.payload;
+            const follower = getUserById(followPayload.follower, state.users);
+            if (follower) {
+                // First, remove all records of the user we wish to follow/unfollow
+                const following = [...follower.profileDetails.following].filter((userId) => {
+                    return userId !== followPayload.following;
+                });
+                // Add that record back if we want to follow that user
+                if (action.type === UserActions.Type.FOLLOW_USER) {
+                    following.push(followPayload.following);
+                }
+                follower.profileDetails.following = following;
+                userService
+                    .saveUser(follower)
+                    .then((newUser) => {
+                        next(UserActions.saveUser(newUser));
+                    })
+                    .catch((err) => {
+                        next(
+                            UtilActions.showError(`Error changing followers: ${err.message || err}`)
+                        );
+                    });
+            } else {
+                next(UtilActions.showError(`Unable to find logged in user`));
+            }
+
         default:
             next(action);
     }

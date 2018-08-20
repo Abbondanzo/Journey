@@ -14,7 +14,9 @@ export namespace UserActions {
         SAVE_AUTH_USER = 'SAVE_AUTH_USER',
         SIGN_IN = 'SIGN_IN',
         REGISTER_USER = 'REGISTER_USER',
-        LOG_OUT = 'LOG_OUT'
+        LOG_OUT = 'LOG_OUT',
+        FOLLOW_USER = 'FOLLOW_USER',
+        UNFOLLOW_USER = 'UNFOLLOW_USER'
     }
     /**
      * ================================
@@ -45,14 +47,6 @@ export namespace UserActions {
     export const saveProfileImage = createAction<{ userId: string; url: string }>(
         Type.SAVE_PROFILE_IMAGE
     );
-    /**
-     * Updates the user with a new profile image that gets sent to the storage bucket.
-     */
-    export const uploadProfileImage = createAction<File>(Type.UPLOAD_PROFILE_IMAGE);
-    /**
-     * Tells the firestore to update the given user.
-     */
-    export const updateUser = createAction<User>(Type.UPDATE_USER);
 
     /**
      * ================================
@@ -82,6 +76,26 @@ export namespace UserActions {
      * Logs the current user out from the auth service.
      */
     export const logOut = createAction(Type.LOG_OUT);
+    /**
+     * Updates the user with a new profile image that gets sent to the storage bucket.
+     */
+    export const uploadProfileImage = createAction<File>(Type.UPLOAD_PROFILE_IMAGE);
+    /**
+     * Tells the firestore to update the given user.
+     */
+    export const updateUser = createAction<User>(Type.UPDATE_USER);
+    /**
+     * The follower user follows the following user.
+     */
+    export const followUser = createAction<{ follower: User['uid']; following: User['uid'] }>(
+        Type.FOLLOW_USER
+    );
+    /**
+     * The follower user unfollows the following user.
+     */
+    export const unfollowUser = createAction<{ follower: User['uid']; following: User['uid'] }>(
+        Type.UNFOLLOW_USER
+    );
 }
 
 export type UserActions = Omit<typeof UserActions, 'Type'>;

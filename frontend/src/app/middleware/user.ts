@@ -1,6 +1,6 @@
 import { UserActions } from '@app/actions';
 import { UtilActions } from '@app/actions/util';
-import { User } from '@app/models';
+import { User, UserRole } from '@app/models';
 import { AppState } from '@app/reducers';
 import { getUserById } from '@app/reducers/user';
 import FirebaseApp from '@app/utils/firebase';
@@ -36,6 +36,10 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                                         url: profileImageUrl
                                     })
                                 );
+                                // Resolve
+                                if (action.payload) {
+                                    action.payload();
+                                }
                             })
                             .catch((err) => {
                                 next(
@@ -43,9 +47,17 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                                         `Unable to get profile details: ${err.message || err}`
                                     )
                                 );
+                                // Resolve
+                                if (action.payload) {
+                                    action.payload();
+                                }
                             });
                     } else {
                         next(UserActions.setLoggedInUser(undefined));
+                        // Resolve
+                        if (action.payload) {
+                            action.payload();
+                        }
                     }
                 });
             };
@@ -100,18 +112,68 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                 .getAllProfiles()
                 .then((users) => {
                     next(UserActions.saveAllUsers(users));
+                    // Resolve
+                    if (action.payload) {
+                        action.payload();
+                    }
+                    for (const user of users) {
+                        firebaseService
+                            .getProfileImage(user.profileDetails.profileImage)
+                            .then((profileImageUrl) => {
+                                next(
+                                    UserActions.saveProfileImage({
+                                        userId: user.uid,
+                                        url: profileImageUrl
+                                    })
+                                );
+                            });
+                    }
                 })
                 .catch((err) => {
+                    // Resolve
+                    if (action.payload) {
+                        action.payload();
+                    }
                     next(UtilActions.showError(`Unable to get load users: ${err.message || err}`));
+                });
+            break;
+        case UserActions.Type.CREATE_USER:
+            const createUser: {
+                displayName: string;
+                email: string;
+                password: string;
+                role: UserRole;
+            } =
+                action.payload;
+            userService
+                .createUser(
+                    createUser.email,
+                    createUser.password,
+                    createUser.displayName,
+                    createUser.role
+                )
+                .then((newUser) => {
+                    next(UserActions.saveUser(newUser));
+                })
+                .catch((err) => {
+                    next(UtilActions.showError(`Unable to create user: ${err.message || err}`));
+                });
+            break;
+        case UserActions.Type.DELETE_USER:
+            const deleteUserId: string = action.payload;
+            userService
+                .deleteUser(deleteUserId)
+                .then(() => {
+                    next(UserActions.deleteUser(deleteUserId));
+                })
+                .catch((err) => {
+                    next(UtilActions.showError(`Unable to delete user: ${err.message || err}`));
                 });
             break;
         case UserActions.Type.UPDATE_USER:
             const user: User = action.payload;
-            firebaseService
-                .saveProfile(user)
-                .then((user) => {
-                    return userService.saveUser(user);
-                })
+            userService
+                .saveUser(user)
                 .then((newUser) => {
                     next(UserActions.saveUser(newUser));
                 })
@@ -186,6 +248,34 @@ export const authMiddleware: Middleware = (store) => (next: Dispatch<AnyAction>)
                 .catch((err) => {
                     next(UtilActions.showError(`Error logging out: ${err.message || err}`));
                 });
+        case UserActions.Type.FOLLOW_USER:
+        case UserActions.Type.UNFOLLOW_USER:
+            const followPayload: { follower: User['uid']; following: User['uid'] } = action.payload;
+            const follower = getUserById(followPayload.follower, state.users);
+            if (follower) {
+                // First, remove all records of the user we wish to follow/unfollow
+                const following = [...follower.profileDetails.following].filter((userId) => {
+                    return userId !== followPayload.following;
+                });
+                // Add that record back if we want to follow that user
+                if (action.type === UserActions.Type.FOLLOW_USER) {
+                    following.push(followPayload.following);
+                }
+                follower.profileDetails.following = following;
+                userService
+                    .saveUser(follower)
+                    .then((newUser) => {
+                        next(UserActions.saveUser(newUser));
+                    })
+                    .catch((err) => {
+                        next(
+                            UtilActions.showError(`Error changing followers: ${err.message || err}`)
+                        );
+                    });
+            } else {
+                next(UtilActions.showError(`Unable to find logged in user`));
+            }
+
         default:
             next(action);
     }
@@ -244,6 +334,40 @@ class UserService {
                 ...this.baseConfig
             })
                 .then(this.resolveUser(resolve))
+                .catch(this.rejectForbiddenError(reject));
+        });
+    }
+
+    createUser(email: string, password: string, displayName: string, role: UserRole) {
+        return new Promise((resolve: (user: User) => void, reject: any) => {
+            axios({
+                method: 'post',
+                url: `/api/user`,
+                data: {
+                    email,
+                    password,
+                    displayName,
+                    role
+                },
+                ...this.baseConfig
+            })
+                .then(this.resolveUser(resolve))
+                .catch(this.rejectForbiddenError(reject));
+        });
+    }
+
+    deleteUser(userId: string) {
+        return new Promise((resolve: () => void, reject: any) => {
+            FirebaseApp.Instance.getBearerToken()
+                .then((bearerToken) => {
+                    return axios({
+                        method: 'delete',
+                        url: `/api/user/${userId}`,
+                        ...this.baseConfig,
+                        headers: { Authorization: bearerToken, 'Content-Type': 'application/json' }
+                    });
+                })
+                .then(resolve)
                 .catch(this.rejectForbiddenError(reject));
         });
     }
@@ -326,6 +450,26 @@ class FirebaseService {
                     .auth()
                     .signOut()
                     .then(resolve);
+            } else {
+                reject(new Error('Authentication network is down'));
+            }
+        });
+    }
+
+    createUser(email: string, password: string) {
+        return new Promise((resolve: (user: User) => void, reject: any) => {
+            if (this.app) {
+                this.app
+                    .auth()
+                    .createUserWithEmailAndPassword(email, password)
+                    .then((userCredentials) => {
+                        const user = userCredentials.user;
+                        if (user) {
+                            resolve(convertFirebaseToUser(user));
+                        } else {
+                            reject(new Error('Unable to create user'));
+                        }
+                    });
             } else {
                 reject(new Error('Authentication network is down'));
             }

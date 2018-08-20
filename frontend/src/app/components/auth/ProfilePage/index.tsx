@@ -10,6 +10,7 @@ export namespace ProfilePage {
     export interface Props extends RouteComponentProps<any> {
         loggedInUser?: User;
         userProfile?: User;
+        isLoading: boolean;
         userImage: string;
         posts: Post[];
         actions: UserActions & PostActions;
@@ -23,7 +24,7 @@ export class ProfilePage extends React.Component<ProfilePage.Props> {
 
     componentWillReceiveProps(props: ProfilePage.Props) {
         // Automatically redirect to login if we're not logged in
-        if (!props.loggedInUser) {
+        if (!props.loggedInUser && !props.isLoading) {
             this.props.history.replace('/login');
         }
     }

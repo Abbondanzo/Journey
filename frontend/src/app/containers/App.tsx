@@ -12,7 +12,8 @@ const mapStateToProps = (state: AppState): Partial<AppPage.Props> => {
     return {
         loggedInUser: getUserById(state.users.loggedInUser, state.users),
         successMessage: state.utils.successMessage,
-        errorMessage: state.utils.errorMessage
+        errorMessage: state.utils.errorMessage,
+        loading: state.utils.isLoading
     };
 };
 

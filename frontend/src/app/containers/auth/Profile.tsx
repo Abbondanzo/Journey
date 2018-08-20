@@ -20,6 +20,7 @@ const mapStateToProps = (
     return {
         loggedInUser,
         userProfile,
+        isLoading: state.utils.isLoading,
         posts
     };
 };

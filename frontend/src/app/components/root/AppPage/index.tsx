@@ -1,7 +1,9 @@
 import { PostActions, UserActions } from '@app/actions';
 import { UtilActions } from '@app/actions/util';
 import { Alert } from '@app/components/util/Alert';
+import { LoadingModal } from '@app/components/util/LoadingModal';
 import { Navbar } from '@app/components/util/Navbar';
+import Admin from '@app/containers/auth/Admin';
 import Login from '@app/containers/auth/Login';
 import Profile from '@app/containers/auth/Profile';
 import Register from '@app/containers/auth/Register';
@@ -18,6 +20,7 @@ export namespace AppPage {
         loggedInUser?: User;
         successMessage?: string;
         errorMessage?: string;
+        loading: boolean;
         actions: PostActions & UserActions & UtilActions;
     }
 }
@@ -46,8 +49,10 @@ export class AppPage extends React.Component<AppPage.Props> {
                     history={this.props.history}
                 />
                 <NewPostModal />
+                <LoadingModal loading={this.props.loading} />
                 <div className="container full-height">
                     <Switch>
+                        <Route path="/admin" component={Admin} />
                         <Route path="/profile/:userId" component={Profile} />
                         <Route path="/profile" component={Profile} />
                         <Route path="/register" component={Register} />

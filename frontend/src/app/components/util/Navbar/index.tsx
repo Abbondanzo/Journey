@@ -1,6 +1,6 @@
 import { PostActions, UserActions } from '@app/actions';
 import ProfileImage from '@app/containers/util/ProfileImage';
-import { User } from '@app/models/User';
+import { User, UserRole } from '@app/models/User';
 import * as React from 'react';
 import { RouteComponentProps } from 'react-router';
 import { Link } from 'react-router-dom';
@@ -67,6 +67,24 @@ export class Navbar extends React.Component<Navbar.Props, Navbar.State> {
                                     Map
                                 </Link>
                             </li>
+                            {this.props.loggedInUser &&
+                            this.props.loggedInUser.profileDetails.role ===
+                                UserRole.ADMINISTRATOR ? (
+                                <li
+                                    className={
+                                        this.props.location &&
+                                        `${this.props.location.pathname}` === '/admin'
+                                            ? 'nav-item active'
+                                            : 'nav-item'
+                                    }
+                                >
+                                    <Link to="/admin" className="nav-link">
+                                        Admin
+                                    </Link>
+                                </li>
+                            ) : (
+                                undefined
+                            )}
                         </ul>
                         <ul className="navbar-nav ml-auto">
                             {this.props.loggedInUser ? (

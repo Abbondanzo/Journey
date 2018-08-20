@@ -98,6 +98,13 @@ export class PermissionsManager {
         });
     }
 
+    static async canEditAllUsers(req: Request) {
+        return this.getUser(req).then((user) => {
+            const role = user.profileDetails.role;
+            return role === UserRole.ADMINISTRATOR;
+        });
+    }
+
     static getToken(req: Request) {
         return (req as any).user as admin.auth.DecodedIdToken;
     }

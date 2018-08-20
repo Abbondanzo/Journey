@@ -20,7 +20,7 @@ export namespace PostActions {
     export const deletePost = createAction<Post['id']>(Type.DELETE_POST);
     export const showPostModal = createAction(Type.SHOW_POST_MODAL);
     export const hidePostModal = createAction(Type.HIDE_POST_MODAL);
-    export const loadAllPosts = createAction(Type.LOAD_ALL_POSTS);
+    export const loadAllPosts = createAction<() => void | undefined>(Type.LOAD_ALL_POSTS);
     export const saveAllPosts = createAction<Post[]>(Type.SAVE_ALL_POSTS);
 }
 

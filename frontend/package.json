@@ -63,7 +63,7 @@
     },
     "dependencies": {
         "@google/maps": "^0.5.5",
-        "axios": "^0.18.0",
+        "axios": "^0.21.1",
         "classnames": "^2.2.6",
         "firebase": "^5.3.1",
         "googlemaps": "^1.12.0",

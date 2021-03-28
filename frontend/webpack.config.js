@@ -11,7 +11,6 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var MiniCssExtractPlugin = require('mini-css-extract-plugin');
 var WebpackCleanupPlugin = require('webpack-cleanup-plugin');
 var Dotenv = require('dotenv-webpack');
-var CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     context: sourcePath,

@@ -1,15 +1,18 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+# OSX
 .DS_Store
+
+# Gradle
+.gradle
+
+# Local config
+/local.properties
+local.properties
+
+# Generated files
 /build
 /captures
-.externalNativeBuild
-.cxx
-local.properties
+
+# Intellij project files
+.idea/*
+!.idea/codeStyles/
+*.iml

@@ -6,8 +6,8 @@ import androidx.room.PrimaryKey
 import com.abbondanzo.journey.model.Location
 import org.joda.time.DateTimeZone
 
-@Entity(tableName = "log_entry")
-class LogEntryEntity(
+@Entity(tableName = "entry")
+class EntryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long,
     @ColumnInfo(name = "title") val title: String,
     @ColumnInfo(name = "body") val body: String,

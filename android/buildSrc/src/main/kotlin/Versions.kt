@@ -1,6 +1,8 @@
 internal object Versions {
 
+    const val GSON = "2.8.6"
     const val JODA_TIME = "2.10.10"
+    const val JODA_TIME_CONVERT = "2.2.1"
 
     object Android {
         const val ACTIVITY_KTX = "1.2.2"
@@ -27,6 +29,5 @@ internal object Versions {
 
     object Kotlin {
         const val COROUTINES = "1.3.9"
-        const val STDLIB = "1.4.31"
     }
 }

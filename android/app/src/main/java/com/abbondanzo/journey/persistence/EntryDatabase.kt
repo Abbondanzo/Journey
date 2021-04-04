@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.abbondanzo.journey.model.Location
 import kotlinx.coroutines.CoroutineScope
@@ -11,10 +12,11 @@ import kotlinx.coroutines.launch
 import org.joda.time.DateTimeZone
 
 @Database(entities = [EntryEntity::class], version = 1, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class EntryDatabase : RoomDatabase() {
     abstract fun entryDao(): EntryDao
 
-    private class WordDatabaseCallback(
+    private class EntryDatabaseCallback(
         private val scope: CoroutineScope
     ) : RoomDatabase.Callback() {
 
@@ -88,9 +90,9 @@ abstract class EntryDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     EntryDatabase::class.java,
-                    "log_entry_database"
+                    "entry_database"
                 )
-                    .addCallback(WordDatabaseCallback(scope))
+                    .addCallback(EntryDatabaseCallback(scope))
                     .build()
                 INSTANCE = instance
                 // return instance

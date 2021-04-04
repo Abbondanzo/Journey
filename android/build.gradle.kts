@@ -3,6 +3,7 @@ buildscript {
     repositories {
         google()
         jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath(Dependencies.Android.Tooling.GRADLE)

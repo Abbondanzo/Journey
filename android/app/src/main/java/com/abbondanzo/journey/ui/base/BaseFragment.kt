@@ -1,9 +1,8 @@
 package com.abbondanzo.journey.ui.base
 
-import android.os.Bundle
 import androidx.annotation.LayoutRes
-import androidx.lifecycle.ViewModel
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
 abstract class BaseFragment<VM : ViewModel>(
@@ -12,12 +11,6 @@ abstract class BaseFragment<VM : ViewModel>(
 
     protected lateinit var viewModel: VM
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
-
     inline fun <reified VM : ViewModel> getFragmentViewModel(): VM =
         ViewModelProvider(this).get(VM::class.java)
-
 }

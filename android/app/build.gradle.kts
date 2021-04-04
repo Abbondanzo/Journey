@@ -40,7 +40,9 @@ android {
 }
 
 dependencies {
+    implementation(Dependencies.GSON)
     implementation(Dependencies.JODA_TIME)
+    implementation(Dependencies.JODA_TIME_CONVERT)
 
     implementation(Dependencies.Android.ACTIVITY_KTX)
     implementation(Dependencies.Android.CONSTRAINT_LAYOUT)

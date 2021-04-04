@@ -1,7 +1,8 @@
 object Dependencies {
 
-
+    const val GSON = "com.google.code.gson:gson:${Versions.GSON}"
     const val JODA_TIME = "joda-time:joda-time:${Versions.JODA_TIME}"
+    const val JODA_TIME_CONVERT = "org.joda:joda-convert:${Versions.JODA_TIME_CONVERT}"
 
     object Android {
         const val ACTIVITY_KTX = "androidx.activity:activity-ktx:${Versions.Android.ACTIVITY_KTX}"
@@ -38,10 +39,10 @@ object Dependencies {
     object Kotlin {
         const val COROUTINES_ANDROID = "org.jetbrains.kotlinx:kotlinx-coroutines-android:${Versions.Kotlin.COROUTINES}"
         const val COROUTINES_CORE = "org.jetbrains.kotlinx:kotlinx-coroutines-core:${Versions.Kotlin.COROUTINES}"
-        const val STDLIB = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.Kotlin.STDLIB}"
+        const val STDLIB = "org.jetbrains.kotlin:kotlin-stdlib:${CoreVersions.KOTLIN}"
 
         object Tooling {
-            const val GRADLE = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.Kotlin.STDLIB}"
+            const val GRADLE = "org.jetbrains.kotlin:kotlin-gradle-plugin:${CoreVersions.KOTLIN}"
         }
     }
 }

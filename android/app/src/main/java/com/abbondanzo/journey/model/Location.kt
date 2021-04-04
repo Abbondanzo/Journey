@@ -5,4 +5,4 @@ data class Location(
     val country: String,
     val latitude: Float,
     val longitude: Float
-)
+): JSONConvertible

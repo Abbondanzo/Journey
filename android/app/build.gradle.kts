@@ -4,6 +4,7 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("kotlin-kapt")
+    id("dagger.hilt.android.plugin")
 }
 
 android {
@@ -43,6 +44,9 @@ dependencies {
     implementation(Dependencies.GSON)
     implementation(Dependencies.JODA_TIME)
     implementation(Dependencies.JODA_TIME_CONVERT)
+
+    implementation(Dependencies.Hilt.HILT_ANDROID)
+    kapt(Dependencies.Hilt.HILT_COMPILER)
 
     implementation(Dependencies.Android.ACTIVITY_KTX)
     implementation(Dependencies.Android.CONSTRAINT_LAYOUT)

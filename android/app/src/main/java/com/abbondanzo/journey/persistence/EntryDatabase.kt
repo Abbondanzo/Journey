@@ -1,14 +1,9 @@
 package com.abbondanzo.journey.persistence
 
-import android.content.Context
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.sqlite.db.SupportSQLiteDatabase
 import com.abbondanzo.journey.model.Location
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import org.joda.time.DateTimeZone
 
 @Database(entities = [EntryEntity::class], version = 1, exportSchema = false)
@@ -16,19 +11,7 @@ import org.joda.time.DateTimeZone
 abstract class EntryDatabase : RoomDatabase() {
     abstract fun entryDao(): EntryDao
 
-    private class EntryDatabaseCallback(
-        private val scope: CoroutineScope
-    ) : RoomDatabase.Callback() {
-
-        override fun onCreate(db: SupportSQLiteDatabase) {
-            super.onCreate(db)
-            INSTANCE?.let { database ->
-                scope.launch {
-                    populateDatabase(database.entryDao())
-                }
-            }
-        }
-
+    companion object {
         suspend fun populateDatabase(entryDao: EntryDao) {
             // Delete all content here.
             entryDao.deleteAll()
@@ -76,28 +59,6 @@ abstract class EntryDatabase : RoomDatabase() {
                     )
                 )
             )
-        }
-    }
-
-    companion object {
-        @Volatile
-        private var INSTANCE: EntryDatabase? = null
-
-        fun getDatabase(
-            context: Context, scope: CoroutineScope
-        ): EntryDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    EntryDatabase::class.java,
-                    "entry_database"
-                )
-                    .addCallback(EntryDatabaseCallback(scope))
-                    .build()
-                INSTANCE = instance
-                // return instance
-                instance
-            }
         }
     }
 }

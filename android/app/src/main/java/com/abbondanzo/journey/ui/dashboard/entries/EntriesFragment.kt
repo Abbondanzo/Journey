@@ -1,4 +1,4 @@
-package com.abbondanzo.journey.ui.entries
+package com.abbondanzo.journey.ui.dashboard.entries
 
 import android.os.Bundle
 import android.view.View
@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.abbondanzo.journey.R
 import com.abbondanzo.journey.databinding.FragmentEntriesBinding
 import com.abbondanzo.journey.model.Entry
-import com.abbondanzo.journey.ui.entries.adapter.EntriesAdapter
+import com.abbondanzo.journey.ui.dashboard.entries.adapter.EntriesAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

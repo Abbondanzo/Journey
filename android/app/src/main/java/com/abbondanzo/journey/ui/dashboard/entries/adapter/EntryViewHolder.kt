@@ -1,4 +1,4 @@
-package com.abbondanzo.journey.ui.entries.adapter
+package com.abbondanzo.journey.ui.dashboard.entries.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

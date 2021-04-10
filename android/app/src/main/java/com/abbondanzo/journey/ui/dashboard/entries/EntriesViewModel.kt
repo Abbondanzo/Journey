@@ -1,4 +1,4 @@
-package com.abbondanzo.journey.ui.entries
+package com.abbondanzo.journey.ui.dashboard.entries
 
 import androidx.lifecycle.*
 import com.abbondanzo.journey.model.Entry

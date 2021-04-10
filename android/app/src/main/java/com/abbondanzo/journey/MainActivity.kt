@@ -14,9 +14,11 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.abbondanzo.journey.databinding.ActivityMainBinding
+import com.google.android.material.appbar.AppBarLayout.OnOffsetChangedListener
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.math.max
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -64,6 +66,13 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             binding.appBarMain.toolbarTitle.text = destination.label
         }
+        // Fade contents on scroll
+        val appBarLayout = binding.appBarMain.appBarLayout
+        appBarLayout.addOnOffsetChangedListener(OnOffsetChangedListener { layout, verticalOffset ->
+            val range = (-layout.totalScrollRange).toFloat() * 0.9f
+            val alpha = max(1.0f - verticalOffset.toFloat() / range, 0f)
+            binding.appBarMain.collapsingToolbarContents.alpha = alpha
+        })
         // Nested included views don't work in viewbinding
         val navView: NavigationView = findViewById(R.id.nav_view)
         setupActionBarWithNavController(navController, appBarConfiguration)

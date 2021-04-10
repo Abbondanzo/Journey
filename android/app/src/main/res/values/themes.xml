@@ -26,4 +26,15 @@
     </style>
 
     <style name="Theme.Journey.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="Theme.Journey.AppBarLayout.Text" parent="Theme.Journey">
+        <item name="android:textSize">18sp</item>
+        <item name="android:fontFamily">@font/gotham_rounded_book</item>
+    </style>
+
+    <style name="Theme.Journey.AppBarLayout.Caption" parent="Theme.Journey">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/gotham_rounded_light</item>
+        <item name="android:color">#ddd</item>
+    </style>
 </resources>

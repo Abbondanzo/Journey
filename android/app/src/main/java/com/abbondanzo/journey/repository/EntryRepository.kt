@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class EntryRepository @Inject constructor(private val entryDao: EntryDao) {
+internal class EntryRepository @Inject constructor(private val entryDao: EntryDao) {
     fun getEntries(): Flow<List<Entry>> {
         return entryDao.getEntries().map { entries ->
             entries.map {

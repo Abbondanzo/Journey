@@ -1,7 +1,10 @@
 package com.abbondanzo.journey
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.Menu
+import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
@@ -21,6 +24,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
 
     private lateinit var binding: ActivityMainBinding
+
+    private val viewModel: MainViewModel by viewModels()
 
     private val navController: NavController
         get() = findNavController(R.id.nav_host_fragment)
@@ -63,6 +68,10 @@ class MainActivity : AppCompatActivity() {
         val navView: NavigationView = findViewById(R.id.nav_view)
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+        // Bind profile details
+        viewModel.toolbarUsername.observe(this, this::handleToolbarUsername)
+        viewModel.toolbarLocation.observe(this, this::handleToolbarLocation)
+        viewModel.toolbarProfilePicture.observe(this, this::handleToolbarProfilePicture)
     }
 
     private fun setupFab() {
@@ -70,6 +79,27 @@ class MainActivity : AppCompatActivity() {
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show()
+        }
+    }
+
+    private fun handleToolbarUsername(username: String) {
+        binding.appBarMain.toolbarUsername.apply {
+            visibility = if (username.isEmpty()) View.GONE else View.VISIBLE
+            text = username
+        }
+    }
+
+    private fun handleToolbarLocation(location: String) {
+        binding.appBarMain.toolbarLocation.apply {
+            visibility = if (location.isEmpty()) View.GONE else View.VISIBLE
+            text = location
+        }
+    }
+
+    private fun handleToolbarProfilePicture(profilePicture: Bitmap) {
+        binding.appBarMain.toolbarProfilePicture.apply {
+            visibility = View.VISIBLE
+            setImageBitmap(profilePicture)
         }
     }
 }

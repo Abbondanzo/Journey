@@ -19,7 +19,8 @@
             android:layout_gravity="center_horizontal"
             android:background="@drawable/purple_gradient"
             android:padding="16dp"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:titleEnabled="false">
 
             <ImageView
                 android:layout_width="100dp"
@@ -32,15 +33,26 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
+                android:layout_gravity="center_horizontal"
                 app:layout_collapseMode="pin"
-                app:popupTheme="@style/Theme.Journey.PopupOverlay" />
+                app:popupTheme="@style/Theme.Journey.PopupOverlay">
+
+                <TextView
+                    android:id="@+id/toolbar_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Dashboard" />
+
+            </androidx.appcompat.widget.Toolbar>
 
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <include layout="@layout/content_main" />
+    <include
+        android:id="@+id/content_main"
+        layout="@layout/content_main" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"

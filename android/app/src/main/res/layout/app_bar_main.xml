@@ -18,16 +18,47 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:background="@drawable/purple_gradient"
-            android:padding="16dp"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:titleEnabled="false">
 
-            <ImageView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/shape_profile_picture"
-                android:contentDescription="@string/profile_picture" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="?attr/actionBarSize"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    android:foreground="@drawable/shape_profile_picture">
+
+                    <ImageView
+                        android:id="@+id/toolbar_profile_picture"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@drawable/shape_profile_picture_placeholder"
+                        android:contentDescription="@string/profile_picture" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/toolbar_username"
+                    style="@style/Theme.Journey.AppBarLayout.Text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    tools:text="Peter Abbondanzo" />
+
+                <TextView
+                    android:id="@+id/toolbar_location"
+                    style="@style/Theme.Journey.AppBarLayout.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    tools:text="Boston MA" />
+            </LinearLayout>
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -39,12 +70,12 @@
 
                 <TextView
                     android:id="@+id/toolbar_title"
+                    style="@style/Theme.Journey.AppBarLayout.Text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
                     tools:text="Dashboard" />
-
             </androidx.appcompat.widget.Toolbar>
-
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 
@@ -62,5 +93,4 @@
         android:layout_margin="@dimen/fab_margin"
         app:srcCompat="@android:drawable/ic_dialog_email"
         tools:ignore="ContentDescription" />
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

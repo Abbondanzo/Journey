@@ -12,6 +12,7 @@ internal object Versions {
         const val MATERIAL = "1.2.1"
         const val NAVIGATION = "2.3.4"
         const val ROOM = "2.2.6"
+        const val VIEWPAGER = "1.0.0"
 
         object Test {
             const val ARCH = "2.1.0"

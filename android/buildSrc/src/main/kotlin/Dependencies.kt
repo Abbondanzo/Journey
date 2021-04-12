@@ -16,6 +16,7 @@ object Dependencies {
         const val ROOM_COMPILER = "androidx.room:room-compiler:${Versions.Android.ROOM}"
         const val ROOM_KTX = "androidx.room:room-ktx:${Versions.Android.ROOM}"
         const val ROOM_TESTING = "androidx.room:room-testing:${Versions.Android.ROOM}"
+        const val VIEWPAGER = "androidx.viewpager:viewpager:${Versions.Android.VIEWPAGER}"
 
         object Test {
             const val ARCH = "androidx.arch.core:core-testing:${Versions.Android.Test.ARCH}"

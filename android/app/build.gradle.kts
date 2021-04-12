@@ -12,6 +12,7 @@ android {
     buildToolsVersion(AndroidConfig.BUILD_TOOLS_VERSION)
 
     buildFeatures {
+        dataBinding = true
         viewBinding = true
     }
 
@@ -55,6 +56,7 @@ dependencies {
     implementation(Dependencies.Android.MATERIAL)
     implementation(Dependencies.Android.NAVIGATION_FRAGMENT)
     implementation(Dependencies.Android.NAVIGATION_UI)
+    implementation(Dependencies.Android.VIEWPAGER)
 
     api(Dependencies.Kotlin.COROUTINES_ANDROID)
     api(Dependencies.Kotlin.COROUTINES_CORE)

@@ -2,8 +2,8 @@
     <!-- Base application theme. -->
     <style name="Theme.Journey" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorPrimary">#5e51ca</item>
+        <item name="colorPrimaryVariant">#6041c2</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>
@@ -19,7 +19,22 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.Journey.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.Journey.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:background">@null</item>
+        <item name="background">@null</item>
+
+    </style>
 
     <style name="Theme.Journey.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="Theme.Journey.AppBarLayout.Text" parent="Theme.Journey">
+        <item name="android:textSize">18sp</item>
+        <item name="android:fontFamily">@font/gotham_rounded_book</item>
+    </style>
+
+    <style name="Theme.Journey.AppBarLayout.Caption" parent="Theme.Journey">
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/gotham_rounded_light</item>
+        <item name="android:color">#ddd</item>
+    </style>
 </resources>

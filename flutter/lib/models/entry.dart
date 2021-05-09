@@ -14,7 +14,8 @@ class Entry {
 
   Entry(this.id, this.title, this.body, this.dateTime, this.location);
 
-  Entry(this.title, this.body, this.location, {String id, DateTime dateTime})
+  Entry.asNew(this.title, this.body, this.location,
+      {String id, DateTime dateTime})
       : id = id ?? Uuid().generateV4(),
         dateTime = dateTime ?? DateTime.now();
 

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:journey/models/models.dart';
+import 'package:journey/models/entry.dart';
 
 abstract class EntriesEvent extends Equatable {
   const EntriesEvent();

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:journey/blocs/entries/entries.dart';
 import 'package:journey/data/entry/entry_repository.dart';
-import 'package:journey/models/models.dart';
+import 'package:journey/models/entry.dart';
 import 'package:meta/meta.dart';
 
 class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {

@@ -39,4 +39,10 @@ class Location {
     return Location(
         entity.city, entity.country, LatLng(entity.latitude, entity.longitude));
   }
+
+  /// Returns a formal `city, country` string for displaying this location in a
+  /// human-readable format.
+  String formattedLocation() {
+    return '$city, $country';
+  }
 }

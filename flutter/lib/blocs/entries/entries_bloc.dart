@@ -33,8 +33,8 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
       yield EntriesLoaded(
         entries.map(Entry.fromEntity).toList(),
       );
-    } catch (_) {
-      yield EntriesNotLoaded();
+    } catch (e) {
+      yield EntriesNotLoaded(e);
     }
   }
 

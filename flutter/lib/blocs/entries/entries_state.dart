@@ -22,4 +22,8 @@ class EntriesLoaded extends EntriesState {
   String toString() => 'EntriesLoaded { entries: $entries }';
 }
 
-class EntriesNotLoaded extends EntriesState {}
+class EntriesNotLoaded extends EntriesState {
+  final Exception exception;
+
+  const EntriesNotLoaded(this.exception);
+}

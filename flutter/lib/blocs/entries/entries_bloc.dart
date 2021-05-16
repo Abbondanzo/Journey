@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:journey/blocs/entries/entries.dart';
 import 'package:journey/data/entry/entry_repository.dart';
 import 'package:journey/models/entry.dart';
 import 'package:meta/meta.dart';
+
+import 'entries_event.dart';
+import 'entries_state.dart';
 
 class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
   final EntryRepository entryRepository;

@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:journey/data/entry/entry_repository.dart';
 import 'package:journey/models/entry.dart';
+import 'package:journey/repositories/entry_repository.dart';
 import 'package:meta/meta.dart';
 
 import 'entries_event.dart';
@@ -31,10 +31,8 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
 
   Stream<EntriesState> _mapLoadEntriesToState() async* {
     try {
-      final entries = await entryRepository.loadEntries();
-      yield EntriesLoaded(
-        entries.map(Entry.fromEntity).toList(),
-      );
+      final entries = await entryRepository.getEntries();
+      yield EntriesLoaded(entries);
     } catch (e) {
       yield EntriesNotLoaded(e);
     }
@@ -45,7 +43,7 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
       final updatedEntries = List<Entry>.from((state as EntriesLoaded).entries)
         ..add(event.entry);
       yield EntriesLoaded(updatedEntries);
-      await _saveEntries(updatedEntries);
+      await entryRepository.insert(event.entry);
     }
   }
 
@@ -55,7 +53,7 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
         return entry.id == event.updatedEntry.id ? event.updatedEntry : entry;
       }).toList();
       yield EntriesLoaded(updatedEntries);
-      await _saveEntries(updatedEntries);
+      await entryRepository.update(event.updatedEntry);
     }
   }
 
@@ -66,13 +64,7 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
           .where((entry) => entry.id != event.entry.id)
           .toList();
       yield EntriesLoaded(updatedEntries);
-      await _saveEntries(updatedEntries);
+      await entryRepository.delete(event.entry);
     }
-  }
-
-  Future _saveEntries(List<Entry> entries) {
-    return entryRepository.saveEntries(
-      entries.map((entry) => entry.toEntity()).toList(),
-    );
   }
 }

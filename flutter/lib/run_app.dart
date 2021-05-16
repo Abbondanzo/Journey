@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:journey/blocs/entries/entries.dart';
-import 'package:journey/data/entry/entry_repository.dart';
+import 'package:journey/repositories/entry_repository.dart';
 import 'package:journey/widgets/entries/entries_list.dart';
 
 void runBlocApp(EntryRepository repository) {

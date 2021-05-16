@@ -11,10 +11,7 @@ import 'entries_state.dart';
 class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
   final EntryRepository entryRepository;
 
-  EntriesBloc({@required this.entryRepository});
-
-  @override
-  EntriesState get initialState => EntriesLoading();
+  EntriesBloc({@required this.entryRepository}) : super(EntriesLoading());
 
   @override
   Stream<EntriesState> mapEventToState(EntriesEvent event) async* {

@@ -5,7 +5,6 @@ import 'package:journey/repositories/entry_repository.dart';
 import 'package:journey/widgets/entries/entries_list.dart';
 
 void runBlocApp(EntryRepository repository) {
-  BlocSupervisor.delegate = BlocDelegate();
   runApp(
     BlocProvider<EntriesBloc>(
       create: (context) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:journey/widgets/add_entry_form/add_entry_form.dart';
 
 class AddEntryScreen extends StatelessWidget {
   @override
@@ -7,7 +8,7 @@ class AddEntryScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text("Add Entry"),
       ),
-      body: Text("Body"),
+      body: AddEntryForm(),
     );
   }
 }

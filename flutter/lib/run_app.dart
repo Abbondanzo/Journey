@@ -21,7 +21,7 @@ class JourneyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Journey',
+      title: "Journey",
       initialRoute: Routes.home,
       routes: {
         Routes.home: (context) => HomeScreen(),

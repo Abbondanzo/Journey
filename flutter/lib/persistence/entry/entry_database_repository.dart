@@ -5,38 +5,38 @@ import 'package:journey/repositories/entry_repository.dart';
 import 'entry_dao.dart';
 
 class EntryDatabaseRepository implements EntryRepository {
-  final dao = EntryDao();
-  final DatabaseProvider databaseProvider;
+  final _dao = EntryDao();
+  final DatabaseProvider _databaseProvider;
 
-  EntryDatabaseRepository(this.databaseProvider);
+  EntryDatabaseRepository(this._databaseProvider);
 
   @override
   Future<List<Entry>> getEntries() async {
-    final db = await databaseProvider.db();
-    List<Map<String, dynamic>> maps = await db.query(dao.tableName);
-    return dao.fromList(maps);
+    final db = await _databaseProvider.db();
+    List<Map<String, dynamic>> maps = await db.query(_dao.tableName);
+    return _dao.fromList(maps);
   }
 
   @override
   Future<Entry> insert(Entry entry) async {
-    final db = await databaseProvider.db();
-    await db.insert(dao.tableName, dao.toMap(entry));
+    final db = await _databaseProvider.db();
+    await db.insert(_dao.tableName, _dao.toMap(entry));
     return entry;
   }
 
   @override
   Future<Entry> update(Entry entry) async {
-    final db = await databaseProvider.db();
-    await db.update(dao.tableName, dao.toMap(entry),
-        where: dao.columnId + " = ?", whereArgs: [entry.id]);
+    final db = await _databaseProvider.db();
+    await db.update(_dao.tableName, _dao.toMap(entry),
+        where: _dao.columnId + " = ?", whereArgs: [entry.id]);
     return entry;
   }
 
   @override
   Future<Entry> delete(Entry entry) async {
-    final db = await databaseProvider.db();
-    await db.delete(dao.tableName,
-        where: dao.columnId + " = ?", whereArgs: [entry.id]);
+    final db = await _databaseProvider.db();
+    await db.delete(_dao.tableName,
+        where: _dao.columnId + " = ?", whereArgs: [entry.id]);
     return entry;
   }
 }

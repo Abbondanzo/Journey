@@ -5,8 +5,8 @@ class EntryItem extends StatelessWidget {
   final Entry entry;
   final GestureTapCallback onTap;
 
-  EntryItem({Key key, @required this.entry, @required this.onTap})
-      : super(key: key);
+  EntryItem({required this.entry, required this.onTap})
+      : super(key: Key(entry.id));
 
   @override
   Widget build(BuildContext context) {

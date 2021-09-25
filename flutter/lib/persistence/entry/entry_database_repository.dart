@@ -13,7 +13,7 @@ class EntryDatabaseRepository implements EntryRepository {
   @override
   Future<List<Entry>> getEntries() async {
     final db = await databaseProvider.db();
-    List<Map> maps = await db.query(dao.tableName);
+    List<Map<String, dynamic>> maps = await db.query(dao.tableName);
     return dao.fromList(maps);
   }
 

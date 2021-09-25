@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:journey/models/entry.dart';
 import 'package:journey/repositories/entry_repository.dart';
-import 'package:meta/meta.dart';
 
 import 'entries_event.dart';
 import 'entries_state.dart';
@@ -11,7 +10,7 @@ import 'entries_state.dart';
 class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
   final EntryRepository entryRepository;
 
-  EntriesBloc({@required this.entryRepository}) : super(EntriesLoading());
+  EntriesBloc({required this.entryRepository}) : super(EntriesLoading());
 
   @override
   Stream<EntriesState> mapEventToState(EntriesEvent event) async* {
@@ -31,7 +30,7 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
       final entries = await entryRepository.getEntries();
       yield EntriesLoaded(entries);
     } catch (e) {
-      yield EntriesNotLoaded(e);
+      yield EntriesNotLoaded(e as Exception);
     }
   }
 

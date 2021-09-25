@@ -7,10 +7,6 @@ import 'entry_item.dart';
 import 'entry_item_loading.dart';
 
 class EntriesList extends StatelessWidget {
-  EntriesList({
-    Key key,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<EntriesBloc, EntriesState>(builder: (_, state) {

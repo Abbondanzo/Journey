@@ -1,4 +1,3 @@
-import 'package:journey/data/entry/entry_entity.dart';
 import 'package:meta/meta.dart';
 
 import 'location.dart';
@@ -41,14 +40,5 @@ class Entry {
   @override
   String toString() {
     return 'Entry{id: $id, title: $title, body: $body, dateTime: $dateTime, location: $location}';
-  }
-
-  EntryEntity toEntity() {
-    return EntryEntity(id, title, body, dateTime, location.toEntity());
-  }
-
-  static Entry fromEntity(EntryEntity entity) {
-    return Entry(entity.id, entity.title, entity.body, entity.dateTime,
-        Location.fromEntity(entity.location));
   }
 }

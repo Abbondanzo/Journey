@@ -8,7 +8,7 @@ class LatLng {
   static final UNKNOWN = LatLng(-1, -1);
 
   @override
-  int get hashCode => latitude.hashCode ^ longitude.hashCode;
+  int get hashCode => latitude.hashCode ^ (longitude.hashCode * 1000);
 
   @override
   bool operator ==(Object other) =>

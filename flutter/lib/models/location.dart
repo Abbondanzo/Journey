@@ -1,4 +1,3 @@
-import 'package:journey/data/location/location_entity.dart';
 import 'package:meta/meta.dart';
 
 import 'lat_lng.dart';
@@ -29,15 +28,6 @@ class Location {
   @override
   String toString() {
     return 'Location{city: $city, country: $country, latLng: $latLng}';
-  }
-
-  LocationEntity toEntity() {
-    return LocationEntity(city, country, latLng.latitude, latLng.longitude);
-  }
-
-  static Location fromEntity(LocationEntity entity) {
-    return Location(
-        entity.city, entity.country, LatLng(entity.latitude, entity.longitude));
   }
 
   /// Returns a formal `city, country` string for displaying this location in a

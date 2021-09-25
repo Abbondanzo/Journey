@@ -27,6 +27,9 @@ class EntriesList extends StatelessWidget {
   }
 
   Widget _buildLoaded(List<Entry> entries) {
+    if (entries.isEmpty) {
+      return _buildZeroState();
+    }
     return ListView.builder(
       itemCount: entries.length,
       itemBuilder: (BuildContext context, int index) {
@@ -41,6 +44,10 @@ class EntriesList extends StatelessWidget {
   }
 
   Widget _buildZeroState() {
-    return Container();
+    return Container(
+        alignment: Alignment.center,
+        child: Text(
+          "No entries exist!",
+        ));
   }
 }

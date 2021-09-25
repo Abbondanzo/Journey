@@ -1,9 +1,10 @@
+import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
 import 'lat_lng.dart';
 
 @immutable
-class Location {
+class Location extends Equatable {
   final String city;
   final String country;
   final LatLng latLng;
@@ -14,21 +15,7 @@ class Location {
   static final UNKNOWN = Location('', '', LatLng.UNKNOWN);
 
   @override
-  int get hashCode => city.hashCode ^ country.hashCode ^ latLng.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Location &&
-          runtimeType == other.runtimeType &&
-          city == other.city &&
-          country == other.country &&
-          latLng == other.latLng;
-
-  @override
-  String toString() {
-    return 'Location{city: $city, country: $country, latLng: $latLng}';
-  }
+  List<Object?> get props => [city, country, latLng];
 
   /// Returns a formal `city, country` string for displaying this location in a
   /// human-readable format.

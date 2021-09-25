@@ -1,10 +1,11 @@
+import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
 import 'location.dart';
 import 'uuid.dart';
 
 @immutable
-class Entry {
+class Entry extends Equatable {
   final String id;
   final String title;
   final String body;
@@ -19,26 +20,5 @@ class Entry {
         dateTime = dateTime ?? DateTime.now();
 
   @override
-  int get hashCode =>
-      id.hashCode ^
-      title.hashCode ^
-      body.hashCode ^
-      dateTime.hashCode ^
-      location.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Entry &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          title == other.title &&
-          body == other.body &&
-          dateTime == other.dateTime &&
-          location == other.location;
-
-  @override
-  String toString() {
-    return 'Entry{id: $id, title: $title, body: $body, dateTime: $dateTime, location: $location}';
-  }
+  List<Object?> get props => [id, title, body, dateTime, location];
 }

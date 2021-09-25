@@ -1,8 +1,9 @@
+import 'package:equatable/equatable.dart';
 import 'package:journey/models/uuid.dart';
 import 'package:meta/meta.dart';
 
 @immutable
-class User {
+class User extends Equatable {
   final String id;
   final String firstName;
   final String lastName;
@@ -19,24 +20,5 @@ class User {
         profilePicture = profilePicture;
 
   @override
-  int get hashCode =>
-      id.hashCode ^
-      firstName.hashCode ^
-      lastName.hashCode ^
-      profilePicture.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is User &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          firstName == other.firstName &&
-          lastName == other.lastName &&
-          profilePicture == other.profilePicture;
-
-  @override
-  String toString() {
-    return 'User{id: $id, firstName: $firstName, lastName: $lastName, profilePicture: $profilePicture}';
-  }
+  List<Object?> get props => [id, firstName, lastName, profilePicture];
 }

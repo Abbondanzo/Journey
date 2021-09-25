@@ -1,6 +1,10 @@
-class LatLng {
-  double latitude;
-  double longitude;
+import 'package:equatable/equatable.dart';
+import 'package:meta/meta.dart';
+
+@immutable
+class LatLng extends Equatable {
+  final double latitude;
+  final double longitude;
 
   LatLng(this.latitude, this.longitude);
 
@@ -11,15 +15,5 @@ class LatLng {
   int get hashCode => latitude.hashCode ^ (longitude.hashCode * 1000);
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is LatLng &&
-          runtimeType == other.runtimeType &&
-          latitude == other.latitude &&
-          longitude == other.longitude;
-
-  @override
-  String toString() {
-    return 'LatLng{latitude: $latitude, longitude: $longitude}';
-  }
+  List<Object?> get props => [latitude, longitude];
 }

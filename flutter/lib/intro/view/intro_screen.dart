@@ -1,39 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:journey/authentication/authentication.dart';
-import 'package:journey/entries/entries.dart';
 
 class IntroScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Journey')),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Builder(
-              builder: (context) {
-                final userId = context.select(
-                  (UserBloc bloc) {
-                    if (bloc.state is UserLoaded) {
-                      return (bloc.state as UserLoaded).user?.id;
-                    }
-                  },
-                );
-                return Text('UserID: $userId');
-              },
-            ),
-            EntriesList(),
-            ElevatedButton(
-              child: const Text('Logout'),
-              onPressed: () {
-                context.read<UserBloc>().add(RemoveUser());
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+        body: Container(
+            alignment: Alignment.center,
+            color: Theme.of(context).colorScheme.primary,
+            child:
+                Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 24.0),
+                child: const Text("Journey",
+                    style: TextStyle(
+                      color: Color(0xFFFFFFFF),
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                    )),
+              ),
+              TextButton(
+                  onPressed: () => {print("Pressed")},
+                  style: TextButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 24.0),
+                      shape: const StadiumBorder()),
+                  child: const Text("Continue",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)))
+            ])));
   }
 }

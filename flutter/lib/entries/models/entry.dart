@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:journey/entries/entries.dart';
 import 'package:journey/models/uuid.dart';
 import 'package:meta/meta.dart';
 
@@ -8,6 +9,8 @@ class LatLng extends Equatable {
   final double longitude;
 
   const LatLng(this.latitude, this.longitude);
+
+  static const UNKNOWN = LatLng(-1, -1);
 
   @override
   int get hashCode => latitude.hashCode ^ (longitude.hashCode * 1000);
@@ -23,6 +26,8 @@ class Location extends Equatable {
   final LatLng latLng;
 
   const Location(this.city, this.country, this.latLng);
+
+  static const UNKNOWN = Location('', '', LatLng.UNKNOWN);
 
   @override
   List<Object?> get props => [city, country, latLng];

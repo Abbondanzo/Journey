@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:journey/router/delegate.dart';
+import 'package:journey/router/information_parser.dart';
 
-import 'routes.dart';
-import 'screens/add_entry_screen.dart';
-import 'screens/home_screen.dart';
+class _JourneyAppState extends State<JourneyApp> {
+  AppRouterDelegate _routerDelegate = AppRouterDelegate();
+  AppRouteInformationParser _routeInformationParser =
+      AppRouteInformationParser();
 
-class JourneyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Journey",
-      initialRoute: Routes.home,
-      routes: {
-        Routes.home: (context) => HomeScreen(),
-        Routes.addEntry: (context) => AddEntryScreen(),
-      },
+    return MaterialApp.router(
+      title: 'Journey',
       theme: ThemeData(
         primaryColor: Colors.white,
       ),
+      routerDelegate: _routerDelegate,
+      routeInformationParser: _routeInformationParser,
     );
   }
+}
+
+class JourneyApp extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => _JourneyAppState();
 }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:journey/authentication/authentication.dart';
 import 'package:journey/router/delegate.dart';
 import 'package:journey/router/information_parser.dart';
 
 class _JourneyAppState extends State<JourneyApp> {
-  AppRouterDelegate _routerDelegate = AppRouterDelegate();
-  AppRouteInformationParser _routeInformationParser =
+  final AppRouterDelegate _routerDelegate =
+      AppRouterDelegate(UserPreferencesRepository());
+  final AppRouteInformationParser _routeInformationParser =
       AppRouteInformationParser();
 
   @override

@@ -1,11 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:journey/blocs/entries/entries.dart';
-import 'package:journey/blocs/user/user.dart';
+import 'package:journey/authentication/authentication.dart';
+import 'package:journey/entries/entries.dart';
 import 'package:journey/persistence/database_provider.dart';
-import 'package:journey/persistence/entry/entry_database_repository.dart';
-import 'package:journey/persistence/user/user_preferences_repository.dart';
 
 import 'app.dart';
 

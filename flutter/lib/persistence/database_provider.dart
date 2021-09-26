@@ -1,4 +1,4 @@
-import 'package:journey/persistence/entry/entry_dao.dart';
+import 'package:journey/entries/persistence/entry_database_repository.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 

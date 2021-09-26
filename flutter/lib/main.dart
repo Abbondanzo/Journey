@@ -1,31 +1,43 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:journey/blocs/entries/entries.dart';
+import 'package:journey/blocs/user/user.dart';
+import 'package:journey/persistence/database_provider.dart';
+import 'package:journey/persistence/entry/entry_database_repository.dart';
+import 'package:journey/persistence/user/user_preferences_repository.dart';
 
-import 'providers/entries.dart';
-import 'providers/user.dart';
-import 'routes.dart';
-import 'screens/add_entry_screen.dart';
-import 'screens/home_screen.dart';
+import 'app.dart';
 
-class JourneyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Journey",
-      initialRoute: Routes.home,
-      routes: {
-        Routes.home: (context) => HomeScreen(),
-        Routes.addEntry: (context) => AddEntryScreen(),
-      },
-      theme: ThemeData(
-        primaryColor: Colors.white,
-      ),
-    );
-  }
+Widget _withUserProvider(Widget child) {
+  final userRepository = UserPreferencesRepository();
+  return BlocProvider<UserBloc>(
+    create: (context) {
+      return UserBloc(userRepository: userRepository)..add(LoadUser());
+    },
+    child: child,
+  );
+}
+
+Widget _withEntriesProvider(Widget child) {
+  final provider = DatabaseProvider.get;
+  final repository = EntryDatabaseRepository(provider);
+  return BlocProvider<EntriesBloc>(
+    create: (context) {
+      return EntriesBloc(entryRepository: repository)..add(LoadEntries());
+    },
+    child: child,
+  );
 }
 
 Future<void> main() async {
+  // Static configuration
   EquatableConfig.stringify = true;
+
+  // Binding and storage initialization
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(withUserProvider(withEntriesProvider(JourneyApp())));
+  await DatabaseProvider.get.db();
+
+  // Start the Flutter experience
+  runApp(_withUserProvider(_withEntriesProvider(JourneyApp())));
 }

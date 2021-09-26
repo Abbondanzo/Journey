@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:journey/authentication/authentication.dart';
 import 'package:journey/dashboard/dashboard.dart';
+import 'package:journey/intro/intro.dart';
 import 'package:journey/splash/splash.dart';
 
 import 'path.dart';
@@ -75,7 +76,7 @@ class AppRouterDelegate extends RouterDelegate<AppPath>
       [MaterialPage(key: ValueKey('SplashPage'), child: SplashScreen())];
 
   List<Page> get _loggedOutStack =>
-      [MaterialPage(key: ValueKey('SplashPage'), child: SplashScreen())];
+      [MaterialPage(key: ValueKey('IntroPage'), child: IntroScreen())];
 
   List<Page> get _loggedInStack {
     return [

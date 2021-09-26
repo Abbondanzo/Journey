@@ -1,6 +1,4 @@
-import 'package:journey/models/entry.dart';
-import 'package:journey/models/lat_lng.dart';
-import 'package:journey/models/location.dart';
+import 'package:journey/entries/entries.dart';
 import 'package:test/test.dart';
 
 void main() {

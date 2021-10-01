@@ -10,38 +10,67 @@ class SignUpForm extends StatefulWidget {
 class SignUpFormState extends State<SignUpForm> {
   final _formKey = GlobalKey<FormState>();
 
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+
+  // Default to disabled since typing in one field validates the rest
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Build a Form widget using the _formKey created above.
     return Form(
       key: _formKey,
+      autovalidateMode: _autovalidateMode,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextFormField(
-            // The validator receives the text that the user has entered.
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'First Name'),
+            controller: _firstNameController,
+            keyboardType: TextInputType.name,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter some text';
+                return 'Please enter a first name';
               }
               return null;
             },
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: ElevatedButton(
-              onPressed: () {
-                // Validate returns true if the form is valid, or false otherwise.
-                if (_formKey.currentState!.validate()) {
-                  // If the form is valid, display a snackbar. In the real world,
-                  // you'd often call a server or save the information in a database.
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Processing Data')),
-                  );
-                }
-              },
-              child: const Text('Submit'),
-            ),
+          SizedBox(height: 16),
+          TextFormField(
+            decoration: const InputDecoration(labelText: 'Last Name'),
+            controller: _lastNameController,
+            keyboardType: TextInputType.name,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter a last name';
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                final from =
+                    'From "${_firstNameController.text} ${_lastNameController.text}"';
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(from)),
+                );
+              } else {
+                setState(() {
+                  _autovalidateMode = AutovalidateMode.onUserInteraction;
+                });
+              }
+            },
+            child: const Text('Submit'),
           ),
         ],
       ),

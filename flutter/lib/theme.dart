@@ -16,4 +16,6 @@ final purpleTheme = ThemeData(
     }),
     buttonTheme: ButtonThemeData(
         padding: EdgeInsets.symmetric(horizontal: 16.0),
-        shape: const StadiumBorder()));
+        shape: const StadiumBorder()),
+    inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(), focusedBorder: OutlineInputBorder()));

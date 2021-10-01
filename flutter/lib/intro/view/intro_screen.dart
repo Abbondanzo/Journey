@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import './sign_up_screen.dart';
+
 class IntroScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,14 @@ class IntroScreen extends StatelessWidget {
                     )),
               ),
               TextButton(
-                  onPressed: () => {print("Pressed")},
+                  onPressed: () => {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) {
+                            return SignUpScreen();
+                          }),
+                        )
+                      },
                   style: TextButton.styleFrom(
                       backgroundColor: Colors.white,
                       padding: EdgeInsets.symmetric(horizontal: 24.0),

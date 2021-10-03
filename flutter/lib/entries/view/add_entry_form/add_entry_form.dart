@@ -44,8 +44,6 @@ class AddEntryFormState extends State<AddEntryForm> {
             DateTime(date.year, date.month, date.day, time.hour, time.minute);
         _dateController.text = combinedDateTime.toIso8601String();
       }
-    } else {
-      print('Canceled?');
     }
   }
 

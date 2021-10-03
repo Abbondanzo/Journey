@@ -24,7 +24,6 @@ class EntryDao extends Dao<Entry> {
 
   @override
   Entry fromMap(Map<String, dynamic> query) {
-    print(query);
     return Entry(
         id: query[columnId],
         title: query[_columnTitle] as String,

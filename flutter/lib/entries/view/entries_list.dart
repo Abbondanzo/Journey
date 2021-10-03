@@ -9,7 +9,6 @@ class EntriesList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<EntriesBloc, EntriesState>(builder: (_, state) {
-      print(state);
       if (state is EntriesLoading) {
         return this._buildLoading();
       } else if (state is EntriesLoaded) {
@@ -32,7 +31,6 @@ class EntriesList extends StatelessWidget {
     if (entries.isEmpty) {
       return _buildZeroState();
     }
-    print(entries);
     return ListView.builder(
       shrinkWrap: true,
       itemCount: entries.length,
@@ -48,7 +46,6 @@ class EntriesList extends StatelessWidget {
   }
 
   Widget _buildErrorState(BuildContext context, Exception e) {
-    print(e);
     return Container(
         alignment: Alignment.center,
         child: Column(children: [

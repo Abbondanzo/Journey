@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:journey/authentication/authentication.dart';
 
 class SignUpForm extends StatefulWidget {
   @override
@@ -59,11 +61,9 @@ class SignUpFormState extends State<SignUpForm> {
           ElevatedButton(
             onPressed: () {
               if (_formKey.currentState!.validate()) {
-                final from =
-                    'From "${_firstNameController.text} ${_lastNameController.text}"';
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(from)),
-                );
+                context.read<UserBloc>().add(SetUser(User(
+                    firstName: _firstNameController.text,
+                    lastName: _lastNameController.text)));
               } else {
                 setState(() {
                   _autovalidateMode = AutovalidateMode.onUserInteraction;

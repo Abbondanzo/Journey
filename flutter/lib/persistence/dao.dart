@@ -11,7 +11,7 @@ abstract class Dao<T> {
   /// Helper method for converting a list of database entities
   List<T> fromList(List<Map<String, dynamic>> query) {
     List<T> items = [];
-    for (Map map in query) {
+    for (Map<String, dynamic> map in query) {
       items.add(fromMap(map));
     }
     return items;

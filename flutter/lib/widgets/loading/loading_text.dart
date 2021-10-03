@@ -4,7 +4,8 @@ class LoadingText extends StatelessWidget {
   final double width;
   final double height;
 
-  const LoadingText({Key key, @required this.width, @required this.height})
+  const LoadingText(
+      {required Key key, required this.width, required this.height})
       : super(key: key);
 
   @override

@@ -1,17 +1,16 @@
-import 'package:journey/persistence/entry/entry_dao.dart';
+import 'package:journey/entries/persistence/entry_database_repository.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseProvider {
   static final _instance = DatabaseProvider._internal();
-  static DatabaseProvider get = _instance;
+  static final DatabaseProvider get = _instance;
   DatabaseProvider._internal();
 
-  Future<Database> _db;
+  Future<Database>? _db;
 
   Future<Database> db() {
-    _db ??= _initDb();
-    return _db;
+    return _db ??= _initDb();
   }
 
   // Guaranteed to be called only once.

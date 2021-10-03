@@ -25,11 +25,11 @@ class EntryDao extends Dao<Entry> {
   @override
   Entry fromMap(Map<String, dynamic> query) {
     return Entry(
-        query[columnId],
-        query[_columnTitle] as String,
-        query[_columnBody] as String,
-        DateTime.parse(query[_columnDateTime]),
-        _fromLocationMap(query[_columnLocation]));
+        id: query[columnId],
+        title: query[_columnTitle] as String,
+        body: query[_columnBody] as String,
+        dateTime: DateTime.parse(query[_columnDateTime]),
+        location: _fromLocationMap(query[_columnLocation]));
   }
 
   @override

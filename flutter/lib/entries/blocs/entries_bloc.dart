@@ -32,7 +32,14 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
       final entries = await entryRepository.getEntries();
       yield EntriesLoaded(entries);
     } catch (e) {
-      yield EntriesNotLoaded(e as Exception);
+      if (e is Exception) {
+        yield EntriesNotLoaded(e);
+      } else if (e is TypeError) {
+        yield EntriesNotLoaded(Exception(e.toString()));
+      } else {
+        yield EntriesNotLoaded(
+            Exception('Something went wrong while loading entries'));
+      }
     }
   }
 
@@ -62,7 +69,7 @@ class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
           .where((entry) => entry.id != event.entry.id)
           .toList();
       yield EntriesLoaded(updatedEntries);
-      await entryRepository.delete(event.entry);
+      await entryRepository.delete(event.entry.id);
     }
   }
 }

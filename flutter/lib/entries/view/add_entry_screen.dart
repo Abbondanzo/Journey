@@ -9,7 +9,7 @@ class AddEntryScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text("Add Entry"),
       ),
-      body: AddEntryForm(),
+      body: Padding(padding: const EdgeInsets.all(16), child: AddEntryForm()),
     );
   }
 }

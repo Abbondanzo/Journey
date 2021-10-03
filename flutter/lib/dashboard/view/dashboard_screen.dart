@@ -24,15 +24,27 @@ class DashboardScreen extends StatelessWidget {
                 return Text('UserID: $userId');
               },
             ),
-            EntriesList(),
             ElevatedButton(
               child: const Text('Logout'),
               onPressed: () {
                 context.read<UserBloc>().add(RemoveUser());
               },
             ),
+            Expanded(child: EntriesList()),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) {
+              return AddEntryScreen();
+            }),
+          );
+        },
+        child: Icon(Icons.add),
+        tooltip: "Add Entry",
       ),
     );
   }

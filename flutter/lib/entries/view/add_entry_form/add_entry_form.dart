@@ -33,9 +33,17 @@ class AddEntryFormState extends State<AddEntryForm> {
         context: context,
         initialDate: initialDate,
         firstDate: DateTime(1900),
-        lastDate: DateTime(2100));
+        lastDate: DateTime.now());
+
     if (date != null) {
-      _dateController.text = date.toIso8601String();
+      final initialTime = TimeOfDay.fromDateTime(initialDate);
+      final time =
+          await showTimePicker(context: context, initialTime: initialTime);
+      if (time != null) {
+        final combinedDateTime =
+            DateTime(date.year, date.month, date.day, time.hour, time.minute);
+        _dateController.text = combinedDateTime.toIso8601String();
+      }
     } else {
       print('Canceled?');
     }

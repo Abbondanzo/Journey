@@ -35,7 +35,7 @@ class SignUpFormState extends State<SignUpForm> {
         children: [
           TextFormField(
             autofocus: true,
-            decoration: const InputDecoration(labelText: 'First Name'),
+            decoration: const InputDecoration(labelText: 'First Name *'),
             controller: _firstNameController,
             keyboardType: TextInputType.name,
             validator: (value) {
@@ -47,7 +47,7 @@ class SignUpFormState extends State<SignUpForm> {
           ),
           SizedBox(height: 16),
           TextFormField(
-            decoration: const InputDecoration(labelText: 'Last Name'),
+            decoration: const InputDecoration(labelText: 'Last Name *'),
             controller: _lastNameController,
             keyboardType: TextInputType.name,
             validator: (value) {

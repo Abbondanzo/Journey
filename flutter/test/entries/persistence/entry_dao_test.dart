@@ -5,7 +5,12 @@ void main() {
   group('EntryDao', () {
     final location = Location('city', 'country', LatLng(1, 2));
     final dateTime = DateTime(2021, 5, 21, 6);
-    final entry = Entry('id', 'title', 'body', dateTime, location);
+    final entry = Entry(
+        id: 'id',
+        title: 'title',
+        body: 'body',
+        dateTime: dateTime,
+        location: location);
     final map = {
       'id': 'id',
       'title': 'title',

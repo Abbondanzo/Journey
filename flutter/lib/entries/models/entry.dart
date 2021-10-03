@@ -47,12 +47,17 @@ class Entry extends Equatable {
   final DateTime dateTime;
   final Location location;
 
-  Entry(this.id, this.title, this.body, this.dateTime, this.location);
-
-  Entry.asNew(this.title, this.body, this.location,
-      {String? id, DateTime? dateTime})
+  Entry(
+      {String? id,
+      required String title,
+      required String body,
+      DateTime? dateTime,
+      required Location location})
       : id = id ?? Uuid().generateV4(),
-        dateTime = dateTime ?? DateTime.now();
+        title = title,
+        body = body,
+        dateTime = dateTime ?? DateTime.now(),
+        location = location;
 
   @override
   List<Object?> get props => [id, title, body, dateTime, location];

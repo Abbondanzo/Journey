@@ -17,10 +17,10 @@ void main() {
         expect(location1.hashCode, isNot(equals(location2.hashCode)));
       });
 
-      test('if two models with inverted values, return same hashCode', () {
+      test('if two models with inverted values, return different hashCode', () {
         final location1 = Location('city', 'country', LatLng(1, 2));
         final location2 = Location('country', 'city', LatLng(1, 2));
-        expect(location1.hashCode, equals(location2.hashCode));
+        expect(location1.hashCode, isNot(equals(location2.hashCode)));
       });
     });
 
@@ -50,8 +50,7 @@ void main() {
     group('toString', () {
       test('returns string with all values', () {
         final location = Location('city', 'country', LatLng(1, 2));
-        final expectedString = 'Location{city: city, country: country, '
-            'latLng: LatLng{latitude: 1.0, longitude: 2.0}}';
+        final expectedString = 'Location(city, country, LatLng(1.0, 2.0))';
         expect(location.toString(), equals(expectedString));
       });
     });

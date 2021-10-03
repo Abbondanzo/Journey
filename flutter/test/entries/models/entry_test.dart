@@ -41,7 +41,8 @@ void main() {
         expect(entry1.hashCode, isNot(equals(entry2.hashCode)));
       });
 
-      test('if two entries with inverted values, return the same hashCode', () {
+      test('if two entries with inverted values, return different hashCode',
+          () {
         final location = Location('city', 'country', LatLng(1, 2));
         final dateTime = DateTime.now();
         final entry1 = Entry(
@@ -56,7 +57,7 @@ void main() {
             body: 'body',
             dateTime: dateTime,
             location: location);
-        expect(entry1.hashCode, (equals(entry2.hashCode)));
+        expect(entry1.hashCode, isNot(equals(entry2.hashCode)));
       });
     });
 
@@ -129,10 +130,8 @@ void main() {
             body: 'body',
             dateTime: dateTime,
             location: location);
-        final expectedString = 'Entry{id: id, title: title, body: body, '
-            'dateTime: 2021-05-21 06:00:00.000, '
-            'location: Location{city: city, country: country, '
-            'latLng: LatLng{latitude: 1.0, longitude: 2.0}}}';
+        final expectedString =
+            'Entry(id, title, body, 2021-05-21 06:00:00.000, Location(city, country, LatLng(1.0, 2.0)))';
         expect(entry.toString(), equals(expectedString));
       });
     });

@@ -16,12 +16,8 @@ void main() {
       'title': 'title',
       'body': 'body',
       'dateTime': '2021-05-21T06:00:00.000',
-      'location': {
-        'city': 'city',
-        'country': 'country',
-        'latitude': 1.0,
-        'longitude': 2.0
-      }
+      'location':
+          '{"city":"city","country":"country","latitude":1.0,"longitude":2.0}'
     };
 
     test('tableName returns entries', () {

@@ -50,7 +50,7 @@ void main() {
     group('toString', () {
       test('returns string with all values', () {
         final latLng = LatLng(1, 2);
-        final expectedString = 'LatLng{latitude: 1.0, longitude: 2.0}';
+        final expectedString = 'LatLng(1.0, 2.0)';
         expect(latLng.toString(), equals(expectedString));
       });
     });

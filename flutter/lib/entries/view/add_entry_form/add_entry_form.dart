@@ -14,6 +14,7 @@ class AddEntryFormState extends State<AddEntryForm> {
 
   final _titleController = TextEditingController();
   final _bodyController = TextEditingController();
+  final _dateController = TextEditingController();
 
   // Default to disabled since typing in one field validates the rest
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
@@ -23,6 +24,21 @@ class AddEntryFormState extends State<AddEntryForm> {
     _titleController.dispose();
     _bodyController.dispose();
     super.dispose();
+  }
+
+  Future _selectDate() async {
+    final initialDate =
+        DateTime.tryParse(_dateController.text) ?? DateTime.now();
+    final date = await showDatePicker(
+        context: context,
+        initialDate: initialDate,
+        firstDate: DateTime(1900),
+        lastDate: DateTime(2100));
+    if (date != null) {
+      _dateController.text = date.toIso8601String();
+    } else {
+      print('Canceled?');
+    }
   }
 
   @override
@@ -54,6 +70,19 @@ class AddEntryFormState extends State<AddEntryForm> {
             ),
             controller: _bodyController,
             keyboardType: TextInputType.name,
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            decoration: const InputDecoration(
+              labelText: 'Time',
+            ),
+            controller: _dateController,
+            onTap: () {
+              // Below line stops keyboard from appearing
+              FocusScope.of(context).requestFocus(new FocusNode());
+
+              _selectDate();
+            },
           ),
           SizedBox(height: 16),
           ElevatedButton(

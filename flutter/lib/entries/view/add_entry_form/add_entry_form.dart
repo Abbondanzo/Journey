@@ -68,8 +68,12 @@ class AddEntryFormState extends State<AddEntryForm> {
 
   @override
   void initState() {
-    _updateDateTimer =
-        Timer.periodic(Duration(minutes: 1), (Timer t) => _updateDate());
+    _updateDateTimer = Timer.periodic(Duration(seconds: 10), (Timer t) {
+      final now = DateTime.now();
+      if (now.hour == 0 && now.minute == 0 && now.second <= 10) {
+        _updateDate();
+      }
+    });
     super.initState();
   }
 

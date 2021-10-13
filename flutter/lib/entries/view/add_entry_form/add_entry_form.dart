@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:journey/entries/entries.dart';
 
@@ -60,8 +61,9 @@ class AddEntryFormState extends State<AddEntryForm> {
   // Use this function to update the dateController in the background
   Timer? _updateDateTimer;
 
-  // Store date in state internally
-  var _date = DateTime.now();
+  // Store date and location in state internally
+  DateTime _date = DateTime.now();
+  Location? _location = null;
 
   // Default to disabled since typing in one field validates the rest
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
@@ -121,6 +123,48 @@ class AddEntryFormState extends State<AddEntryForm> {
     }
   }
 
+  Future _assignCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    final currentPosition = await Geolocator.getCurrentPosition();
+
+    setState(() {
+      _location = Location('Unknown', 'Unknown',
+          LatLng(currentPosition.latitude, currentPosition.longitude));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -129,7 +173,7 @@ class AddEntryFormState extends State<AddEntryForm> {
         child: Container(
           child: SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Padding(
                   padding: const EdgeInsets.all(30),
@@ -210,7 +254,7 @@ class AddEntryFormState extends State<AddEntryForm> {
                             style: Theme.of(context).textTheme.headline6),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () => {print('Use Current Location')},
+                          onPressed: _assignCurrentLocation,
                           child: const Text('Use Current Location'),
                           style: ElevatedButton.styleFrom(
                             minimumSize: Size(double.infinity, 40),
@@ -219,30 +263,48 @@ class AddEntryFormState extends State<AddEntryForm> {
                         const Center(
                             child: Text('OR', textAlign: TextAlign.center)),
                         OutlinedButton(
-                          onPressed: () => {print('Enter Location Manually')},
+                          onPressed: () {
+                            setState(() {
+                              _location = Location('Boston', 'United States',
+                                  LatLng(42.361145, -71.057083));
+                            });
+                          },
                           child: const Text('Enter Location Manually'),
                           style: OutlinedButton.styleFrom(
                             minimumSize: Size(double.infinity, 40),
                           ),
-                        )
+                        ),
+                        if (_location != null) Text('Location: $_location')
                       ],
                     )),
-                ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      final entry = Entry(
-                          title: _titleController.text,
-                          body: _bodyController.text,
-                          location: Location('city', 'country', LatLng(1, 2)));
-                      context.read<EntriesBloc>().add(AddEntry(entry));
-                    } else {
-                      setState(() {
-                        _autovalidateMode = AutovalidateMode.onUserInteraction;
-                      });
-                    }
-                  },
-                  child: const Text('Submit'),
-                ),
+                const Divider(),
+                Padding(
+                    padding: const EdgeInsets.all(30),
+                    child: ElevatedButton(
+                      onPressed: _location == null
+                          ? null
+                          : () {
+                              if (_formKey.currentState!.validate()) {
+                                final entry = Entry(
+                                    title: _titleController.text,
+                                    body: _bodyController.text,
+                                    location: Location(
+                                        'city', 'country', LatLng(1, 2)));
+                                context
+                                    .read<EntriesBloc>()
+                                    .add(AddEntry(entry));
+                              } else {
+                                setState(() {
+                                  _autovalidateMode =
+                                      AutovalidateMode.onUserInteraction;
+                                });
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(double.infinity, 40),
+                      ),
+                      child: const Text('Submit'),
+                    )),
               ],
             ),
           ),

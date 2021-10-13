@@ -288,11 +288,11 @@ class AddEntryFormState extends State<AddEntryForm> {
                                 final entry = Entry(
                                     title: _titleController.text,
                                     body: _bodyController.text,
-                                    location: Location(
-                                        'city', 'country', LatLng(1, 2)));
+                                    location: _location!);
                                 context
                                     .read<EntriesBloc>()
                                     .add(AddEntry(entry));
+                                Navigator.pop(context);
                               } else {
                                 setState(() {
                                   _autovalidateMode =

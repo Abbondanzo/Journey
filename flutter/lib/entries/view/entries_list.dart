@@ -13,8 +13,10 @@ class EntriesList extends StatelessWidget {
         return this._buildLoading();
       } else if (state is EntriesLoaded) {
         return this._buildLoaded(state.entries);
+      } else if (state is EntriesNotLoaded) {
+        return this._buildErrorState(context, state.exception);
       } else {
-        return this._buildZeroState();
+        throw ArgumentError.value(state, 'Illegal entry state');
       }
     });
   }
@@ -30,6 +32,7 @@ class EntriesList extends StatelessWidget {
       return _buildZeroState();
     }
     return ListView.builder(
+      shrinkWrap: true,
       itemCount: entries.length,
       itemBuilder: (BuildContext context, int index) {
         final entry = entries[index];
@@ -42,11 +45,26 @@ class EntriesList extends StatelessWidget {
     );
   }
 
+  Widget _buildErrorState(BuildContext context, Exception e) {
+    return Container(
+        alignment: Alignment.center,
+        child: Column(children: [
+          const Text(
+            'Entries failed to load. Tap to retry',
+          ),
+          ElevatedButton(
+              onPressed: () {
+                context.read<EntriesBloc>().add(LoadEntries());
+              },
+              child: const Text('Retry'))
+        ]));
+  }
+
   Widget _buildZeroState() {
     return Container(
         alignment: Alignment.center,
-        child: Text(
-          "No entries exist!",
+        child: const Text(
+          'No entries exist!',
         ));
   }
 }

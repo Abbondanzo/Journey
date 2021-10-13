@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:journey/entries/entries.dart';
 import 'package:journey/persistence/dao.dart';
 import 'package:journey/persistence/database_provider.dart';
@@ -33,10 +35,9 @@ class EntryDatabaseRepository implements EntryRepository {
   }
 
   @override
-  Future<Entry> delete(Entry entry) async {
+  Future<void> delete(String entryId) async {
     final db = await _databaseProvider.db();
     await db.delete(_dao.tableName,
-        where: _dao.columnId + " = ?", whereArgs: [entry.id]);
-    return entry;
+        where: _dao.columnId + " = ?", whereArgs: [entryId]);
   }
 }

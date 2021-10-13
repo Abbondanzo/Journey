@@ -5,7 +5,7 @@ abstract class EntryRepository {
 
   Future<Entry> update(Entry entry);
 
-  Future<Entry> delete(Entry entry);
+  Future<void> delete(String entryId);
 
   Future<List<Entry>> getEntries();
 }

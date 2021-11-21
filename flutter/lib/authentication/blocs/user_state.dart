@@ -12,7 +12,7 @@ class UserLoading extends UserState {}
 class UserLoaded extends UserState {
   final User? user;
 
-  const UserLoaded([this.user = null]);
+  const UserLoaded([this.user]);
 
   @override
   List<Object> get props => [user ?? true];

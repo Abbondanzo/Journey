@@ -30,7 +30,7 @@ class AppRouterDelegate extends RouterDelegate<AppPath>
   GlobalKey<NavigatorState> get navigatorKey => _navigatorKey;
 
   AppRouterDelegate(this._userRepository)
-      : _navigatorKey = GlobalKey<NavigatorState>() {}
+      : _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {

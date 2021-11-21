@@ -9,30 +9,23 @@ part 'user_state.dart';
 class UserBloc extends Bloc<UserEvent, UserState> {
   final UserRepository userRepository;
 
-  UserBloc({required this.userRepository}) : super(UserLoading());
-
-  @override
-  Stream<UserState> mapEventToState(UserEvent event) async* {
-    if (event is LoadUser) {
-      yield* _mapLoadUserToState();
-    } else if (event is RemoveUser) {
-      yield* _mapRemoveUserToState();
-    } else if (event is SetUser) {
-      yield* _mapSetUserToState(event);
-    }
+  UserBloc({required this.userRepository}) : super(UserLoading()) {
+    on<LoadUser>(_onLoadUser);
+    on<RemoveUser>(_onRemoveUser);
+    on<SetUser>(_onSetUser);
   }
 
-  Stream<UserState> _mapLoadUserToState() async* {
+  void _onLoadUser(LoadUser event, Emitter<UserState> emit) async {
     try {
       final user = await userRepository.getUser();
-      yield UserLoaded(user);
+      emit(UserLoaded(user));
     } catch (e) {
-      yield UserNotLoaded(e as Exception);
+      emit(UserNotLoaded(e as Exception));
     }
   }
 
-  Stream<UserState> _mapRemoveUserToState() async* {
-    yield UserLoaded(null);
+  void _onRemoveUser(RemoveUser event, Emitter<UserState> emit) async {
+    emit(UserLoaded(null));
 
     if (state is UserLoaded) {
       // Only perform remove on loaded state if a user exists
@@ -44,8 +37,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     }
   }
 
-  Stream<UserState> _mapSetUserToState(SetUser event) async* {
-    yield UserLoaded(event.user);
+  void _onSetUser(SetUser event, Emitter<UserState> emit) async {
+    emit(UserLoaded(event.user));
     await userRepository.setUser(event.user);
   }
 }

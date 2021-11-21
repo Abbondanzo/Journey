@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:journey/entries/entries.dart';
 import 'package:journey/models/uuid.dart';
 import 'package:meta/meta.dart';
 

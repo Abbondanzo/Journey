@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
@@ -12,63 +10,55 @@ part 'entries_state.dart';
 class EntriesBloc extends Bloc<EntriesEvent, EntriesState> {
   final EntryRepository entryRepository;
 
-  EntriesBloc({required this.entryRepository}) : super(EntriesLoading());
-
-  @override
-  Stream<EntriesState> mapEventToState(EntriesEvent event) async* {
-    if (event is LoadEntries) {
-      yield* _mapLoadEntriesToState();
-    } else if (event is AddEntry) {
-      yield* _mapAddEntryToState(event);
-    } else if (event is UpdateEntry) {
-      yield* _mapUpdateEntryToState(event);
-    } else if (event is DeleteEntry) {
-      yield* _mapDeleteEntryToState(event);
-    }
+  EntriesBloc({required this.entryRepository}) : super(EntriesLoading()) {
+    on<LoadEntries>(_onLoadEntries);
+    on<AddEntry>(_onAddEntry);
+    on<UpdateEntry>(_onUpdateEntry);
+    on<DeleteEntry>(_onDeleteEntry);
   }
 
-  Stream<EntriesState> _mapLoadEntriesToState() async* {
+  void _onLoadEntries(LoadEntries event, Emitter<EntriesState> emit) async {
     try {
       final entries = await entryRepository.getEntries();
-      yield EntriesLoaded(entries);
+      emit(EntriesLoaded(entries));
     } catch (e) {
       if (e is Exception) {
-        yield EntriesNotLoaded(e);
+        emit(EntriesNotLoaded(e));
       } else if (e is TypeError) {
-        yield EntriesNotLoaded(Exception(e.toString()));
+        emit(EntriesNotLoaded(Exception(e.toString())));
       } else {
-        yield EntriesNotLoaded(
-            Exception('Something went wrong while loading entries'));
+        emit(EntriesNotLoaded(
+            Exception('Something went wrong while loading entries')));
       }
     }
   }
 
-  Stream<EntriesState> _mapAddEntryToState(AddEntry event) async* {
+  void _onAddEntry(AddEntry event, Emitter<EntriesState> emit) async {
     if (state is EntriesLoaded) {
       final updatedEntries = List<Entry>.from((state as EntriesLoaded).entries)
         ..add(event.entry);
-      yield EntriesLoaded(updatedEntries);
+      emit(EntriesLoaded(updatedEntries));
       await entryRepository.insert(event.entry);
     }
   }
 
-  Stream<EntriesState> _mapUpdateEntryToState(UpdateEntry event) async* {
+  void _onUpdateEntry(UpdateEntry event, Emitter<EntriesState> emit) async {
     if (state is EntriesLoaded) {
       final updatedEntries = (state as EntriesLoaded).entries.map((entry) {
         return entry.id == event.updatedEntry.id ? event.updatedEntry : entry;
       }).toList();
-      yield EntriesLoaded(updatedEntries);
+      emit(EntriesLoaded(updatedEntries));
       await entryRepository.update(event.updatedEntry);
     }
   }
 
-  Stream<EntriesState> _mapDeleteEntryToState(DeleteEntry event) async* {
+  void _onDeleteEntry(DeleteEntry event, Emitter<EntriesState> emit) async {
     if (state is EntriesLoaded) {
       final updatedEntries = (state as EntriesLoaded)
           .entries
           .where((entry) => entry.id != event.entry.id)
           .toList();
-      yield EntriesLoaded(updatedEntries);
+      emit(EntriesLoaded(updatedEntries));
       await entryRepository.delete(event.entry.id);
     }
   }

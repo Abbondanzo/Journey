@@ -63,7 +63,7 @@ class AddEntryFormState extends State<AddEntryForm> {
 
   // Store date and location in state internally
   DateTime _date = DateTime.now();
-  Location? _location = null;
+  Location? _location;
 
   // Default to disabled since typing in one field validates the rest
   AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;

@@ -1,6 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:journey/entries/entries.dart';
 
+class _DashboardTab extends StatelessWidget {
+  final Icon icon;
+
+  _DashboardTab({required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final Color dividerColor = Theme.of(context).dividerColor;
+    return Tab(
+      child: Container(
+        child: icon,
+        alignment: Alignment.center,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          border: Border(
+            right: BorderSide(color: dividerColor),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class DashboardContent extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -10,56 +33,52 @@ class DashboardContent extends StatefulWidget {
 
 class DashboardContentState extends State<DashboardContent>
     with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  var currentIndex = 0;
+  late TabController _controller;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(vsync: this, length: 3);
-    _tabController.addListener(_handleTabSelection);
+    _controller = TabController(vsync: this, length: 3, initialIndex: 2);
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    _controller.dispose();
     super.dispose();
-  }
-
-  void _handleTabSelection() {
-    setState(() {
-      currentIndex = _tabController.index;
-    });
-  }
-
-  Color _getIconColor(BuildContext context, int tabIndex) {
-    if (currentIndex == tabIndex) {
-      return Theme.of(context).primaryColor;
-    } else {
-      return Color(0xFF8E8E8E);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    print(currentIndex);
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      TabBar(
-        controller: _tabController,
-        tabs: [
-          Tab(
-            icon: Icon(Icons.directions_car, color: _getIconColor(context, 0)),
-          ),
-          Tab(
-              icon: Icon(Icons.directions_transit,
-                  color: _getIconColor(context, 1))),
-          Tab(
-              icon: Icon(Icons.directions_bike,
-                  color: _getIconColor(context, 2))),
-        ],
-      ),
-      Expanded(child: EntriesList()),
-    ]);
+    final Color primaryColor = Theme.of(context).primaryColor;
+    final Color dividerColor = Theme.of(context).dividerColor;
+
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: dividerColor))),
+          child: TabBar(
+              controller: _controller,
+              indicatorColor: primaryColor,
+              labelColor: primaryColor,
+              labelPadding: EdgeInsets.zero,
+              unselectedLabelColor: Color(0xFF8E8E8E),
+              tabs: [
+                _DashboardTab(icon: Icon(Icons.map_outlined)),
+                _DashboardTab(icon: Icon(Icons.local_activity_outlined)),
+                _DashboardTab(icon: Icon(Icons.book_outlined))
+              ]),
+        ),
+        Expanded(
+            child: TabBarView(
+          controller: _controller,
+          children: [
+            Center(child: Text("Map")),
+            Center(child: Text("Stats")),
+            EntriesList()
+          ],
+        ))
+      ],
+    );
   }
 }

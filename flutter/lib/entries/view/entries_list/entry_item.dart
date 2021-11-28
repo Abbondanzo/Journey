@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../models/entry.dart';
+import 'package:journey/entries/entries.dart';
 
 class EntryItem extends StatelessWidget {
   final Entry entry;
@@ -22,12 +21,5 @@ class EntryItem extends StatelessWidget {
           style: TextStyle(color: Color(0xFFB8B8B8)),
           key: Key('${entry.id}__subtitle')),
     );
-    // return Scaffold(
-    //     body: ListTile(
-    //   onTap: onTap,
-    //   title: Text(entry.title, key: Key('${entry.id}__title')),
-    //   subtitle: Text(entry.location.formattedLocation(),
-    //       key: Key('${entry.id}__subtitle')),
-    // ));
   }
 }

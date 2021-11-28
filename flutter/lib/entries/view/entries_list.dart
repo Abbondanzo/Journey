@@ -31,7 +31,7 @@ class EntriesList extends StatelessWidget {
     if (entries.isEmpty) {
       return _buildZeroState();
     }
-    return ListView.builder(
+    return ListView.separated(
       shrinkWrap: true,
       itemCount: entries.length,
       itemBuilder: (BuildContext context, int index) {
@@ -42,6 +42,7 @@ class EntriesList extends StatelessWidget {
               print("Item $index");
             });
       },
+      separatorBuilder: (context, index) => Divider(height: 1),
     );
   }
 

@@ -14,6 +14,11 @@ final purpleTheme = ThemeData(
       800: Color(0xFF442AAC),
       900: Color(0xFF331C9F),
     }),
+    fontFamily: 'Gotham',
+    textTheme: TextTheme(
+      bodyText1: TextStyle(),
+      bodyText2: TextStyle(),
+    ).apply(displayColor: Color(0xFF727272), bodyColor: Color(0xFFB8B8B8)),
     buttonTheme: ButtonThemeData(
         padding: EdgeInsets.symmetric(horizontal: 16.0),
         shape: const StadiumBorder()),

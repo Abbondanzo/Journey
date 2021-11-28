@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:journey/authentication/authentication.dart';
 import 'package:journey/entries/entries.dart';
 
+import './dashboard_content.dart';
+
 class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,7 @@ class DashboardScreen extends StatelessWidget {
                 context.read<UserBloc>().add(RemoveUser());
               },
             ),
-            Expanded(child: EntriesList()),
+            Expanded(child: DashboardContent())
           ],
         ),
       ),

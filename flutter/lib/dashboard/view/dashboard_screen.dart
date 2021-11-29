@@ -45,6 +45,7 @@ class DashboardScreenState extends State<DashboardScreen>
               expandedHeight: _appBarHeight,
               floating: false,
               title: Text('Dashboard'),
+              centerTitle: true,
               flexibleSpace: LayoutBuilder(
                   builder: (BuildContext context, BoxConstraints constraints) {
                 final rawPercentAboveThreshold = (constraints.maxHeight -

@@ -12,7 +12,7 @@ class EntriesList extends StatelessWidget {
       if (state is EntriesLoading) {
         return this._buildLoading();
       } else if (state is EntriesLoaded) {
-        return this._buildZeroState();
+        return this._buildLoaded(state.entries);
       } else if (state is EntriesNotLoaded) {
         return this._buildErrorState(context, state.exception);
       } else {
@@ -21,64 +21,51 @@ class EntriesList extends StatelessWidget {
     });
   }
 
-  RenderObjectWidget _buildLoading() {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
-        return EntryItemLoading();
-      }, childCount: 3),
+  Widget _buildLoading() {
+    return ListView(
+      children: [EntryItemLoading(), EntryItemLoading(), EntryItemLoading()],
     );
   }
 
-  RenderObjectWidget _buildLoaded(List<Entry> entries) {
+  Widget _buildLoaded(List<Entry> entries) {
     if (entries.isEmpty) {
       return _buildZeroState();
     }
-    return SliverList(
-      delegate: SliverChildBuilderDelegate((BuildContext context, int index) {
+    return ListView.separated(
+      shrinkWrap: true,
+      itemCount: entries.length,
+      itemBuilder: (BuildContext context, int index) {
+        final entry = entries[index];
         return EntryItem(
-            entry: entries[index],
+            entry: entry,
             onTap: () {
               print("Item $index");
             });
-      }, childCount: entries.length),
+      },
+      separatorBuilder: (context, index) => Divider(height: 1),
     );
-    // return SliverList.separated(
-    //   shrinkWrap: true,
-    //   itemCount: entries.length,
-    //   itemBuilder: (BuildContext context, int index) {
-    //     final entry = entries[index];
-    //     return EntryItem(
-    //         entry: entry,
-    //         onTap: () {
-    //           print("Item $index");
-    //         });
-    //   },
-    //   separatorBuilder: (context, index) => Divider(height: 1),
-    // );
   }
 
-  RenderObjectWidget _buildErrorState(BuildContext context, Exception e) {
-    return SliverToBoxAdapter(
-        child: Container(
-            alignment: Alignment.center,
-            child: Column(children: [
-              const Text(
-                'Entries failed to load. Tap to retry',
-              ),
-              ElevatedButton(
-                  onPressed: () {
-                    context.read<EntriesBloc>().add(LoadEntries());
-                  },
-                  child: const Text('Retry'))
-            ])));
+  Widget _buildErrorState(BuildContext context, Exception e) {
+    return Container(
+        alignment: Alignment.center,
+        child: Column(children: [
+          const Text(
+            'Entries failed to load. Tap to retry',
+          ),
+          ElevatedButton(
+              onPressed: () {
+                context.read<EntriesBloc>().add(LoadEntries());
+              },
+              child: const Text('Retry'))
+        ]));
   }
 
-  RenderObjectWidget _buildZeroState() {
-    return SliverToBoxAdapter(
-        child: Container(
-            alignment: Alignment.center,
-            child: const Text(
-              'No entries exist!',
-            )));
+  Widget _buildZeroState() {
+    return Container(
+        alignment: Alignment.center,
+        child: const Text(
+          'No entries exist!',
+        ));
   }
 }

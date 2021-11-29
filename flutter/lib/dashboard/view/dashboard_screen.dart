@@ -69,8 +69,8 @@ class DashboardScreenState extends State<DashboardScreen>
               child: TabBarView(
             controller: _tabController,
             children: [
-              Center(child: Text("Map")),
-              Center(child: Text("Stats")),
+              Center(child: Text('Map')),
+              Center(child: Text('Stats')),
               Center(child: EntriesList())
             ],
           ))
@@ -86,7 +86,7 @@ class DashboardScreenState extends State<DashboardScreen>
           );
         },
         child: Icon(Icons.add),
-        tooltip: "Add Entry",
+        tooltip: 'Add Entry',
       ),
     );
   }

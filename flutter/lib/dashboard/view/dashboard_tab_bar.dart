@@ -71,8 +71,8 @@ class DashboardTabBar extends StatelessWidget {
     return SliverPersistentHeader(
         pinned: true,
         delegate: _SliverAppBarDelegate(
-            minHeight: 40.0,
-            maxHeight: 40.0,
+            minHeight: 44.0,
+            maxHeight: 44.0,
             child: Container(
               decoration: BoxDecoration(
                   color: Colors.white,

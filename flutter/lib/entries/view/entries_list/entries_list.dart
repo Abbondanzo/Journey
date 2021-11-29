@@ -22,7 +22,7 @@ class EntriesList extends StatelessWidget {
   }
 
   Widget _buildLoading() {
-    return ListView(
+    return Column(
       children: [EntryItemLoading(), EntryItemLoading(), EntryItemLoading()],
     );
   }
@@ -31,19 +31,15 @@ class EntriesList extends StatelessWidget {
     if (entries.isEmpty) {
       return _buildZeroState();
     }
-    return ListView.separated(
-      shrinkWrap: true,
-      itemCount: entries.length,
-      itemBuilder: (BuildContext context, int index) {
-        final entry = entries[index];
-        return EntryItem(
-            entry: entry,
-            onTap: () {
-              print("Item $index");
-            });
-      },
-      separatorBuilder: (context, index) => Divider(height: 1),
-    );
+
+    return Column(
+        children: entries.map<Widget>((entry) {
+      return EntryItem(
+          entry: entry,
+          onTap: () {
+            print("Item $entry");
+          });
+    }).toList());
   }
 
   Widget _buildErrorState(BuildContext context, Exception e) {

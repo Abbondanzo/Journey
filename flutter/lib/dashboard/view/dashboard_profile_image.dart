@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 class DashboardProfileImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
+    return CircleAvatar(
+      backgroundColor: Colors.black,
+      minRadius: 48.0,
+      maxRadius: 48.0,
+    );
   }
 }

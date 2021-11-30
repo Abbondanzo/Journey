@@ -14,10 +14,43 @@ class DashboardScreen extends StatefulWidget {
   }
 }
 
+class _DashboardTabView extends StatelessWidget {
+  final String tabName;
+  final Widget child;
+
+  _DashboardTabView({required this.tabName, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      bottom: false,
+      child: Builder(
+        builder: (BuildContext context) {
+          return CustomScrollView(
+            key: PageStorageKey<String>(tabName),
+            slivers: <Widget>[
+              SliverOverlapInjector(
+                handle:
+                    NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+              ),
+              SliverToBoxAdapter(child: child)
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
 class DashboardScreenState extends State<DashboardScreen>
     with SingleTickerProviderStateMixin {
-  final _appBarHeight = 250.0;
-  final _fadeOutThreshold = 40.0;
+  final _appBarHeight = 300.0;
+  final _dashboardTabs = [
+    DashboardTab(name: 'Map', icon: Icon(Icons.map_outlined)),
+    DashboardTab(name: 'Stats', icon: Icon(Icons.local_activity_outlined)),
+    DashboardTab(name: 'Entries', icon: Icon(Icons.book_outlined))
+  ];
 
   late TabController _tabController;
   late ScrollController _scrollController;
@@ -39,60 +72,54 @@ class DashboardScreenState extends State<DashboardScreen>
   Widget build(BuildContext context) {
     final Color primaryColor = Theme.of(context).primaryColor;
     return Scaffold(
-      body: CustomScrollView(
-        controller: _scrollController,
-        slivers: <Widget>[
-          SliverAppBar(
-              pinned: true,
-              expandedHeight: _appBarHeight,
-              floating: false,
-              title: const Text('Dashboard'),
-              centerTitle: true,
-              flexibleSpace: LayoutBuilder(
-                  builder: (BuildContext context, BoxConstraints constraints) {
-                final rawPercentAboveThreshold = (constraints.maxHeight -
-                        kToolbarHeight -
-                        _fadeOutThreshold) /
-                    (_appBarHeight - kToolbarHeight - _fadeOutThreshold);
-                // Bounds percentange to [0, 1]
-                final double opacity = max(min(rawPercentAboveThreshold, 1), 0);
-                return SafeArea(
-                    child: Container(
-                        alignment: Alignment.center,
-                        decoration: new BoxDecoration(
-                          gradient: new LinearGradient(
-                              begin: Alignment(-1.0, -1),
-                              end: Alignment(1.0, 1),
-                              colors: [Color(0xFF5B70D9), primaryColor]),
-                        ),
-                        child: Opacity(
-                            opacity: opacity,
-                            child: ClipRect(
-                                child: OverflowBox(
-                                    maxWidth: double.infinity,
-                                    maxHeight: double.infinity,
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const SizedBox(height: 24),
-                                        DashboardProfileImage(),
-                                        const SizedBox(height: 12),
-                                        DashboardName(),
-                                      ],
-                                    ))))));
-              })),
-          DashboardTabBar(controller: _tabController),
-          SliverFillRemaining(
-              child: TabBarView(
-            controller: _tabController,
-            children: [
-              Center(child: Text('Map')),
-              Center(child: Text('Stats')),
-              Center(child: EntriesList())
-            ],
-          ))
-        ],
+      body: NestedScrollView(
+        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+          return <Widget>[
+            SliverOverlapAbsorber(
+              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+              sliver: SliverAppBar(
+                  title: const Text('Dashboard'),
+                  centerTitle: true,
+                  pinned: true,
+                  expandedHeight: _appBarHeight,
+                  forceElevated: innerBoxIsScrolled,
+                  flexibleSpace: FlexibleSpaceBar(
+                      titlePadding: const EdgeInsets.only(bottom: 8.0),
+                      centerTitle: true,
+                      collapseMode: CollapseMode.parallax,
+                      background: Container(
+                          decoration: new BoxDecoration(
+                            gradient: new LinearGradient(
+                                begin: Alignment(-1.0, -1),
+                                end: Alignment(1.0, 1),
+                                colors: [Color(0xFF5B70D9), primaryColor]),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(height: kToolbarHeight),
+                              DashboardProfileImage(),
+                              const SizedBox(height: 12),
+                              DashboardName(),
+                              const SizedBox(height: 24),
+                            ],
+                          ))),
+                  bottom: DashboardTabBar(
+                      controller: _tabController,
+                      dashboardTabs: _dashboardTabs)),
+            ),
+          ];
+        },
+        body: TabBarView(controller: _tabController, children: [
+          _DashboardTabView(
+              tabName: _dashboardTabs[0].name,
+              child: Center(child: Text('Map'))),
+          _DashboardTabView(
+              tabName: _dashboardTabs[1].name,
+              child: Center(child: Text('Stats'))),
+          _DashboardTabView(
+              tabName: _dashboardTabs[2].name, child: EntriesList())
+        ]),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

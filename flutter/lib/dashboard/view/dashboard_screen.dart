@@ -37,6 +37,7 @@ class DashboardScreenState extends State<DashboardScreen>
 
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = Theme.of(context).primaryColor;
     return Scaffold(
       body: CustomScrollView(
         controller: _scrollController,
@@ -58,6 +59,12 @@ class DashboardScreenState extends State<DashboardScreen>
                 return SafeArea(
                     child: Container(
                         alignment: Alignment.center,
+                        decoration: new BoxDecoration(
+                          gradient: new LinearGradient(
+                              begin: Alignment(-1.0, -1),
+                              end: Alignment(1.0, 1),
+                              colors: [Color(0xFF5B70D9), primaryColor]),
+                        ),
                         child: Opacity(
                             opacity: opacity,
                             child: ClipRect(

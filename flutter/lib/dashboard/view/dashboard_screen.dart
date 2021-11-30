@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:journey/entries/entries.dart';
 
+import './dashboard_name.dart';
 import './dashboard_profile_image.dart';
 import './dashboard_tab_bar.dart';
 
@@ -15,7 +16,7 @@ class DashboardScreen extends StatefulWidget {
 
 class DashboardScreenState extends State<DashboardScreen>
     with SingleTickerProviderStateMixin {
-  final _appBarHeight = 200.0;
+  final _appBarHeight = 250.0;
   final _fadeOutThreshold = 40.0;
 
   late TabController _tabController;
@@ -44,7 +45,7 @@ class DashboardScreenState extends State<DashboardScreen>
               pinned: true,
               expandedHeight: _appBarHeight,
               floating: false,
-              title: Text('Dashboard'),
+              title: const Text('Dashboard'),
               centerTitle: true,
               flexibleSpace: LayoutBuilder(
                   builder: (BuildContext context, BoxConstraints constraints) {
@@ -58,11 +59,21 @@ class DashboardScreenState extends State<DashboardScreen>
                     child: Container(
                         alignment: Alignment.center,
                         child: Opacity(
-                          opacity: opacity,
-                          child: Stack(
-                            children: [DashboardProfileImage()],
-                          ),
-                        )));
+                            opacity: opacity,
+                            child: ClipRect(
+                                child: OverflowBox(
+                                    maxWidth: double.infinity,
+                                    maxHeight: double.infinity,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const SizedBox(height: 24),
+                                        DashboardProfileImage(),
+                                        const SizedBox(height: 12),
+                                        DashboardName(),
+                                      ],
+                                    ))))));
               })),
           DashboardTabBar(controller: _tabController),
           SliverFillRemaining(

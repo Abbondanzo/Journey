@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "scheme": "journey",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -15,6 +16,7 @@
     "ios": {
       "supportsTablet": true
     },
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",

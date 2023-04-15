@@ -1,23 +1,10 @@
 import { registerRootComponent } from 'expo';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { ExpoRoot } from 'expo-router';
 
 function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your appp!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+  // @ts-expect-error require is not typed
+  const ctx = require.context('./app');
+  return <ExpoRoot context={ctx} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
 
 registerRootComponent(App);

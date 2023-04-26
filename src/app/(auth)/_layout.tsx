@@ -1,6 +1,6 @@
 import { Redirect, Slot } from 'expo-router';
 import { useContext } from 'react';
-import { SessionContext } from '../../auth/SessionContext';
+import { SessionContext } from '../../features/auth/SessionContext';
 
 export default function Layout() {
   const session = useContext(SessionContext);

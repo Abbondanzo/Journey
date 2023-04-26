@@ -1,5 +1,5 @@
 import { Button, StyleSheet, Text, View } from 'react-native';
-import { useActiveSession } from '../../auth/useActiveSession';
+import { useActiveSession } from '../../features/auth/useActiveSession';
 
 export default function Home() {
   const session = useActiveSession();

@@ -1,5 +1,5 @@
 import { Button, StyleSheet, Text, View } from 'react-native';
-import { useSession } from '../../auth/useSession';
+import { useSession } from '../../features/auth/useSession';
 
 export default function SignUp() {
   const session = useSession();

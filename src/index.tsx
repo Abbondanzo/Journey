@@ -1,10 +1,15 @@
 import { registerRootComponent } from 'expo';
 import { ExpoRoot } from 'expo-router';
+import { SessionProvider } from './auth/SessionProvider';
 
 function App() {
   // @ts-expect-error require is not typed
   const ctx = require.context('./app');
-  return <ExpoRoot context={ctx} />;
+  return (
+    <SessionProvider>
+      <ExpoRoot context={ctx} />
+    </SessionProvider>
+  );
 }
 
 registerRootComponent(App);

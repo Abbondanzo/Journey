@@ -1,8 +1,8 @@
 import { Button, StyleSheet, Text, View } from 'react-native';
-import { useSession } from '../../features/auth/useSession';
+import { useSession } from '../../features/auth/hooks/useSession';
 
 export default function SignUp() {
-  const session = useSession();
+  const { session, logIn } = useSession();
   return (
     <View style={styles.container}>
       <Text>Sign Up</Text>
@@ -10,7 +10,7 @@ export default function SignUp() {
         title="Home"
         onPress={() => {
           if (session.status === 'inactive') {
-            session.logIn({ id: 456, first: 'John', last: 'Doe' });
+            logIn({ id: 456, first: 'John', last: 'Doe' });
           }
         }}
       />

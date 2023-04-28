@@ -1,12 +1,12 @@
 import { Button, StyleSheet, Text, View } from 'react-native';
-import { useActiveSession } from '../../features/auth/useActiveSession';
+import { useActiveSession } from '../../features/auth/hooks/useActiveSession';
 
 export default function Home() {
-  const session = useActiveSession();
+  const { session, logOut } = useActiveSession();
   return (
     <View style={styles.container}>
       <Text>Ello {session.user.first}!</Text>
-      <Button title="Sign Out" onPress={session.logOut} />
+      <Button title="Sign Out" onPress={logOut} />
     </View>
   );
 }

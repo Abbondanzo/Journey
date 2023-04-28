@@ -1,8 +1,7 @@
 import { Redirect, Slot } from 'expo-router';
-import { useContext } from 'react';
-import { SessionContext } from '../../features/auth/SessionContext';
+import { useSession } from '../../features/auth/hooks/useSession';
 
 export default function Layout() {
-  const session = useContext(SessionContext);
+  const { session } = useSession();
   return session.status === 'active' ? <Slot /> : <Redirect href="/sign-up" />;
 }

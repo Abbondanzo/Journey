@@ -16,14 +16,17 @@ export const SessionProvider = ({ children }: Props) => {
 
     getSession()
       .then((maybeSession) => {
-        signal.throwIfAborted();
+        if (signal.aborted) {
+          throw new Error('Abort');
+        }
         if (maybeSession !== null) {
           setSession(maybeSession);
         } else {
           throw new Error('Fall through');
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error(err);
         if (!signal.aborted) {
           setSession({ status: 'inactive' });
         }

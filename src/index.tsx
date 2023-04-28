@@ -1,6 +1,6 @@
 import { registerRootComponent } from 'expo';
 import { ExpoRoot } from 'expo-router';
-import { SessionProvider } from './features/auth/SessionProvider';
+import { SessionProvider } from './features/auth/components/SessionProvider';
 
 function App() {
   // @ts-expect-error require is not typed

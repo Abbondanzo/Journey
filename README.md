@@ -8,6 +8,10 @@ A private, local-first log of everywhere you've been. Pin places by hand, or let
 
 > v2 is a rewrite. The 2018 React/Redux + Firebase web app and the Android/Flutter clients were removed; they remain in git history before this branch.
 
+## Live
+
+**https://abbondanzo.github.io/Journey/** is rebuilt and deployed by GitHub Actions (`.github/workflows/deploy.yml`) on every push to `master` (and to `v2-local-first` while it's in review): typecheck, tests, build, then publish to the `gh-pages` branch. Pull requests run the same checks without deploying. Add it to your home screen from the browser's share menu to use it like an app.
+
 ## Run it
 
 ```sh
@@ -25,8 +29,8 @@ Journey has no backend, so it needs a Google OAuth client ID of your own:
 
 1. In [Google Cloud Console](https://console.cloud.google.com/), create a project and **enable the Google Calendar API**.
 2. **OAuth consent screen:** choose External, keep it in *Testing*, and add your Google account as a test user. Add the scope `https://www.googleapis.com/auth/calendar.readonly`.
-3. **Credentials → Create credentials → OAuth client ID → Web application.** Under *Authorized JavaScript origins* add `http://localhost:5173` and your deployed URL (for example `https://journey.pages.dev`).
-4. Paste the client ID into **Settings → Google OAuth client ID** in the app, or build with `VITE_GOOGLE_CLIENT_ID=… pnpm build`.
+3. **Credentials → Create credentials → OAuth client ID → Web application.** Under *Authorized JavaScript origins* add `https://abbondanzo.github.io` (and `http://localhost:5173` for local development).
+4. Paste the client ID into **Settings → Google OAuth client ID** in the app. To bake it into the deployed site instead, add it as a repository variable named `GOOGLE_CLIENT_ID` (Settings → Secrets and variables → Actions → Variables); the next deploy picks it up. A client ID is not a secret.
 
 While the consent screen is in Testing, Google asks you to re-approve access about once a week; that's fine for personal use. Publishing for other people requires Google's verification for the calendar scope.
 

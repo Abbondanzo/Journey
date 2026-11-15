@@ -1,0 +1,82 @@
+import { useEffect, useState } from 'react';
+import { exportAll, getSetting, setSetting, wipeAll } from '../../db/repo';
+import { placeForAirport } from '../../geo/places';
+import type { Journey } from '../data';
+import { BrandRow, Icon, TabBar, TopoHeader } from '../kit';
+import { href } from '../router';
+
+export function Settings({ j }: { j: Journey }) {
+  const [home, setHome] = useState(j.homeAirport ?? '');
+  const [clientId, setClientId] = useState('');
+  const [confirmWipe, setConfirmWipe] = useState(false);
+  const [saved, setSaved] = useState('');
+  useEffect(() => {
+    getSetting<string>('googleClientId', '').then(setClientId);
+  }, []);
+  const airport = placeForAirport(home);
+  return (
+    <div className="screen">
+      <TopoHeader moon={false}>
+        <BrandRow />
+        <h1 style={{ fontSize: 30 }}>Settings</h1>
+        <span className="muted">Everything lives in this browser’s storage. There is no account and no server.</span>
+      </TopoHeader>
+      <main className="pad stack" style={{ paddingTop: 18, gap: 16 }}>
+        <form
+          className="card"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (airport) await setSetting('homeAirport', home.toUpperCase());
+            await setSetting('googleClientId', clientId.trim());
+            setSaved('Saved');
+          }}
+        >
+          <label className="field">
+            <span>Home airport</span>
+            <input className="input" value={home} maxLength={3} onChange={(e) => setHome(e.target.value.toUpperCase())} placeholder="JFK" />
+          </label>
+          <span className="muted" style={{ fontSize: 12 }}>{airport ? airport.name : 'Trips start and end here. Leave empty to work it out from your flights.'}</span>
+          <label className="field" style={{ marginTop: 8 }}>
+            <span>Google OAuth client ID</span>
+            <input className="input" value={clientId} onChange={(e) => setClientId(e.target.value)} placeholder="1234-abc.apps.googleusercontent.com" autoComplete="off" spellCheck={false} />
+          </label>
+          <span className="muted" style={{ fontSize: 12 }}>Needed once to connect Google Calendar. See the README for the two-minute setup.</span>
+          <div className="row" style={{ marginTop: 8 }}>
+            <button className="btn small dark">Save</button>
+            <span role="status" className="muted">{saved}</span>
+          </div>
+        </form>
+        <a className="btn primary" href={href('/import')}>
+          <Icon name="calendar" size={18} /> Import from calendar
+        </a>
+        <button
+          className="btn ghost"
+          onClick={async () => {
+            const data = await exportAll();
+            const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `journey-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+        >
+          Export everything (.json)
+        </button>
+        <button
+          className="btn ghost"
+          onClick={async () => {
+            if (!confirmWipe) return setConfirmWipe(true);
+            await wipeAll();
+            setConfirmWipe(false);
+            setHome('');
+            setClientId('');
+          }}
+        >
+          {confirmWipe ? 'Tap again to delete all data on this phone' : 'Delete all data'}
+        </button>
+      </main>
+      <TabBar active="settings" />
+    </div>
+  );
+}

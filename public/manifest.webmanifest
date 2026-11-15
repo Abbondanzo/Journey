@@ -1,0 +1,10 @@
+{
+  "name": "Journey",
+  "short_name": "Journey",
+  "description": "A private, local-first travel log.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ECE7D8",
+  "theme_color": "#172015",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

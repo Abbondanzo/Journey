@@ -19,7 +19,9 @@ beforeEach(async () => {
 });
 
 async function runSampleImport(user: ReturnType<typeof userEvent.setup>) {
+  // Land on home first so the import screen starts fresh, even on a slow runner.
   await go('/');
+  await screen.findByText(/Distance traveled/i);
   await go('/import');
   await user.click(await screen.findByRole('button', { name: /sample calendar/i }));
   await user.click(await screen.findByRole('button', { name: /find my trips/i }));

@@ -1,29 +1,32 @@
 import { sameMetro, type Place } from '../geo/places';
-import { daysBetween, instant } from './dates';
+import { addDays, daysBetween, instant } from './dates';
 import type { LegCandidate, StayCandidate } from './types';
 
 /**
  * Home bases, inferred from the calendar rather than set once. People move,
- * so "home" is whichever place the evidence points to around a given moment:
+ * so home is worked out as a timeline:
  *
- * - nights spent somewhere with no hotel booked (time at home isn't in a
- *   hotel; time on a trip usually is),
- * - how many different places your journeys link it to (home is the hub you
- *   keep leaving from and returning to; a destination links back to one place),
- * - the start of your travel history (you probably left from home) and the end
- *   (you probably came back).
+ * Between one journey and the next you're somewhere (where you landed, or, if
+ * a leg is missing from the data, where you landed and later where you set
+ * off from). For each of those stretches we pick where you were based, so that
+ * the whole timeline is as cheap as possible:
  *
- * `before(t)` asks "where were you based just before leaving at t?" and only
- * looks backwards; `after(t)` asks "where are you based after arriving at t?"
- * and only looks forwards. That asymmetry is what lets a move (one way from the
- * old home to the new one) end a trip at the new home.
+ * - a night away from your base with no hotel booked costs 1 (you live where
+ *   you sleep without a booking),
+ * - a booked night away costs very little (that's what trips look like),
+ * - a booked night at your base costs 1 (you don't book hotels at home),
+ * - moving costs a month of nights, so a base never flips for a few weeks
+ *   with family, and a short blip between two stays in the same city is
+ *   cheaper to explain as a trip.
+ *
+ * The cheapest timeline is found exactly (Viterbi over stretches × places).
+ * Places you tell us you lived ("Austin, Jun–Nov 2021") are fixed points.
  */
 
-const DAY = 86400_000;
-const TAU = 150 * DAY; // evidence half-fades over roughly five months
-const HORIZON = 540 * DAY; // ignore evidence more than ~18 months away
-const LINK_WEIGHT = 15;
-const EDGE_WEIGHT = 30;
+const MOVE_COST = 30; // about a month of nights
+const BOOKED_AWAY = 0.05;
+const HOTEL_AT_HOME = 1;
+const EDGE_NIGHTS = 30; // assumed nights at home before the first journey (and after the last, if it's a return)
 // Overnight changes of plane run to ~16h; a longer stop with no hotel was likely a day or two at home (just moved, say).
 const CONNECTION_HOURS = 18;
 
@@ -41,12 +44,24 @@ export interface HomePeriod {
   place: Place;
   from: string;
   to: string;
+  /** The move happened somewhere in a stretch with a leg missing; `from` is the middle of it. */
+  approxFrom?: boolean;
+}
+
+/** "I lived in Austin from June to November 2021": fixed points for the timeline. */
+export interface KnownBase {
+  place: Place;
+  from: string;
+  to: string;
 }
 
 export interface BaseModel {
   journeys: Journey[];
   before(t: number): Place | undefined;
   after(t: number): Place | undefined;
+  /** Base just before journey k leaves, and just after it lands. */
+  beforeJ(k: number): Place | undefined;
+  afterJ(k: number): Place | undefined;
   isBase: IsBase;
   periods: HomePeriod[];
 }
@@ -65,6 +80,8 @@ export type IsBase = (p: Place, t: number) => boolean;
 /** A change of planes under a day with no hotel is one journey, not two. */
 export function isConnection(a: LegCandidate, b: LegCandidate, stays: StayCandidate[], isBase?: IsBase): boolean {
   if (!b.from || !sameMetro(a.to, b.from, 100)) return false;
+  // Out and back to where you started (EWR → BOS → EWR) is a day trip, not a change of planes.
+  if (a.from && sameMetro(a.from, b.to, 100)) return false;
   if (sleptNear(stays, a.to, a.arriveDate, b.departDate)) return false;
   const timed = !!a.arrive && b.depart.length > 10;
   const atBase = isBase?.(a.to, arrivalOf(a)) ?? false;
@@ -92,129 +109,203 @@ export function toJourneys(legs: LegCandidate[], stays: StayCandidate[], isBase?
   return out;
 }
 
-interface Cluster {
-  anchor: Place;
-  order: number;
-  uses: Map<string, { p: Place; n: number }>;
-  evidence: { t: number; w: number }[];
-  links: { t: number; other: number }[];
-}
-
-/**
- * Two passes: first find bases treating every short stop as a connection, then
- * rebuild journeys knowing where you lived, so an overnight at home between two
- * trips isn't mistaken for a layover.
- */
-export function buildBases(legs: LegCandidate[], stays: StayCandidate[], hint?: Place): BaseModel {
-  const first = modelFor(toJourneys(legs, stays), stays, hint);
+export function buildBases(legs: LegCandidate[], stays: StayCandidate[], hint?: Place, known: KnownBase[] = []): BaseModel {
+  const first = modelFor(toJourneys(legs, stays), stays, hint, known);
   const isBase: IsBase = (p, t) => [first.before(t), first.after(t)].some((b) => !!b && sameMetro(b, p));
-  const model = modelFor(toJourneys(legs, stays, isBase), stays, hint);
+  const model = modelFor(toJourneys(legs, stays, isBase), stays, hint, known);
   return { ...model, isBase: (p, t) => [model.before(t), model.after(t)].some((b) => !!b && sameMetro(b, p)) };
 }
 
-function modelFor(journeys: Journey[], stays: StayCandidate[], hint?: Place): Omit<BaseModel, 'isBase'> {
-  const clusters: Cluster[] = [];
-  const clusterOf = (p: Place): number => {
-    let i = clusters.findIndex((c) => sameMetro(c.anchor, p));
-    if (i < 0) {
-      clusters.push({ anchor: p, order: clusters.length, uses: new Map(), evidence: [], links: [] });
-      i = clusters.length - 1;
-    }
-    return i;
-  };
-  const use = (i: number, p: Place, n = 1) => {
-    const k = p.iata ?? `${p.city}:${p.country}`;
-    const u = clusters[i].uses.get(k) ?? { p, n: 0 };
-    u.n += n;
-    clusters[i].uses.set(k, u);
-  };
+interface Stretch {
+  /** Where you landed, and where you next set off from (different when a leg is missing). */
+  at: Place;
+  next: Place;
+  nights: number;
+  start: number;
+  end: number;
+  startDate: string;
+  endDate: string;
+}
 
-  journeys.forEach((j, idx) => {
-    const a = clusterOf(j.from);
-    const b = clusterOf(j.to);
-    use(a, j.from);
-    use(b, j.to);
-    if (a !== b) {
-      clusters[a].links.push({ t: j.depart, other: b });
-      clusters[b].links.push({ t: j.arrive, other: a });
-    }
-    const next = journeys[idx + 1];
-    if (next) {
-      // Nights between arriving and leaving again, minus nights in a hotel there.
-      const n = Math.max(0, daysBetween(j.arriveDate, next.departDate));
-      let unbooked = 0;
-      for (let d = 0; d < n; d++) {
-        const day = new Date(Date.parse(j.arriveDate + 'T00:00:00Z') + d * DAY).toISOString().slice(0, 10);
-        const next1 = new Date(Date.parse(day + 'T00:00:00Z') + DAY).toISOString().slice(0, 10);
-        if (!sleptNear(stays, j.to, day, next1)) unbooked++;
-      }
-      const t = (j.arrive + next.depart) / 2;
-      if (sameMetro(next.from, j.to, 100)) {
-        if (unbooked > 0) clusters[b].evidence.push({ t, w: unbooked });
-      } else if (unbooked > 0) {
-        // A leg is missing (a return that never made it into the calendar, or a drive):
-        // the time was most likely spent where you next left from.
-        clusters[clusterOf(next.from)].evidence.push({ t, w: unbooked * 0.5 });
-      }
-    }
+function hotelNights(stays: StayCandidate[], p: Place, from: string, to: string) {
+  let n = 0;
+  for (const s of stays) {
+    if (!s.place || !sameMetro(s.place, p, 60)) continue;
+    const a = s.checkIn > from ? s.checkIn : from;
+    const b = s.checkOut < to ? s.checkOut : to;
+    n += Math.max(0, daysBetween(a, b));
+  }
+  return n;
+}
+
+function modelFor(journeys: Journey[], stays: StayCandidate[], hint: Place | undefined, known: KnownBase[]): Omit<BaseModel, 'isBase'> {
+  const empty = { journeys, periods: [] as HomePeriod[] };
+  if (!journeys.length) {
+    const only = () => hint ?? known[0]?.place;
+    return { ...empty, before: only, after: only, beforeJ: only, afterJ: only };
+  }
+
+  // Stretches: before the first journey, between each pair, after the last.
+  const first = journeys[0];
+  const last = journeys[journeys.length - 1];
+  const stretches: Stretch[] = [
+    { at: first.from, next: first.from, nights: EDGE_NIGHTS, start: -Infinity, end: first.depart, startDate: addDays(first.departDate, -EDGE_NIGHTS), endDate: first.departDate },
+  ];
+  for (let k = 1; k < journeys.length; k++) {
+    const a = journeys[k - 1];
+    const b = journeys[k];
+    stretches.push({ at: a.to, next: b.from, nights: Math.max(0, daysBetween(a.arriveDate, b.departDate)), start: a.arrive, end: b.depart, startDate: a.arriveDate, endDate: b.departDate });
+  }
+  // You probably end your history at home, but only if it's somewhere you've set off from before:
+  // a last flight to somewhere new is as likely a trip still under way (flown out, not back yet).
+  const leftFromBefore = journeys.some((j) => sameMetro(j.from, last.to));
+  stretches.push({ at: last.to, next: last.to, nights: leftFromBefore ? EDGE_NIGHTS : 0, start: last.arrive, end: Infinity, startDate: last.arriveDate, endDate: addDays(last.arriveDate, EDGE_NIGHTS) });
+
+  // Candidate bases: every metro you've been in, plus what you told us.
+  const places: Place[] = [];
+  const add = (p: Place) => {
+    if (!places.some((q) => sameMetro(q, p))) places.push(p);
+  };
+  known.forEach((k) => add(k.place));
+  stretches.forEach((s) => {
+    add(s.at);
+    add(s.next);
   });
-  if (journeys.length) {
-    const first = journeys[0];
-    const last = journeys[journeys.length - 1];
-    clusters[clusterOf(first.from)].evidence.push({ t: first.depart - 15 * DAY, w: EDGE_WEIGHT });
-    // You probably end your history at home, but only if it's somewhere you've set off from before:
-    // a last flight to somewhere new is as likely a trip still under way (flown out, not back yet).
-    const leftFromBefore = journeys.some((j) => sameMetro(j.from, last.to));
-    const hotelAfter = stays.some((s) => s.place && sameMetro(s.place, last.to, 60) && s.checkIn >= last.arriveDate && daysBetween(last.arriveDate, s.checkIn) <= 1);
-    if (leftFromBefore && !hotelAfter) clusters[clusterOf(last.to)].evidence.push({ t: last.arrive + 15 * DAY, w: EDGE_WEIGHT });
-  }
-  const hintIdx = hint ? clusterOf(hint) : -1;
-  if (hint) use(hintIdx, hint, 0.5);
+  if (hint) add(hint);
 
-  const score = (c: Cluster, t: number, dir: 'before' | 'after') => {
-    const side = (et: number) => (dir === 'before' ? et <= t : et >= t) && Math.abs(et - t) <= HORIZON;
-    const decay = (et: number) => Math.exp(-Math.abs(et - t) / TAU);
-    let s = 0;
-    for (const e of c.evidence) if (side(e.t)) s += e.w * decay(e.t);
-    const partners = new Map<number, number>();
-    // Strictly before/after: the journey you're asking about doesn't vouch for its own ends.
-    for (const l of c.links) if (side(l.t) && l.t !== t) partners.set(l.other, Math.max(partners.get(l.other) ?? 0, decay(l.t)));
-    for (const v of partners.values()) s += LINK_WEIGHT * v;
-    if (c.order === hintIdx) s += 40;
-    return s;
+  // How often you set off from somewhere within a year either side of a stretch.
+  const YEAR = 365 * 86400_000;
+  const homeness = (p: Place, s: Stretch) => {
+    const mid = Number.isFinite(s.start) && Number.isFinite(s.end) ? (s.start + s.end) / 2 : Number.isFinite(s.start) ? s.start : s.end;
+    return journeys.filter((j) => Math.abs(j.depart - mid) <= YEAR && sameMetro(j.from, p)).length;
   };
-  const best = (t: number, dir: 'before' | 'after'): Place | undefined => {
-    let top: Cluster | undefined;
-    let topScore = 0;
-    for (const c of clusters) {
-      const s = score(c, t, dir);
-      if (s > topScore + 1e-9 || (Math.abs(s - topScore) <= 1e-9 && top && c.order < top.order && s > 0)) {
-        top = c;
-        topScore = s;
+
+  const cost = (s: Stretch, c: Place): number => {
+    const fixed = known.filter((k) => k.from <= s.endDate && s.startDate <= k.to);
+    if (fixed.length) return fixed.some((k) => sameMetro(k.place, c)) ? 0 : 1e6;
+    const atHere = sameMetro(c, s.at);
+    const atNext = sameMetro(c, s.next);
+    const missingLeg = !sameMetro(s.at, s.next);
+    const booked = Math.min(s.nights, hotelNights(stays, s.at, s.startDate, s.endDate));
+    const unbooked = s.nights - booked;
+    let x: number;
+    if (missingLeg && (atHere || atNext)) {
+      // A leg is missing: you were at one end, then the other, for unknown shares of the time. Split the
+      // nights by how much each looks like a home around then (how often you fly out of it); the share
+      // spent at the other end counts as time away.
+      const [h, n] = [homeness(s.at, s), homeness(s.next, s)];
+      const shareHere = h + n ? h / (h + n) : 0.5;
+      x = (atHere ? 1 - shareHere : shareHere) * unbooked + (atHere ? booked * HOTEL_AT_HOME : 0);
+    } else if (atHere) x = booked * HOTEL_AT_HOME;
+    else x = unbooked + booked * BOOKED_AWAY;
+    if (hint && sameMetro(c, hint)) x -= 0.01 * Math.max(1, s.nights);
+    return x;
+  };
+
+  // Viterbi.
+  const n = stretches.length;
+  const m = places.length;
+  let best = places.map((p) => cost(stretches[0], p));
+  const back: number[][] = [];
+  for (let i = 1; i < n; i++) {
+    const row: number[] = [];
+    const next: number[] = [];
+    for (let c = 0; c < m; c++) {
+      let arg = c;
+      let v = best[c];
+      for (let p = 0; p < m; p++) {
+        const w = best[p] + MOVE_COST;
+        // On a tie, move as late as the evidence allows: you lived in the old place until it says otherwise.
+        if (p !== c && w <= v + 1e-9) {
+          v = w;
+          arg = p;
+        }
+      }
+      row.push(arg);
+      next.push(v + cost(stretches[i], places[c]));
+    }
+    back.push(row);
+    best = next;
+  }
+  let c = best.indexOf(Math.min(...best));
+  const path: number[] = new Array(n);
+  for (let i = n - 1; i >= 0; i--) {
+    path[i] = c;
+    if (i > 0) c = back[i - 1][c];
+  }
+  // The airport you actually use there (most journeys), not whichever was seen first.
+  const shown = (idx: number): Place => {
+    const counts = new Map<string, { p: Place; n: number }>();
+    for (const j of journeys)
+      for (const p of [j.from, j.to])
+        if (sameMetro(p, places[idx])) {
+          const k = p.iata ?? `${p.city}:${p.country}`;
+          const e = counts.get(k) ?? { p, n: 0 };
+          e.n++;
+          counts.set(k, e);
+        }
+    return [...counts.values()].sort((a, b) => b.n - a.n || (a.p.iata ?? '').localeCompare(b.p.iata ?? ''))[0]?.p ?? places[idx];
+  };
+  const shownCache = new Map<number, Place>();
+  const baseOf = (i: number) => {
+    const idx = path[Math.max(0, Math.min(n - 1, i))];
+    if (!shownCache.has(idx)) shownCache.set(idx, shown(idx));
+    return shownCache.get(idx)!;
+  };
+
+  // Stretch i covers [start_i, end_i]; journey k runs between stretch k and stretch k+1.
+  const locate = (t: number, side: 'before' | 'after') => {
+    for (let i = 0; i < n; i++) {
+      if (t <= stretches[i].end) return t >= stretches[i].start ? i : side === 'before' ? i - 1 : i;
+    }
+    return n - 1;
+  };
+
+  const periods: HomePeriod[] = [];
+  for (let i = 0; i < n; i++) {
+    const b = baseOf(i);
+    const prev = periods[periods.length - 1];
+    if (prev && sameMetro(prev.place, b)) continue;
+    const s = stretches[i];
+    // A move inside a stretch with a missing leg happened some time in it: show the middle.
+    const approx = i > 0 && !sameMetro(s.at, s.next) && !sameMetro(s.at, b);
+    const from = i === 0 ? first.departDate : approx ? addDays(s.startDate, Math.floor(s.nights / 2)) : s.startDate;
+    if (prev) prev.to = from;
+    periods.push({ place: b, from, to: from, approxFrom: approx || undefined });
+  }
+  periods[periods.length - 1].to = last.arriveDate;
+
+  return {
+    journeys,
+    periods: withKnown(periods, known),
+    before: (t) => baseOf(locate(t, 'before')),
+    after: (t) => baseOf(locate(t, 'after')),
+    beforeJ: (k) => baseOf(k),
+    afterJ: (k) => baseOf(k + 1),
+  };
+}
+
+/** What you told us wins over what was worked out, for the dates you gave. */
+export function withKnown(periods: HomePeriod[], known: KnownBase[]): HomePeriod[] {
+  if (!known.length) return periods;
+  let out: HomePeriod[] = periods.map((p) => ({ ...p }));
+  for (const k of [...known].sort((a, b) => a.from.localeCompare(b.from))) {
+    const next: HomePeriod[] = [];
+    for (const p of out) {
+      if (p.to < k.from || p.from > k.to) next.push(p);
+      else {
+        if (p.from < k.from) next.push({ ...p, to: k.from });
+        if (p.to > k.to) next.push({ ...p, from: k.to, approxFrom: undefined });
       }
     }
-    if (!top) return hint;
-    return [...top.uses.values()].sort((a, b) => b.n - a.n || (a.p.iata ?? '').localeCompare(b.p.iata ?? ''))[0]?.p ?? top.anchor;
-  };
-
-  const before = (t: number) => best(t, 'before') ?? best(t, 'after');
-  const after = (t: number) => best(t, 'after') ?? best(t, 'before');
-
-  // Timeline of bases, for showing the traveller what was detected.
-  const periods: HomePeriod[] = [];
-  for (const j of journeys) {
-    const b = before(j.depart);
-    if (!b) continue;
-    const last = periods[periods.length - 1];
-    if (last && sameMetro(last.place, b)) last.to = j.departDate;
-    else periods.push({ place: b, from: j.departDate, to: j.departDate });
+    next.push({ place: k.place, from: k.from, to: k.to });
+    out = next.sort((a, b) => a.from.localeCompare(b.from));
   }
-  if (journeys.length) {
-    const lastJ = journeys[journeys.length - 1];
-    const b = after(lastJ.arrive);
-    const last = periods[periods.length - 1];
-    if (b && last && sameMetro(last.place, b)) last.to = lastJ.arriveDate;
-    else if (b) periods.push({ place: b, from: lastJ.arriveDate, to: lastJ.arriveDate });
+  const merged: HomePeriod[] = [];
+  for (const p of out) {
+    const prev = merged[merged.length - 1];
+    if (prev && sameMetro(prev.place, p.place)) prev.to = p.to > prev.to ? p.to : prev.to;
+    else if (p.from < p.to || !prev) merged.push(p);
   }
-  return { journeys, before, after, periods };
+  return merged;
 }

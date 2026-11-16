@@ -112,7 +112,10 @@ export function cityForAirport(a: Airport): City {
     const d = haversineKm(a, c);
     const reach = c.pop >= 1_000_000 ? 75 : c.pop >= 300_000 ? 40 : 20;
     if (d > reach) continue;
-    const score = 2 * Math.log10(c.pop) - d / 25;
+    // The city the airport is named for gets a nudge (Venice Marco Polo → Venice, not bigger Mestre next door),
+    // but not enough to beat a metropolis (Newark Liberty → New York).
+    const named = ` ${normalize(`${a.name} ${a.municipality}`)} `.includes(` ${normalize(c.name)} `) ? 1.5 : 0;
+    const score = 2 * Math.log10(c.pop) - d / 25 + named;
     if (score > bestScore) {
       bestScore = score;
       best = c;

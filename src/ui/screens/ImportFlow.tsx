@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
 import { existingIndex, getSetting, saveImport, setSetting } from '../../db/repo';
 import { monthLabel, rangeLabel } from '../../import/dates';
+import type { KnownBase } from '../../import/bases';
+import { KnownBasesEditor } from '../KnownBases';
 import { looksLikeFlighty, parseFlightyCsv, type FlightyParse } from '../../import/flighty';
 import { runImport } from '../../import/pipeline';
-import type { ImportResult, ProposedTrail, SkipReason } from '../../import/types';
+import type { CalEvent, ImportResult, ProposedTrail, SkipReason } from '../../import/types';
 import { GoogleCalendarSource, type CalendarInfo, type CalendarSource } from '../../google/source';
 import { SampleCalendarSource } from '../../google/sample';
 import { fmtKm, Icon, TopoHeader } from '../kit';
@@ -48,6 +50,9 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
   const [saved, setSaved] = useState<{ trails: number; entries: number; legs: number }>();
   const [busy, setBusy] = useState(false);
   const [flighty, setFlighty] = useState<FlightyFile>();
+  const [known, setKnown] = useState<KnownBase[]>([]);
+  const [fixing, setFixing] = useState(false);
+  const [inputs, setInputs] = useState<{ events: CalEvent[]; flighty?: FlightyFile }>();
 
   async function connect(kind: 'google' | 'sample') {
     setError(undefined);
@@ -76,15 +81,27 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
     try {
       const to = `${thisYear + 1}-12-31`;
       const events = source ? await source.events(cals.filter((c) => picked.has(c.id)), `${fromYear}-01-01`, to, setFetched) : [];
-      // No home airport to set: where you lived (and when you moved) is worked out from the trips themselves.
-      const r = runImport(events, { existing: await existingIndex(), legs: flightyNow?.legs, skipped: flightyNow?.skipped });
-      setResult(r);
-      setKeep(new Set(r.trails.flatMap(itemsOf)));
+      setInputs({ events, flighty: flightyNow });
+      await analyse(events, flightyNow, await getSetting<KnownBase[]>('knownBases', []));
       setStep('review');
     } catch (e) {
       setError((e as Error).message);
       setStep(source ? 'calendars' : 'intro');
     }
+  }
+
+  // No home airport to set: where you lived (and when you moved) is worked out from the trips themselves,
+  // with anything the user has told us about where they lived taken as given.
+  async function analyse(events: CalEvent[], f: FlightyFile | undefined, knownBases: KnownBase[]) {
+    setKnown(knownBases);
+    const r = runImport(events, { existing: await existingIndex(), legs: f?.legs, skipped: f?.skipped, known: knownBases });
+    setResult(r);
+    setKeep(new Set(r.trails.flatMap(itemsOf)));
+  }
+
+  async function correctBases(next: KnownBase[]) {
+    await setSetting('knownBases', next);
+    if (inputs) await analyse(inputs.events, inputs.flighty, next);
   }
 
   async function loadFlighty(file: File | undefined, andScan: boolean) {
@@ -277,10 +294,21 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
                     {h.place.city}
                     {h.place.iata ? <span className="muted"> · {h.place.iata}</span> : null}
                   </b>
-                  <span className="muted">{all.length === 1 ? 'throughout' : i === 0 ? `since ${monthLabel(h.from)}` : `${monthLabel(h.from)} – ${monthLabel(h.to)}`}</span>
+                  <span className="muted">
+                    {all.length === 1 ? 'throughout' : i === 0 ? `since ${h.approxFrom ? '~' : ''}${monthLabel(h.from)}` : `${h.approxFrom ? '~' : ''}${monthLabel(h.from)} – ${monthLabel(h.to)}`}
+                  </span>
                 </span>
               ))}
-              <span className="muted" style={{ fontSize: 12 }}>Trips start and end here. Changes of plane on the way aren’t counted as places.</span>
+              <span className="muted" style={{ fontSize: 12 }}>
+                Trips start and end here. Changes of plane on the way aren’t counted as places. ~ marks a move that happened somewhere in a gap in your flights.
+              </span>
+              {fixing ? (
+                <KnownBasesEditor value={known} onChange={correctBases} />
+              ) : (
+                <button className="chip" style={{ alignSelf: 'flex-start' }} onClick={() => setFixing(true)}>
+                  {known.length ? `Your corrections (${known.length})` : 'Not right? Tell Journey where you lived'}
+                </button>
+              )}
             </section>
           )}
           {result.trails.map((t) => {

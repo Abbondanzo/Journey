@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
 import { exportAll, getSetting, setSetting, wipeAll } from '../../db/repo';
+import type { KnownBase } from '../../import/bases';
 import type { Journey } from '../data';
+import { KnownBasesEditor } from '../KnownBases';
 import { BrandRow, Icon, TabBar, TopoHeader } from '../kit';
 import { href } from '../router';
 
 export function Settings(_props: { j: Journey }) {
   const [clientId, setClientId] = useState('');
+  const [known, setKnown] = useState<KnownBase[]>([]);
   const [confirmWipe, setConfirmWipe] = useState(false);
   const [saved, setSaved] = useState('');
   useEffect(() => {
     getSetting<string>('googleClientId', '').then(setClientId);
+    getSetting<KnownBase[]>('knownBases', []).then(setKnown);
   }, []);
   return (
     <div className="screen">
@@ -37,6 +41,19 @@ export function Settings(_props: { j: Journey }) {
             <span role="status" className="muted">{saved}</span>
           </div>
         </form>
+        <section className="card stack" aria-label="Where you lived" style={{ gap: 8 }}>
+          <span className="eyebrow">Where you lived</span>
+          <span className="muted" style={{ fontSize: 12 }}>
+            Journey works out home from your flights. Anything you add here is taken as given: trips start and end there, and pins count distance from there.
+          </span>
+          <KnownBasesEditor
+            value={known}
+            onChange={async (next) => {
+              await setSetting('knownBases', next);
+              setKnown(next);
+            }}
+          />
+        </section>
         <a className="btn primary" href={href('/import')}>
           <Icon name="calendar" size={18} /> Import from calendar
         </a>

@@ -111,6 +111,9 @@ export function parseFlightyCsv(text: string): FlightyParse {
       carrier: airline || undefined,
       number: number || undefined,
       confirmation: get(r, 'PNR', 'Confirmation') || undefined,
+      // Flighty also tracks flights you only followed (a codeshare twin, a missed or rebooked one):
+      // a record locator or seat says this one was yours.
+      booked: !!(get(r, 'PNR', 'Confirmation') || get(r, 'Seat')) || undefined,
       sources: [source],
       updated: '1970-01-01T00:00:00Z',
     });

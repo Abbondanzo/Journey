@@ -4,6 +4,7 @@ import { dedupe } from './dedupe';
 import { extract } from './extract';
 import { nameSimilarity } from './text';
 import { buildTrips } from './trips';
+import type { KnownBase } from './bases';
 import type { CalEvent, Candidate, ExistingIndex, ImportResult, LegCandidate, ProposedEntry, ProposedLeg, ProposedTrail, Skipped } from './types';
 import { haversineKm } from '../geo/geo';
 
@@ -15,6 +16,8 @@ export interface ImportOptions {
   legs?: LegCandidate[];
   /** What those sources already left out (cancelled flights, unknown airports). */
   skipped?: Skipped[];
+  /** Where the traveller says they lived, and when: fixed points for working out home. */
+  known?: KnownBase[];
 }
 
 export const emptyIndex = (): ExistingIndex => ({ fingerprints: new Set(), dismissed: new Set(), entries: [], legs: [] });
@@ -110,7 +113,7 @@ export function runImport(events: CalEvent[], opts: ImportOptions = {}): ImportR
     candidates.push(r.candidate);
   }
   const deduped = dedupe(candidates, skipped);
-  const { trails, home, homes } = buildTrips(deduped, opts.home, skipped);
+  const { trails, home, homes } = buildTrips(deduped, opts.home, skipped, opts.known);
   const existing = opts.existing ?? emptyIndex();
   const filtered = filterExisting(trails, existing, skipped).sort((a, b) => b.start.localeCompare(a.start));
   skipped.sort((a, b) => a.date.localeCompare(b.date) || a.summary.localeCompare(b.summary) || a.reason.localeCompare(b.reason));

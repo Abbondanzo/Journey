@@ -36,6 +36,10 @@ function sameLeg(a: LegCandidate, b: LegCandidate): boolean {
   const ka = flightKey(a);
   const kb = flightKey(b);
   if (ka && kb && ka !== kb) {
+    const timed = a.depart.length > 10 && b.depart.length > 10;
+    const sameRoute = placeClose(a.to, b.to, 100) && (!a.from || !b.from || placeClose(a.from, b.from, 100));
+    // Codeshare: two numbers, one plane (UA 8656 / AC 8874, same route, same minute).
+    if (timed && sameRoute && Math.abs(instant(a.depart) - instant(b.depart)) <= 30 * 60_000) return true;
     // Same number under another code system (TP 202 in Gmail, TAP 202 in Flighty) is the same flight
     // if the route and day agree; a different number is a different flight.
     if (stripZeros(a.number!) !== stripZeros(b.number!)) return false;
@@ -60,7 +64,7 @@ function sameLeg(a: LegCandidate, b: LegCandidate): boolean {
 function mergeLegs(ls: LegCandidate[]): LegCandidate {
   // Prefer the most specific record: timed, with a flight number, with an explicit origin; newest wins ties.
   const score = (l: LegCandidate) =>
-    (l.depart.length > 10 ? 4 : 0) + (l.number ? 2 : 0) + (l.from && !l.fromInferred && !l.fromApprox ? 2 : 0) + (l.toApprox ? 0 : 2) + (l.arrive ? 1 : 0);
+    (l.booked ? 8 : 0) + (l.depart.length > 10 ? 4 : 0) + (l.number ? 2 : 0) + (l.from && !l.fromInferred && !l.fromApprox ? 2 : 0) + (l.toApprox ? 0 : 2) + (l.arrive ? 1 : 0);
   const sorted = [...ls].sort(
     (a, b) => score(b) - score(a) || (b.updated ?? '').localeCompare(a.updated ?? '') || a.sources[0].localeCompare(b.sources[0]),
   );
@@ -79,10 +83,36 @@ function mergeLegs(ls: LegCandidate[]): LegCandidate {
     base.carrier ??= l.carrier;
     base.number ??= l.number;
     base.confirmation ??= l.confirmation;
+    base.booked ||= l.booked;
   }
   base.sources = uniq(ls.flatMap((l) => l.sources));
   base.updated = ls.map((l) => l.updated ?? '').sort().pop() || undefined;
   return base;
+}
+
+/**
+ * Flying A → B twice in a row, a day or two apart, without ever leaving B in between, can't happen:
+ * one was missed, rebooked or only followed. Keep the one you booked (or else the later one).
+ */
+function dropImpossibleRepeats(legs: LegCandidate[], skipped: Skipped[]): LegCandidate[] {
+  const sorted = [...legs].sort((a, b) => instant(a.depart) - instant(b.depart) || a.sources[0].localeCompare(b.sources[0]));
+  const out: LegCandidate[] = [];
+  for (const l of sorted) {
+    const prev = out[out.length - 1];
+    const repeat =
+      prev && prev.mode === l.mode && prev.from && l.from &&
+      placeClose(prev.from, l.from, 100) && placeClose(prev.to, l.to, 100) &&
+      instant(l.depart) - instant(prev.depart) <= 48 * 3600_000;
+    if (!repeat) {
+      out.push(l);
+      continue;
+    }
+    const keepPrev = !!prev.booked && !l.booked;
+    const [kept, dropped] = keepPrev ? [prev, l] : [l, prev];
+    out[out.length - 1] = kept;
+    skipped.push({ summary: legLabel(dropped), date: dropped.departDate, reason: 'rescheduled', sources: dropped.sources });
+  }
+  return out;
 }
 
 // ---------- stays ----------
@@ -212,6 +242,8 @@ export function dedupe(cands: Candidate[], skipped: Skipped[]): Deduped {
     (l) => l.departDate,
     skipped,
   );
+
+  legs = dropImpossibleRepeats(legs, skipped);
 
   // Stays
   const stayGroups = applyCancellations(groups(staysIn, sameStay), (s) => `Stay at ${s.name}`, (s) => s.checkIn, skipped);

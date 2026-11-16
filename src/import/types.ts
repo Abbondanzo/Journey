@@ -43,6 +43,8 @@ export interface LegCandidate {
   carrier?: string;
   number?: string;
   confirmation?: string;
+  /** The traveller's own booking (a seat or record locator), not just a tracked flight. */
+  booked?: boolean;
   cancelled?: boolean;
   sources: string[];
   updated?: string;
@@ -140,7 +142,7 @@ export interface ImportResult {
   /** Most recent home base. */
   home?: Place;
   /** Where you were based over time, oldest first. */
-  homes: { place: Place; from: string; to: string }[];
+  homes: { place: Place; from: string; to: string; approxFrom?: boolean }[];
   stats: { events: number; travelEvents: number; legs: number; stays: number; visits: number };
 }
 

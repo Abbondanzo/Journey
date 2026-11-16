@@ -1,5 +1,5 @@
 import { sameMetro, type Place } from '../geo/places';
-import { buildBases } from './bases';
+import { buildBases, type KnownBase } from './bases';
 import { addDays, instant } from './dates';
 import type { LegCandidate, LegMode, StayCandidate } from './types';
 
@@ -46,7 +46,9 @@ export interface Origin {
 
 const placeOf = (e: SavedEntryLike): Place => ({ name: e.city, city: e.city, country: e.country, lat: e.lat, lon: e.lon });
 
-export function homeAt(legs: SavedLegLike[], entries: SavedEntryLike[], date: string, fallback?: Place): Place | undefined {
+export function homeAt(legs: SavedLegLike[], entries: SavedEntryLike[], date: string, fallback?: Place, known: KnownBase[] = []): Place | undefined {
+  const said = known.find((k) => k.from <= date && date <= k.to);
+  if (said) return said.place;
   const cands: LegCandidate[] = legs
     .filter((l) => !l.auto)
     .map((l) => ({ kind: 'leg' as const, mode: l.mode, from: l.from, to: l.to, depart: l.departDate, departDate: l.departDate, arriveDate: l.arriveDate, sources: [l.id] }))
@@ -55,7 +57,7 @@ export function homeAt(legs: SavedLegLike[], entries: SavedEntryLike[], date: st
   const stays: StayCandidate[] = entries
     .filter((e) => e.kind === 'stay')
     .map((e) => ({ kind: 'stay' as const, name: e.name, place: placeOf(e), checkIn: e.start, checkOut: e.end, sources: [e.id] }));
-  return buildBases(cands, stays, fallback).before(instant(date)) ?? fallback;
+  return buildBases(cands, stays, fallback, known).before(instant(date)) ?? fallback;
 }
 
 export function suggestOrigin(
@@ -65,8 +67,9 @@ export function suggestOrigin(
   start: string,
   place: Place | undefined,
   fallbackHome?: Place,
+  known: KnownBase[] = [],
 ): Origin | undefined {
-  const home = homeAt(legs, entries, start, fallbackHome);
+  const home = homeAt(legs, entries, start, fallbackHome, known);
   // Somewhere you were within the last couple of days, away from home and from this new place: you came from there.
   const prev = entries
     .filter((e) => e.start <= start && e.end >= addDays(start, -2))

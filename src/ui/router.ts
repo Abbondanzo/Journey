@@ -17,6 +17,8 @@ export function usePath() {
   useEffect(() => {
     const on = () => {
       setPath(currentPath());
+      // The page scrolls inside <body> (see theme.css), not the window.
+      document.body.scrollTop = 0;
       window.scrollTo?.(0, 0);
     };
     window.addEventListener('hashchange', on);

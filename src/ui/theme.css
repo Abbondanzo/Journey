@@ -25,6 +25,22 @@
 * {
   box-sizing: border-box;
 }
+/*
+ * App shell: the document itself never scrolls; <body> does. iOS 26 Safari
+ * shrinks its toolbar when the document scrolls but leaves position: fixed
+ * bars where the toolbar used to end, so page content shows through a gap
+ * underneath them. Scrolling inside body keeps the toolbar (and the bars) put.
+ */
+html {
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: none;
+}
 html,
 body {
   margin: 0;
@@ -37,7 +53,7 @@ body {
 #root {
   max-width: 480px;
   margin: 0 auto;
-  min-height: 100dvh;
+  min-height: 100%;
   position: relative;
 }
 a {

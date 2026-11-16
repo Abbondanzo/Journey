@@ -8,15 +8,14 @@ export interface Journey {
   legs: Leg[];
   stats: Stats;
   patches: Patch[];
-  homeAirport?: string;
 }
 
 /** Everything the screens need, live from IndexedDB. */
 export function useJourney(): Journey | undefined {
   return useLiveQuery(async () => {
-    const [trails, entries, legs, home] = await Promise.all([db.trails.toArray(), db.entries.toArray(), db.legs.toArray(), db.settings.get('homeAirport')]);
+    const [trails, entries, legs] = await Promise.all([db.trails.toArray(), db.entries.toArray(), db.legs.toArray()]);
     trails.sort((a, b) => (b.start ?? b.createdAt).localeCompare(a.start ?? a.createdAt));
     const stats = computeStats(trails, entries, legs);
-    return { trails, entries, legs, stats, patches: computePatches(stats, entries), homeAirport: home?.value as string | undefined };
+    return { trails, entries, legs, stats, patches: computePatches(stats, entries) };
   }, []);
 }

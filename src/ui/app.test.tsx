@@ -37,6 +37,9 @@ describe('calendar import, end to end', () => {
     for (const name of ['Lisbon, Oct ’26', 'Kyoto & Tokyo, Apr ’25', 'Mexico City, Mar ’24', 'Berlin, Jun ’23']) {
       expect(screen.getByRole('region', { name })).toBeInTheDocument();
     }
+    // Nobody typed a home airport: it was worked out from the trips.
+    expect(within(screen.getByRole('region', { name: 'Where you were based' })).getByText('New York')).toBeInTheDocument();
+    expect(screen.queryByLabelText(/home airport/i)).not.toBeInTheDocument();
     // Untick one visit before saving.
     const lisbon = screen.getByRole('region', { name: 'Lisbon, Oct ’26' });
     await user.click(within(lisbon).getByRole('checkbox', { name: /Sintra day trip/ }));
@@ -49,7 +52,7 @@ describe('calendar import, end to end', () => {
     expect(entries.map((e) => e.name)).not.toContain('Sintra day trip');
     expect(entries.filter((e) => e.kind === 'stay').map((e) => e.name).sort()).toEqual(['Ace Hotel Kyoto', 'Condesa DF', 'Hotel Bairro Alto', 'Michelberger Hotel', 'Park Hyatt Tokyo']);
     expect(await db.dismissed.count()).toBe(1);
-    expect((await db.settings.get('homeAirport'))?.value).toBe('JFK');
+    expect(await db.settings.get('homeAirport')).toBeUndefined();
 
     // Home shows the distance and the trails.
     await user.click(screen.getByRole('button', { name: /see your atlas/i }));

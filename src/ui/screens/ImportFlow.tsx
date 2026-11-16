@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { existingIndex, getSetting, saveImport, setSetting } from '../../db/repo';
-import { placeForAirport } from '../../geo/places';
-import { rangeLabel } from '../../import/dates';
+import { monthLabel, rangeLabel } from '../../import/dates';
 import { runImport } from '../../import/pipeline';
 import type { ImportResult, ProposedTrail, SkipReason } from '../../import/types';
 import { GoogleCalendarSource, type CalendarInfo, type CalendarSource } from '../../google/source';
@@ -40,7 +39,6 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const thisYear = new Date().getFullYear();
   const [fromYear, setFromYear] = useState(thisYear - 10);
-  const [homeCode, setHomeCode] = useState('');
   const [fetched, setFetched] = useState(0);
   const [result, setResult] = useState<ImportResult>();
   const [keep, setKeep] = useState<Set<string>>(new Set());
@@ -59,7 +57,6 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
       setSource(src);
       setCals(list);
       setPicked(new Set(list.map((c) => c.id)));
-      setHomeCode(await getSetting<string>('homeAirport', ''));
       setStep('calendars');
     } catch (e) {
       setError((e as Error).message);
@@ -74,14 +71,12 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
     setStep('scanning');
     setFetched(0);
     try {
-      const code = homeCode.trim().toUpperCase();
-      if (code && placeForAirport(code)) await setSetting('homeAirport', code);
       const to = `${thisYear + 1}-12-31`;
       const events = await source.events(cals.filter((c) => picked.has(c.id)), `${fromYear}-01-01`, to, setFetched);
-      const r = runImport(events, { home: (code && placeForAirport(code)) || placeForAirport(await getSetting<string>('homeAirport', '')), existing: await existingIndex() });
+      // No home airport to set: where you lived (and when you moved) is worked out from the trips themselves.
+      const r = runImport(events, { existing: await existingIndex() });
       setResult(r);
       setKeep(new Set(r.trails.flatMap(itemsOf)));
-      if (!code && r.home?.iata) setHomeCode(r.home.iata);
       setStep('review');
     } catch (e) {
       setError((e as Error).message);
@@ -93,7 +88,6 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
     if (!result) return;
     setBusy(true);
     try {
-      if (!(await getSetting('homeAirport', '')) && result.home?.iata) await setSetting('homeAirport', result.home.iata);
       const out = await saveImport(
         result.trails.map((trail) => ({ trail, keep })),
         dismissRest,
@@ -190,24 +184,18 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
               </label>
             ))}
           </fieldset>
-          <div className="grid2">
-            <label className="field">
-              <span>Look back to</span>
-              <select className="input" value={fromYear} onChange={(e) => setFromYear(+e.target.value)} disabled={step === 'scanning'}>
-                {Array.from({ length: 21 }, (_, i) => thisYear - i).map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="field">
-              <span>Home airport</span>
-              <input className="input" value={homeCode} onChange={(e) => setHomeCode(e.target.value.toUpperCase().slice(0, 3))} placeholder="auto" maxLength={3} disabled={step === 'scanning'} aria-describedby="home-hint" />
-            </label>
-          </div>
-          <span id="home-hint" className="muted" style={{ fontSize: 12, marginTop: -8 }}>
-            {placeForAirport(homeCode)?.name ?? 'Leave empty and Journey works it out from your flights.'}
+          <label className="field">
+            <span>Look back to</span>
+            <select className="input" value={fromYear} onChange={(e) => setFromYear(+e.target.value)} disabled={step === 'scanning'}>
+              {Array.from({ length: 21 }, (_, i) => thisYear - i).map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </label>
+          <span className="muted" style={{ fontSize: 12, marginTop: -8 }}>
+            No home airport needed. Journey works out where each trip started, follows you when you move, and skips connections.
           </span>
           {error && <div className="error" role="alert">{error}</div>}
           {step === 'scanning' ? (
@@ -233,6 +221,22 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
               <h2 style={{ fontSize: 18 }}>Nothing new</h2>
               <span className="muted">Everything travel-related in these calendars is already in your log.</span>
             </div>
+          )}
+          {result.homes.length > 0 && (
+            <section className="card stack" aria-label="Where you were based" style={{ gap: 6 }}>
+              <span className="eyebrow">Where you were based</span>
+              {[...result.homes].reverse().map((h, i, all) => (
+                <span key={`${h.place.iata ?? h.place.city}-${h.from}`} className="row" style={{ fontSize: 13 }}>
+                  <Icon name="city" size={16} />
+                  <b style={{ flex: 1 }}>
+                    {h.place.city}
+                    {h.place.iata ? <span className="muted"> · {h.place.iata}</span> : null}
+                  </b>
+                  <span className="muted">{all.length === 1 ? 'throughout' : i === 0 ? `since ${monthLabel(h.from)}` : `${monthLabel(h.from)} – ${monthLabel(h.to)}`}</span>
+                </span>
+              ))}
+              <span className="muted" style={{ fontSize: 12 }}>Trips start and end here. Changes of plane on the way aren’t counted as places.</span>
+            </section>
           )}
           {result.trails.map((t) => {
             const ids = itemsOf(t);

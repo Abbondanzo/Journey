@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react';
 import { exportAll, getSetting, setSetting, wipeAll } from '../../db/repo';
-import { placeForAirport } from '../../geo/places';
 import type { Journey } from '../data';
 import { BrandRow, Icon, TabBar, TopoHeader } from '../kit';
 import { href } from '../router';
 
-export function Settings({ j }: { j: Journey }) {
-  const [home, setHome] = useState(j.homeAirport ?? '');
+export function Settings(_props: { j: Journey }) {
   const [clientId, setClientId] = useState('');
   const [confirmWipe, setConfirmWipe] = useState(false);
   const [saved, setSaved] = useState('');
   useEffect(() => {
     getSetting<string>('googleClientId', '').then(setClientId);
   }, []);
-  const airport = placeForAirport(home);
   return (
     <div className="screen">
       <TopoHeader moon={false}>
@@ -26,17 +23,11 @@ export function Settings({ j }: { j: Journey }) {
           className="card"
           onSubmit={async (e) => {
             e.preventDefault();
-            if (airport) await setSetting('homeAirport', home.toUpperCase());
             await setSetting('googleClientId', clientId.trim());
             setSaved('Saved');
           }}
         >
           <label className="field">
-            <span>Home airport</span>
-            <input className="input" value={home} maxLength={3} onChange={(e) => setHome(e.target.value.toUpperCase())} placeholder="JFK" />
-          </label>
-          <span className="muted" style={{ fontSize: 12 }}>{airport ? airport.name : 'Trips start and end here. Leave empty to work it out from your flights.'}</span>
-          <label className="field" style={{ marginTop: 8 }}>
             <span>Google OAuth client ID</span>
             <input className="input" value={clientId} onChange={(e) => setClientId(e.target.value)} placeholder="1234-abc.apps.googleusercontent.com" autoComplete="off" spellCheck={false} />
           </label>
@@ -69,7 +60,6 @@ export function Settings({ j }: { j: Journey }) {
             if (!confirmWipe) return setConfirmWipe(true);
             await wipeAll();
             setConfirmWipe(false);
-            setHome('');
             setClientId('');
           }}
         >

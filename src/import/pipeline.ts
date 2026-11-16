@@ -7,6 +7,7 @@ import { buildTrips } from './trips';
 import type { CalEvent, Candidate, ExistingIndex, ImportResult, ProposedEntry, ProposedTrail, Skipped } from './types';
 
 export interface ImportOptions {
+  /** Optional hint only: bases are inferred from the calendar and may change over time. */
   home?: Place;
   existing?: ExistingIndex;
 }
@@ -83,7 +84,7 @@ export function runImport(events: CalEvent[], opts: ImportOptions = {}): ImportR
     candidates.push(r.candidate);
   }
   const deduped = dedupe(candidates, skipped);
-  const { trails, home } = buildTrips(deduped, opts.home, skipped);
+  const { trails, home, homes } = buildTrips(deduped, opts.home, skipped);
   const existing = opts.existing ?? emptyIndex();
   const filtered = filterExisting(trails, existing, skipped).sort((a, b) => b.start.localeCompare(a.start));
   skipped.sort((a, b) => a.date.localeCompare(b.date) || a.summary.localeCompare(b.summary) || a.reason.localeCompare(b.reason));
@@ -91,6 +92,7 @@ export function runImport(events: CalEvent[], opts: ImportOptions = {}): ImportR
     trails: filtered,
     skipped,
     home,
+    homes,
     stats: {
       events: events.length,
       travelEvents: candidates.length,

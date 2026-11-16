@@ -36,13 +36,14 @@ While the consent screen is in Testing, Google asks you to re-approve access abo
 
 ## How the calendar import works
 
-`src/import/` is a pure, framework-free pipeline (`runImport(events, { home, existing })`):
+`src/import/` is a pure, framework-free pipeline (`runImport(events, { existing })`):
 
 1. **Normalise** (`src/google/normalize.ts`): Google events become `CalEvent`s with local calendar days, using each event's own time zone, so an overnight flight lands on the right dates.
 2. **Extract** (`extract.ts`): each event becomes a flight / train / bus / ferry leg, a stay, a visit, or nothing. It understands Gmail's auto-added events (`Flight to Lisbon (TP 202)`, `Stay at …`, `Reservation at …`), TripIt-style titles (`UA123 EWR to SFO`), hand-made ones (`✈️ JFK → LIS`, `Hotel: Ace`, `Check-in: …`), several languages, and route details in descriptions. Reminders (`Book flight…`, `Online check-in opens`, `Pick up Mom from JFK`), recurring events, birthdays and out-of-office blocks are ignored.
 3. **Dedupe** (`dedupe.ts`): the same event in several calendars (by iCalUID), the same flight seen through Gmail and TripIt (flight number + day, or route + time), check-in/check-out pairs, overlapping hotel blocks, cancellations (unless re-booked later) and reschedules (same confirmation code, latest version wins).
-4. **Group into trips** (`trips.ts`): legs are split at home (inferred from your flights if not set); layovers under 24 hours aren't destinations; flying into one city and sleeping in another (KIX → Kyoto) counts the city you slept in; stays without flights become estimated ground trips; restaurant bookings at home are left out. Trips are named after where you spent your nights (`Lisbon, Oct ’26`, `Kyoto & Tokyo, Apr ’25`, `Portugal, May ’26`).
-5. **Compare with what's saved**: every leg and entry has a fingerprint; re-importing adds only what's new, attaches it to the trail it belongs to, recognises things you logged by hand, and skips anything you dismissed.
+4. **Find where you lived** (`bases.ts`): there's no home airport setting. Legs joined by a change of planes (under 24 hours, no hotel; under 6 hours where you live) become one journey. Each place then collects evidence over time: nights there with no hotel booked, how many different places your journeys link it to, and the start and end of your history. Evidence fades over months, so a move (Boston, then New York) shows up as a new base, with or without a one-way flight in the calendar.
+5. **Group into trips** (`trips.ts`): a trip starts when you leave where you were based and ends when you arrive where you're based next; connections are never origins or destinations; flying into one city and sleeping in another (KIX → Kyoto) counts the city you slept in; stays without flights become estimated ground trips; restaurant bookings at home are left out. Trips are named after where you spent your nights (`Lisbon, Oct ’26`, `Kyoto & Tokyo, Apr ’25`, `Portugal, May ’26`); a one-way move is `To New York, Jun ’21`.
+6. **Compare with what's saved**: every leg and entry has a fingerprint; re-importing adds only what's new, attaches it to the trail it belongs to, recognises things you logged by hand, and skips anything you dismissed.
 
 Everything left out is listed on the review screen with the reason (duplicate, cancelled, rescheduled, already logged, not during a trip, couldn't tell where).
 

@@ -137,7 +137,10 @@ export interface ProposedTrail {
 export interface ImportResult {
   trails: ProposedTrail[];
   skipped: Skipped[];
+  /** Most recent home base. */
   home?: Place;
+  /** Where you were based over time, oldest first. */
+  homes: { place: Place; from: string; to: string }[];
   stats: { events: number; travelEvents: number; legs: number; stays: number; visits: number };
 }
 

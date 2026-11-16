@@ -2,10 +2,8 @@ import fc from 'fast-check';
 import { emptyIndex, runImport } from './pipeline';
 import { addDays } from './dates';
 import { ev } from '../test/events';
-import { placeForAirport } from '../geo/places';
 import type { CalEvent, ImportResult } from './types';
 
-const HOME = placeForAirport('JFK')!;
 const DESTS: [string, string, string][] = [
   ['LIS', 'Lisbon', 'Portugal'],
   ['CDG', 'Paris', 'France'],
@@ -47,14 +45,25 @@ const tripArb: fc.Arbitrary<TripSpec> = fc.record({
   withNumbers: fc.boolean(),
 });
 
-function buildHistory(trips: TripSpec[]): { events: CalEvent[]; starts: string[] } {
+/**
+ * Events for a run of round trips from New York. With `moveAfter`, the first
+ * trips leave from Boston instead, then a one-way flight moves you to New York.
+ */
+function buildHistory(trips: TripSpec[], moveAfter?: number): { events: CalEvent[]; starts: string[]; moveDay?: string } {
   const events: CalEvent[] = [];
   const starts: string[] = [];
   let lastBack = '2019-01-10';
   let day = lastBack;
   let n = 0;
   const id = () => `g${++n}`;
+  let moveDay: string | undefined;
   trips.forEach((t, ti) => {
+    if (moveAfter !== undefined && ti === moveAfter + 1) {
+      moveDay = addDays(lastBack, 20);
+      events.push(ev('✈️ BOS → JFK', `${moveDay}T10:00`, `${moveDay}T11:15`, { id: id() }));
+      lastBack = moveDay;
+    }
+    const inBoston = moveAfter !== undefined && ti <= moveAfter;
     day = addDays(lastBack, t.gapDays);
     const [code, city, country] = DESTS[t.dest];
     const back = addDays(day, t.nights);
@@ -66,13 +75,13 @@ function buildHistory(trips: TripSpec[]): { events: CalEvent[]; starts: string[]
       if (t.style === 'tripit') return ev(`${t.withNumbers ? `XX${100 + ti * 2 + k} ` : 'Flight '}${from} to ${to}`, `${date}T09:00`, `${date}T20:00`, { id: id() });
       return ev(`✈️ ${from} → ${to}`, `${date}T09:00`, `${date}T20:00`, { id: id() });
     };
-    const H = t.homeAirport;
+    const H = inBoston ? 'BOS' : t.homeAirport;
     if (t.via && t.via !== code) {
       // Outbound with a connection: both legs the same day, a few hours apart.
       events.push(ev(`Flight ${H} → ${t.via}`, `${day}T06:00`, `${day}T12:00`, { id: id() }));
       events.push(ev(`Flight ${t.via} → ${code}`, `${day}T14:00`, `${day}T18:00`, { id: id() }));
     } else events.push(flight(H, code, city, day, 0));
-    events.push(flight(code, H, 'New York', back, 1));
+    events.push(flight(code, H, inBoston ? 'Boston' : 'New York', back, 1));
     // Split nights between hotels, back to back.
     const hs = t.hotels.length ? t.hotels : [];
     let cur = day;
@@ -86,7 +95,7 @@ function buildHistory(trips: TripSpec[]): { events: CalEvent[]; starts: string[]
       events.push(ev(`Dinner at ${PLACES[v]} ${ti}`, `${d}T20:00`, `${d}T22:00`, { id: id(), location: `${city}, ${country}` }));
     });
   });
-  return { events, starts };
+  return { events, starts, moveDay };
 }
 
 const noiseArb = fc.array(
@@ -129,7 +138,7 @@ describe('import invariants (property-based)', () => {
     fc.assert(
       fc.property(historyArb, (trips) => {
         const { events, starts } = buildHistory(trips);
-        const r = runImport(events, { home: HOME });
+        const r = runImport(events);
         expect(r.trails.map((t) => t.start).sort()).toEqual([...starts].sort());
         r.trails.forEach((t) => {
           const spec = trips[starts.indexOf(t.start)];
@@ -142,11 +151,32 @@ describe('import invariants (property-based)', () => {
     );
   });
 
+  it('follows a move: every trip starts where you lived then, and connections are never places', () => {
+    fc.assert(
+      fc.property(fc.array(tripArb, { minLength: 2, maxLength: 7 }), fc.nat(), (trips, k) => {
+        const moveAfter = k % (trips.length - 1);
+        const { events, starts, moveDay } = buildHistory(trips, moveAfter);
+        const r = runImport(events);
+        const byStart = new Map(r.trails.map((t) => [t.start, t]));
+        expect(r.trails).toHaveLength(trips.length + 1);
+        expect(byStart.get(moveDay!)?.name).toMatch(/^To New York/);
+        trips.forEach((spec, i) => {
+          const t = byStart.get(starts[i])!;
+          expect(t, `trip ${i}`).toBeDefined();
+          expect(t.legs[0].from.city).toBe(i <= moveAfter ? 'Boston' : 'New York');
+          expect(t.entries.filter((e) => e.kind === 'city').map((e) => e.city)).toEqual([DESTS[spec.dest][1]]);
+        });
+        expect(r.homes.map((h) => h.place.city)).toEqual(['Boston', 'New York']);
+      }),
+      RUNS,
+    );
+  });
+
   it('does not depend on the order events arrive in', () => {
     fc.assert(
       fc.property(historyArb, fc.integer({ min: 1, max: 1e9 }), (trips, seed) => {
         const { events } = buildHistory(trips);
-        expect(snapshot(runImport(shuffle(events, seed), { home: HOME }))).toBe(snapshot(runImport(events, { home: HOME })));
+        expect(snapshot(runImport(shuffle(events, seed)))).toBe(snapshot(runImport(events)));
       }),
       RUNS,
     );
@@ -158,7 +188,7 @@ describe('import invariants (property-based)', () => {
         const { events } = buildHistory(trips);
         const withIds = events.map((e) => ({ ...e, iCalUID: `${e.id}@x` }));
         const copies = withIds.map((e) => ({ ...e, uid: `shared/${e.id}`, calendarId: 'shared' }));
-        expect(snapshot(runImport([...withIds, ...copies], { home: HOME }))).toBe(snapshot(runImport(withIds, { home: HOME })));
+        expect(snapshot(runImport([...withIds, ...copies]))).toBe(snapshot(runImport(withIds)));
       }),
       RUNS,
     );
@@ -174,8 +204,8 @@ describe('import invariants (property-based)', () => {
           if (m && !e.summary.startsWith('Dinner')) return [{ ...e, uid: `copy/${e.id}`, id: `c${e.id}`, start: e.start.replace('T09:00', 'T09:30') }];
           return [];
         });
-        const base = runImport(events, { home: HOME });
-        const both = runImport([...events, ...reworded], { home: HOME });
+        const base = runImport(events);
+        const both = runImport([...events, ...reworded]);
         expect(both.trails.map((t) => [t.start, t.legs.length, t.entries.length])).toEqual(base.trails.map((t) => [t.start, t.legs.length, t.entries.length]));
       }),
       RUNS,
@@ -187,7 +217,7 @@ describe('import invariants (property-based)', () => {
       fc.property(historyArb, noiseArb, (trips, noise) => {
         const { events } = buildHistory(trips);
         const extra = noise.map((n, i) => ev(n.title, `${addDays('2019-01-01', n.day)}T10:00`, `${addDays('2019-01-01', n.day)}T11:00`, { id: `n${i}` }));
-        expect(snapshot(runImport([...events, ...extra], { home: HOME }))).toBe(snapshot(runImport(events, { home: HOME })));
+        expect(snapshot(runImport([...events, ...extra]))).toBe(snapshot(runImport(events)));
       }),
       RUNS,
     );
@@ -197,7 +227,7 @@ describe('import invariants (property-based)', () => {
     fc.assert(
       fc.property(historyArb, (trips) => {
         const { events } = buildHistory(trips);
-        const first = runImport(events, { home: HOME });
+        const first = runImport(events);
         const idx = emptyIndex();
         first.trails.forEach((t, i) => {
           for (const l of t.legs) {
@@ -209,7 +239,7 @@ describe('import invariants (property-based)', () => {
             idx.entries.push({ id: e.fingerprint, kind: e.kind, name: e.name, start: e.start, end: e.end, trailId: `t${i}`, fingerprints: [e.fingerprint] });
           }
         });
-        expect(runImport(events, { home: HOME, existing: idx }).trails).toEqual([]);
+        expect(runImport(events, { existing: idx }).trails).toEqual([]);
       }),
       RUNS,
     );
@@ -219,7 +249,7 @@ describe('import invariants (property-based)', () => {
     fc.assert(
       fc.property(historyArb, (trips) => {
         const { events } = buildHistory(trips);
-        const r = runImport([...events, ...events.map((e) => ({ ...e, uid: `dup/${e.id}` }))], { home: HOME });
+        const r = runImport([...events, ...events.map((e) => ({ ...e, uid: `dup/${e.id}` }))]);
         const prints = r.trails.flatMap((t) => [...t.legs, ...t.entries].map((x) => x.fingerprint));
         expect(new Set(prints).size).toBe(prints.length);
       }),

@@ -1,40 +1,18 @@
 import { haversineKm } from '../geo/geo';
 import { countryName, sameMetro, type Place } from '../geo/places';
+import { buildBases, isConnection, type BaseModel, type HomePeriod } from './bases';
 import { addDays, daysBetween, instant, maxDate, minDate, monthLabel } from './dates';
 import type { Deduped } from './dedupe';
 import { nameKey, normalize } from './text';
 import type { LegCandidate, ProposedEntry, ProposedLeg, ProposedTrail, Skipped, StayCandidate, VisitCandidate } from './types';
 
 const MAX_GAP_DAYS = 60; // a trip with no flight for two months is two trips
-const CONNECTION_HOURS = 24;
 
 function placeKey(p: Place) {
   return p.iata ?? `${normalize(p.city)}-${p.country}`;
 }
 export function cityKey(p: { city: string; country: string }) {
   return `${normalize(p.city)}:${p.country}`;
-}
-
-/** Home is the metro area most legs start or end in, represented by its most-used airport. */
-export function inferHome(legs: LegCandidate[]): Place | undefined {
-  const clusters: { anchor: Place; n: number; first: number; uses: Map<string, { p: Place; n: number; approx: boolean }> }[] = [];
-  legs.forEach((l, i) => {
-    for (const [p, approx] of [[l.from, !!l.fromApprox], [l.to, !!l.toApprox]] as [Place | undefined, boolean][]) {
-      if (!p) continue;
-      let c = clusters.find((c) => sameMetro(c.anchor, p));
-      if (!c) clusters.push((c = { anchor: p, n: 0, first: i, uses: new Map() }));
-      c.n++;
-      const k = p.iata ?? placeKey(p);
-      const u = c.uses.get(k) ?? { p, n: 0, approx };
-      u.n += approx ? 0.5 : 1;
-      u.approx &&= approx;
-      c.uses.set(k, u);
-    }
-  });
-  clusters.sort((a, b) => b.n - a.n || a.first - b.first);
-  const top = clusters[0];
-  if (!top) return undefined;
-  return [...top.uses.values()].sort((a, b) => b.n - a.n || Number(a.approx) - Number(b.approx) || (a.p.iata ?? '').localeCompare(b.p.iata ?? ''))[0].p;
 }
 
 function legFingerprint(l: LegCandidate) {
@@ -52,6 +30,10 @@ interface Segment {
 }
 
 interface TripBuild {
+  /** Where the trip left from, and where it ended up based (the same place unless you moved). */
+  startBase?: Place;
+  endBase?: Place;
+  endsAtBase: boolean;
   legs: LegCandidate[];
   stays: StayCandidate[];
   visits: VisitCandidate[];
@@ -60,46 +42,50 @@ interface TripBuild {
   end: string;
 }
 
-function arrivalInstant(l: LegCandidate) {
-  return instant(l.arrive ?? l.arriveDate);
-}
-
-function splitFlightTrips(legs: LegCandidate[], home?: Place): LegCandidate[][] {
-  const trips: LegCandidate[][] = [];
-  let cur: LegCandidate[] | null = null;
+/**
+ * Split journeys into trips: a trip starts when you leave the place you were
+ * based, and ends when you arrive somewhere you're based afterwards (home
+ * again, or a new home after a move). Connections never start or end a trip.
+ */
+function splitTrips(model: BaseModel): TripBuild[] {
+  const trips: TripBuild[] = [];
+  let cur: TripBuild | null = null;
   const close = () => {
-    if (cur?.length) trips.push(cur);
+    if (cur?.legs.length) trips.push(cur);
     cur = null;
   };
-  for (const leg of legs) {
-    const fromHome = !!home && sameMetro(leg.from!, home);
+  for (const j of model.journeys) {
+    const baseBefore = model.before(j.depart);
     if (cur) {
-      const last: LegCandidate = cur[cur.length - 1];
-      const gap = daysBetween(last.arriveDate, leg.departDate);
-      const homeless = !home && gap > 21;
-      if (gap > MAX_GAP_DAYS || homeless || fromHome) close();
+      const gap = daysBetween(cur.end, j.departDate);
+      // Leaving from home again means the last trip's return wasn't in the calendar.
+      if (gap > MAX_GAP_DAYS || (baseBefore && sameMetro(j.from, baseBefore))) close();
     }
-    (cur ??= []).push(leg);
-    if (home && sameMetro(leg.to, home)) close();
+    cur ??= { startBase: baseBefore, endsAtBase: false, legs: [], stays: [], visits: [], segments: [], start: j.departDate, end: j.arriveDate };
+    cur.legs.push(...j.legs);
+    cur.end = j.arriveDate;
+    const baseAfter = model.after(j.arrive);
+    if (baseAfter && sameMetro(j.to, baseAfter)) {
+      cur.endBase = baseAfter;
+      cur.endsAtBase = true;
+      close();
+    }
   }
   close();
   return trips;
 }
 
-function segmentsFor(legs: LegCandidate[], stays: StayCandidate[], home: Place | undefined, tripEnd: string): Segment[] {
+function segmentsFor(t: TripBuild, isBase: BaseModel['isBase']): Segment[] {
+  const { legs, stays } = t;
   const segs: Segment[] = [];
   legs.forEach((leg, i) => {
     const p = leg.to;
-    if (home && sameMetro(p, home)) return;
+    const isLast = i === legs.length - 1;
+    if (t.startBase && sameMetro(p, t.startBase) && (isLast || t.endsAtBase)) return; // back home
+    if (isLast && t.endsAtBase && t.endBase && sameMetro(p, t.endBase)) return; // arrived at a (new) home
     const next = legs[i + 1];
-    if (next && next.from && sameMetro(next.from, p, 100)) {
-      const hours = (instant(next.depart) - arrivalInstant(leg)) / 3600_000;
-      const stayHere = stays.some((s) => s.place && sameMetro(s.place, p, 60) && s.checkIn <= next.departDate && s.checkOut > leg.arriveDate);
-      const timed = !!leg.arrive && next.depart.length > 10;
-      const sameDay = next.departDate === leg.arriveDate;
-      if (!stayHere && ((timed && hours >= 0 && hours < CONNECTION_HOURS) || (!timed && sameDay))) return; // layover
-    }
-    const seg = { place: p, start: leg.arriveDate, end: next ? next.departDate : maxDate(tripEnd, leg.arriveDate) };
+    if (next && isConnection(leg, next, stays, isBase)) return; // layover
+    const seg = { place: p, start: leg.arriveDate, end: next ? next.departDate : maxDate(t.end, leg.arriveDate) };
     // Flew into one city but slept in another nearby (KIX → Kyoto): the stay's city is the destination.
     const during = stays.filter((s) => s.place && s.checkIn <= seg.end && s.checkOut > seg.start);
     const sleptHere = during.some((s) => sameMetro(s.place!, p, 40));
@@ -152,6 +138,7 @@ function nameTrip(t: TripBuild, cityEntries: ProposedEntry[]): string {
     .filter((c) => c.nights >= 2 || c.nights >= max * 0.5 || max === 0)
     .sort((a, b) => a.first.localeCompare(b.first) || b.nights - a.nights);
   const when = monthLabel(t.start);
+  if (!main.length && t.endsAtBase && t.endBase && t.startBase && !sameMetro(t.endBase, t.startBase)) return `To ${t.endBase.city}, ${when}`;
   if (!main.length) return `Trip, ${when}`;
   if (main.length === 1) return `${main[0].city}, ${when}`;
   if (main.length === 2) return `${main[0].city} & ${main[1].city}, ${when}`;
@@ -160,7 +147,8 @@ function nameTrip(t: TripBuild, cityEntries: ProposedEntry[]): string {
   return `${main[0].city} + ${main.length - 1} more, ${when}`;
 }
 
-function toProposed(t: TripBuild, home: Place | undefined): ProposedTrail {
+function toProposed(t: TripBuild): ProposedTrail {
+  const home = t.startBase;
   const legs: ProposedLeg[] = t.legs.map((l) => ({
     fingerprint: legFingerprint(l),
     mode: l.mode,
@@ -287,11 +275,17 @@ function snapApprox(legs: LegCandidate[], home?: Place): LegCandidate[] {
   }));
 }
 
-export function buildTrips(d: Deduped, homeIn: Place | undefined, skipped: Skipped[]): { trails: ProposedTrail[]; home?: Place } {
-  const home = homeIn ?? inferHome(d.legs);
-  d = { ...d, legs: snapApprox(d.legs, home) };
+export function buildTrips(
+  d: Deduped,
+  hint: Place | undefined,
+  skipped: Skipped[],
+): { trails: ProposedTrail[]; home?: Place; homes: HomePeriod[] } {
+  d = { ...d, legs: snapApprox(d.legs, hint) };
 
-  // Fill missing origins from the previous leg's destination, else home.
+  // First pass: bases from the legs whose origin we know.
+  const firstPass = buildBases(d.legs, d.stays, hint);
+
+  // Fill missing origins from the previous leg's destination, else wherever you were based then.
   const legs: LegCandidate[] = [];
   for (const l of d.legs) {
     if (l.from) {
@@ -299,7 +293,10 @@ export function buildTrips(d: Deduped, homeIn: Place | undefined, skipped: Skipp
       continue;
     }
     const prev = legs[legs.length - 1];
-    const from = prev && daysBetween(prev.arriveDate, l.departDate) <= MAX_GAP_DAYS ? prev.to : home;
+    const gap = prev ? daysBetween(prev.arriveDate, l.departDate) : Infinity;
+    const base = firstPass.before(instant(l.depart));
+    // Recently arrived somewhere: you left from there. Otherwise, from wherever you lived then.
+    const from = gap <= 21 ? prev.to : (base ?? (gap <= MAX_GAP_DAYS ? prev.to : undefined));
     if (!from || sameMetro(from, l.to, 50)) {
       skipped.push({ summary: `Trip to ${l.to.city}`, date: l.departDate, reason: 'unresolved-place', sources: l.sources });
       continue;
@@ -308,15 +305,9 @@ export function buildTrips(d: Deduped, homeIn: Place | undefined, skipped: Skipp
   }
   legs.sort((a, b) => instant(a.depart) - instant(b.depart) || a.sources[0].localeCompare(b.sources[0]));
 
-  const builds: TripBuild[] = splitFlightTrips(legs, home).map((ls) => ({
-    legs: ls,
-    stays: [],
-    visits: [],
-    segments: [],
-    start: ls[0].departDate,
-    end: ls[ls.length - 1].arriveDate,
-  }));
-  const returnsHome = (t: TripBuild) => !!home && sameMetro(t.legs[t.legs.length - 1].to, home);
+  const model = buildBases(legs, d.stays, hint);
+  const builds = splitTrips(model);
+  const returnsHome = (t: TripBuild) => t.endsAtBase;
 
   // Stays join the flight trip they fall in; the rest form ground trips.
   const loose: StayCandidate[] = [];
@@ -334,7 +325,7 @@ export function buildTrips(d: Deduped, homeIn: Place | undefined, skipped: Skipp
   for (const t of builds) {
     t.stays = t.stays.map((s) => completePartialStay(s, t.legs, returnsHome(t) ? t.end : undefined));
     if (!returnsHome(t)) t.end = maxDate(t.end, t.stays.reduce((m, s) => maxDate(m, s.checkOut), t.end));
-    t.segments = segmentsFor(t.legs, t.stays, home, t.end);
+    t.segments = segmentsFor(t, model.isBase);
     for (const s of t.stays) if (!s.place) s.place = placeOn(s.checkIn, t.segments, []) ?? t.segments[0]?.place;
   }
   // Ground trips: chains of stays with at most a day between them.
@@ -348,7 +339,10 @@ export function buildTrips(d: Deduped, homeIn: Place | undefined, skipped: Skipp
     if (last && s0.checkIn <= addDays(last.end, 1)) {
       last.stays.push(s0);
       last.end = maxDate(last.end, s0.checkOut);
-    } else ground.push({ legs: [], stays: [s0], visits: [], segments: [], start: s0.checkIn, end: s0.checkOut });
+    } else {
+      const base = model.before(instant(s0.checkIn)) ?? hint;
+      ground.push({ startBase: base, endBase: base, endsAtBase: true, legs: [], stays: [s0], visits: [], segments: [], start: s0.checkIn, end: s0.checkOut });
+    }
   }
   const all = [...builds, ...ground].sort((a, b) => a.start.localeCompare(b.start));
 
@@ -370,5 +364,6 @@ export function buildTrips(d: Deduped, homeIn: Place | undefined, skipped: Skipp
   for (const t of all) {
     for (const s of t.stays) if (!s.place) skipped.push({ summary: `Stay at ${s.name}`, date: s.checkIn, reason: 'unresolved-place', sources: s.sources });
   }
-  return { trails: all.map((t) => toProposed(t, home)), home };
+  const homes = model.periods;
+  return { trails: all.map((t) => toProposed(t)), home: homes[homes.length - 1]?.place ?? hint, homes };
 }

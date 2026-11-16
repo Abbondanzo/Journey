@@ -32,11 +32,31 @@ for (const [iata, name, municipality, country, lat, lon, rank] of airportsRaw as
   if (!prev || rank > prev.rank) airports.set(iata, { iata, name, municipality, country, lat, lon, rank });
 }
 
-// Names as travellers say them.
-const DISPLAY: Record<string, string> = { 'New York City': 'New York' };
-const cities: City[] = (citiesRaw as [string, string, string, number, number, number][]).map(
-  ([name, , country, lat, lon, pop]) => ({ name: DISPLAY[name] ?? name, country, lat, lon, pop }),
-);
+// Names as English-speaking travellers say them (the data uses local names for some).
+// Keyed by `${name}|${country}`; both names stay searchable.
+const DISPLAY: Record<string, string> = {
+  'New York City|US': 'New York',
+  'Köln|DE': 'Cologne',
+  'Nürnberg|DE': 'Nuremberg',
+  'Hannover|DE': 'Hanover',
+  'Frankfurt am Main|DE': 'Frankfurt',
+  'Antwerpen|BE': 'Antwerp',
+  'Brugge|BE': 'Bruges',
+  'Gent|BE': 'Ghent',
+  'Genève|CH': 'Geneva',
+  'Luzern|CH': 'Lucerne',
+  'Sevilla|ES': 'Seville',
+  'Göteborg|SE': 'Gothenburg',
+  'Fès|MA': 'Fez',
+  'Québec|CA': 'Quebec City',
+};
+const renamed: [string, City][] = [];
+const cities: City[] = (citiesRaw as [string, string, string, number, number, number][]).map(([name, , country, lat, lon, pop]) => {
+  const shown = DISPLAY[`${name}|${country}`];
+  const c = { name: shown ?? name, country, lat, lon, pop };
+  if (shown) renamed.push([name, c]);
+  return c;
+});
 const cityIndex = new Map<string, City[]>();
 function indexCity(key: string, c: City) {
   const list = cityIndex.get(key) ?? [];
@@ -44,7 +64,7 @@ function indexCity(key: string, c: City) {
   cityIndex.set(key, list);
 }
 for (const c of cities) indexCity(normalize(c.name), c);
-for (const [raw, shown] of Object.entries(DISPLAY)) for (const c of cityIndex.get(normalize(shown)) ?? []) indexCity(normalize(raw), c);
+for (const [raw, c] of renamed) indexCity(normalize(raw), c);
 for (const list of cityIndex.values()) list.sort((a, b) => b.pop - a.pop);
 
 // Common local / alternative names people and booking emails use.
@@ -57,6 +77,8 @@ const CITY_ALIASES: Record<string, string> = {
   'sao paulo': 'sao paulo', athina: 'athens', moskva: 'moscow', kobenhavn: 'copenhagen', 'saint petersburg': 'saint petersburg',
   'washington dc': 'washington', 'washington d c': 'washington', sf: 'san francisco', la: 'los angeles',
   'hong kong sar': 'hong kong', 'kyoto shi': 'kyoto', 'tokyo to': 'tokyo', zurich: 'zurich', geneve: 'geneva',
+  kiev: 'kyiv', bangalore: 'bengaluru', marrakech: 'marrakesh', bombay: 'mumbai', calcutta: 'kolkata', madras: 'chennai',
+  saigon: 'ho chi minh city', peking: 'beijing', 'frankfurt am main': 'frankfurt', quebec: 'quebec city',
 };
 
 const countryByCode = allCountries;
@@ -196,6 +218,13 @@ export function sameMetro(a: LatLon, b: LatLon, km = 100): boolean {
 
 /** City autocomplete: prefix matches first, biggest cities first. */
 export function searchCities(query: string, limit = 6): Place[] {
+  // "Cologne, Germany" / "Portland, OR": search the city, prefer the named country.
+  const [head, ...rest] = query.split(',');
+  const country = rest.length ? countryByName.get(normalize(rest.join(' '))) : undefined;
+  if (rest.length) {
+    const found = searchCities(head, limit * 3);
+    return [...found.filter((c) => !country || c.country === country), ...found.filter((c) => country && c.country !== country)].slice(0, limit);
+  }
   const q = normalize(query);
   if (q.length < 2) return [];
   const seen = new Set<string>();
@@ -219,4 +248,16 @@ export function searchCities(query: string, limit = 6): Place[] {
     )
     .slice(0, limit)
     .map((c) => ({ name: c.name, city: c.name, country: c.country, lat: c.lat, lon: c.lon }));
+}
+
+/** What someone typed, as a place: an exact city name ("Cologne, Germany"), an airport code ("EWR"), or an address. */
+export function placeFromText(text: string): Place | undefined {
+  const t = text.trim();
+  if (!t) return undefined;
+  // "EWR" is an airport; "ewr" too, unless it's the start of a city name ("col" → Cologne, Colombo…).
+  if (/^[A-Za-z]{3}$/.test(t) && airports.has(t.toUpperCase()) && (t === t.toUpperCase() || !searchCities(t, 1).length)) return placeForAirport(t.toUpperCase());
+  const top = searchCities(t, 1)[0];
+  const head = normalize(t.split(',')[0]);
+  if (top && (normalize(top.city) === head || normalize(top.city) === (CITY_ALIASES[head] ?? head))) return top;
+  return resolveLocation(t);
 }

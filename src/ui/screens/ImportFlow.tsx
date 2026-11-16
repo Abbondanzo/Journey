@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { existingIndex, getSetting, saveImport, setSetting } from '../../db/repo';
 import { monthLabel, rangeLabel } from '../../import/dates';
+import { looksLikeFlighty, parseFlightyCsv, type FlightyParse } from '../../import/flighty';
 import { runImport } from '../../import/pipeline';
 import type { ImportResult, ProposedTrail, SkipReason } from '../../import/types';
 import { GoogleCalendarSource, type CalendarInfo, type CalendarSource } from '../../google/source';
@@ -10,6 +11,7 @@ import { href, navigate } from '../router';
 import { WorldMap } from '../WorldMap';
 
 type Step = 'intro' | 'calendars' | 'scanning' | 'review' | 'done';
+type FlightyFile = FlightyParse & { name: string };
 
 export type SourceFactory = (kind: 'google' | 'sample', clientId: string) => CalendarSource;
 const defaultFactory: SourceFactory = (kind, clientId) => (kind === 'sample' ? new SampleCalendarSource() : new GoogleCalendarSource(clientId));
@@ -45,6 +47,7 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
   const [dismissRest, setDismissRest] = useState(true);
   const [saved, setSaved] = useState<{ trails: number; entries: number; legs: number }>();
   const [busy, setBusy] = useState(false);
+  const [flighty, setFlighty] = useState<FlightyFile>();
 
   async function connect(kind: 'google' | 'sample') {
     setError(undefined);
@@ -65,24 +68,47 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
     }
   }
 
-  async function scan() {
-    if (!source) return;
+  async function scan(flightyNow: FlightyFile | undefined = flighty) {
+    if (!source && !flightyNow) return;
     setError(undefined);
     setStep('scanning');
     setFetched(0);
     try {
       const to = `${thisYear + 1}-12-31`;
-      const events = await source.events(cals.filter((c) => picked.has(c.id)), `${fromYear}-01-01`, to, setFetched);
+      const events = source ? await source.events(cals.filter((c) => picked.has(c.id)), `${fromYear}-01-01`, to, setFetched) : [];
       // No home airport to set: where you lived (and when you moved) is worked out from the trips themselves.
-      const r = runImport(events, { existing: await existingIndex() });
+      const r = runImport(events, { existing: await existingIndex(), legs: flightyNow?.legs, skipped: flightyNow?.skipped });
       setResult(r);
       setKeep(new Set(r.trails.flatMap(itemsOf)));
       setStep('review');
     } catch (e) {
       setError((e as Error).message);
-      setStep('calendars');
+      setStep(source ? 'calendars' : 'intro');
     }
   }
+
+  async function loadFlighty(file: File | undefined, andScan: boolean) {
+    if (!file) return;
+    setError(undefined);
+    try {
+      const text = await file.text();
+      if (!looksLikeFlighty(text)) throw new Error('That file doesn’t look like a Flighty export. In Flighty: Settings → Export Flights → CSV.');
+      const parsed = parseFlightyCsv(text);
+      const f = { name: file.name, ...parsed };
+      setFlighty(f);
+      if (andScan) await scan(f);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+
+  const flightyPicker = (andScan: boolean, text: string, primary = false) => (
+    <label className={`btn ${primary ? 'primary' : 'ghost'}`} style={{ cursor: 'pointer' }}>
+      <Icon name="plane" size={18} fill />
+      {text}
+      <input type="file" accept=".csv,text/csv,text/comma-separated-values" className="sr-only" onChange={(e) => loadFlighty(e.target.files?.[0], andScan)} />
+    </label>
+  );
 
   async function save() {
     if (!result) return;
@@ -149,6 +175,10 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
             <Icon name="calendar" size={18} />
             Connect Google Calendar
           </button>
+          {flightyPicker(true, 'Use a Flighty export (.csv)')}
+          <span className="muted" style={{ fontSize: 12, marginTop: -8 }}>
+            In Flighty: Settings → Export Flights → CSV. Save the emailed file to Files, then pick it here. You can add it alongside your calendar too.
+          </span>
           <button className="btn ghost" disabled={busy} onClick={() => connect('sample')}>
             Try it with a sample calendar
           </button>
@@ -161,7 +191,7 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
       <div className="screen">
         {header('Choose calendars', source?.label)}
         <main className="pad stack" style={{ paddingTop: 18, gap: 16 }}>
-          <fieldset className="card" style={{ margin: 0 }} disabled={step === 'scanning'}>
+          {cals.length > 0 && <fieldset className="card" style={{ margin: 0 }} disabled={step === 'scanning'}>
             <legend className="sr-only">Calendars to scan</legend>
             {cals.map((c) => (
               <label key={c.id} className="row" style={{ minHeight: 44 }}>
@@ -183,7 +213,7 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
                 {c.primary && <span className="muted" style={{ fontSize: 12 }}>primary</span>}
               </label>
             ))}
-          </fieldset>
+          </fieldset>}
           <label className="field">
             <span>Look back to</span>
             <select className="input" value={fromYear} onChange={(e) => setFromYear(+e.target.value)} disabled={step === 'scanning'}>
@@ -197,13 +227,28 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
           <span className="muted" style={{ fontSize: 12, marginTop: -8 }}>
             No home airport needed. Journey works out where each trip started, follows you when you move, and skips connections.
           </span>
+          {step === 'calendars' &&
+            (flighty ? (
+              <div className="card row" role="status" style={{ fontSize: 13 }}>
+                <Icon name="plane" size={16} fill />
+                <span style={{ flex: 1 }}>
+                  <b>{flighty.legs.length.toLocaleString()} flights</b> from Flighty will be merged in
+                </span>
+                <button className="chip" onClick={() => setFlighty(undefined)}>
+                  Remove
+                </button>
+              </div>
+            ) : (
+              flightyPicker(false, 'Add a Flighty export too')
+            ))}
+          {step === 'scanning' && !source && flighty && <p role="status">Sorting {flighty.legs.length.toLocaleString()} flights…</p>}
           {error && <div className="error" role="alert">{error}</div>}
           {step === 'scanning' ? (
             <p role="status" style={{ fontWeight: 700 }}>
               Reading your calendar… {fetched.toLocaleString()} events
             </p>
           ) : (
-            <button className="btn primary" disabled={!picked.size} onClick={scan}>
+            <button className="btn primary" disabled={!picked.size && !flighty} onClick={() => scan()}>
               Find my trips
             </button>
           )}

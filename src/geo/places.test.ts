@@ -76,3 +76,15 @@ describe('searchCities', () => {
     expect(searchCities('x')).toEqual([]);
   });
 });
+
+describe('typed places', () => {
+  it('understands English names, "City, Country" and airport codes', async () => {
+    const { placeFromText } = await import('./places');
+    expect(placeFromText('Cologne, Germany')?.city).toBe('Cologne');
+    expect(placeFromText('Köln')?.city).toBe('Cologne');
+    expect(placeFromText('Gothenburg')?.country).toBe('SE');
+    expect(placeFromText('Paris, France')?.country).toBe('FR');
+    expect(placeFromText('ewr')?.iata).toBe('EWR');
+    expect(placeFromText('Col')).toBeUndefined();
+  });
+});

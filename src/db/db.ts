@@ -19,6 +19,8 @@ export interface Trail {
   km: number;
   kmEstimated?: boolean;
   source: 'calendar' | 'manual';
+  /** Named by Journey from its places; renamed as places are added unless the user renamed it. */
+  autoName?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -53,6 +55,10 @@ export interface Leg {
   number?: string;
   km: number;
   fingerprints: string[];
+  /** Added for a hand-pinned place (straight line between cities), not from a booking. */
+  estimated?: boolean;
+  /** The assumed trip home at the end; moved when you pin the next stop of the same trip. */
+  auto?: 'return';
 }
 
 export interface Setting {

@@ -50,6 +50,19 @@ describe('home bases', () => {
     expect(r.homes.map((h) => h.place.city)).toEqual(['Boston', 'New York']);
   });
 
+  it("doesn't take a trip you're on right now (flown out, not back yet) for a move", () => {
+    for (const withHotel of [true, false]) {
+      const r = runImport([
+        ...trip('EWR', 'LIS', 'Lisbon, Portugal', '2025-03-01', '2025-03-08'),
+        ...trip('EWR', 'CDG', 'Paris, France', '2025-06-01', '2025-06-06'),
+        fly('EWR', 'BER', '2026-11-10T17:30', '2026-11-11T07:45'),
+        ...(withHotel ? [hotel('Michelberger', '2026-11-11', '2026-11-15', 'Berlin, Germany')] : []),
+      ]);
+      expect(names(r)).toEqual(['Lisbon, Mar ’25', 'Paris, Jun ’25', 'Berlin, Nov ’26']);
+      expect(r.homes.map((h) => h.place.iata)).toEqual(['EWR']);
+    }
+  });
+
   it('starts the trip where you live, not where you changed planes', () => {
     const r = runImport([
       ...trip('BOS', 'CDG', 'Paris, France', '2024-02-01', '2024-02-05'),

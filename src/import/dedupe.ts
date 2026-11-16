@@ -25,6 +25,8 @@ function placeClose(a?: { lat: number; lon: number }, b?: { lat: number; lon: nu
 
 // ---------- legs ----------
 
+const stripZeros = (n: string) => n.replace(/^0+(?=\d)/, '');
+
 function flightKey(l: LegCandidate) {
   return l.carrier && l.number ? `${l.carrier}${l.number}` : undefined;
 }
@@ -33,8 +35,14 @@ function sameLeg(a: LegCandidate, b: LegCandidate): boolean {
   if (a.mode !== b.mode) return false;
   const ka = flightKey(a);
   const kb = flightKey(b);
+  if (ka && kb && ka !== kb) {
+    // Same number under another code system (TP 202 in Gmail, TAP 202 in Flighty) is the same flight
+    // if the route and day agree; a different number is a different flight.
+    if (stripZeros(a.number!) !== stripZeros(b.number!)) return false;
+    return placeClose(a.to, b.to, 100) && (!a.from || !b.from || placeClose(a.from, b.from, 100)) && Math.abs(daysBetween(a.departDate, b.departDate)) <= 1;
+  }
   if (ka && kb) {
-    if (ka !== kb || !placeClose(a.to, b.to, 150)) return false;
+    if (!placeClose(a.to, b.to, 150)) return false;
     if (a.departDate === b.departDate) return true;
     // Different local days can still be one flight seen through two time zones.
     const timed = a.depart.length > 10 && b.depart.length > 10;

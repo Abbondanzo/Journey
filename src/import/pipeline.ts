@@ -4,12 +4,17 @@ import { dedupe } from './dedupe';
 import { extract } from './extract';
 import { nameSimilarity } from './text';
 import { buildTrips } from './trips';
-import type { CalEvent, Candidate, ExistingIndex, ImportResult, ProposedEntry, ProposedTrail, Skipped } from './types';
+import type { CalEvent, Candidate, ExistingIndex, ImportResult, LegCandidate, ProposedEntry, ProposedLeg, ProposedTrail, Skipped } from './types';
+import { haversineKm } from '../geo/geo';
 
 export interface ImportOptions {
   /** Optional hint only: bases are inferred from the calendar and may change over time. */
   home?: Place;
   existing?: ExistingIndex;
+  /** Legs from somewhere other than a calendar (a Flighty export), merged and deduplicated with the rest. */
+  legs?: LegCandidate[];
+  /** What those sources already left out (cancelled flights, unknown airports). */
+  skipped?: Skipped[];
 }
 
 export const emptyIndex = (): ExistingIndex => ({ fingerprints: new Set(), dismissed: new Set(), entries: [], legs: [] });
@@ -34,6 +39,17 @@ function matchExisting(e: ProposedEntry, existing: ExistingIndex) {
   );
 }
 
+/** The same flight saved earlier from another source (other airline code, other wording), or a hand-pinned estimate of it. */
+function matchExistingLeg(l: ProposedLeg, existing: ExistingIndex) {
+  const num = (n?: string) => n?.replace(/^0+(?=\d)/, '');
+  return existing.legs.find(
+    (x) =>
+      !!x.from && !!x.to && x.departDate === l.departDate &&
+      haversineKm(x.from, l.from) <= 100 && haversineKm(x.to, l.to) <= 100 &&
+      (!x.number || !l.number || num(x.number) === num(l.number)),
+  );
+}
+
 /** Drop anything already stored or dismissed; point proposals at the trail they extend. */
 function filterExisting(trails: ProposedTrail[], existing: ExistingIndex, skipped: Skipped[]): ProposedTrail[] {
   const out: ProposedTrail[] = [];
@@ -44,6 +60,16 @@ function filterExisting(trails: ProposedTrail[], existing: ExistingIndex, skippe
       if (existing.dismissed.has(l.fingerprint)) return false;
       if (existing.fingerprints.has(l.fingerprint)) {
         vote(existing.legs.find((x) => x.fingerprints.includes(l.fingerprint))?.trailId);
+        return false;
+      }
+      const same = matchExistingLeg(l, existing);
+      if (same?.estimated) {
+        vote(same.trailId); // a hand-pinned guess for this trip: the real leg joins that trail and replaces it
+        return true;
+      }
+      if (same) {
+        vote(same.trailId);
+        skipped.push({ summary: `${l.from.iata ?? l.from.city} → ${l.to.iata ?? l.to.city}`, date: l.departDate, reason: 'already-logged', sources: l.sources });
         return false;
       }
       return true;
@@ -71,8 +97,8 @@ function filterExisting(trails: ProposedTrail[], existing: ExistingIndex, skippe
 }
 
 export function runImport(events: CalEvent[], opts: ImportOptions = {}): ImportResult {
-  const skipped: Skipped[] = [];
-  const candidates: Candidate[] = [];
+  const skipped: Skipped[] = [...(opts.skipped ?? [])];
+  const candidates: Candidate[] = [...(opts.legs ?? [])];
   const unique = collapseCopies(events);
   for (const ev of unique) {
     const r = extract(ev);
@@ -94,7 +120,7 @@ export function runImport(events: CalEvent[], opts: ImportOptions = {}): ImportR
     home,
     homes,
     stats: {
-      events: events.length,
+      events: events.length + (opts.legs?.length ?? 0),
       travelEvents: candidates.length,
       legs: deduped.legs.length,
       stays: deduped.stays.length,

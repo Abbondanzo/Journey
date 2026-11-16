@@ -153,7 +153,9 @@ describe('import invariants (property-based)', () => {
 
   it('follows a move: every trip starts where you lived then, and connections are never places', () => {
     fc.assert(
-      fc.property(fc.array(tripArb, { minLength: 2, maxLength: 7 }), fc.nat(), (trips, k) => {
+      // Realistic histories: either hotels are booked, or more nights are spent at home than away. (With neither,
+      // a city you keep spending unbooked weeks in, flown to from both homes, really is indistinguishable from home.)
+      fc.property(fc.array(tripArb.map((t) => (t.hotels.length ? t : { ...t, gapDays: Math.max(t.gapDays, t.nights + 1) })), { minLength: 2, maxLength: 7 }), fc.nat(), (trips, k) => {
         const moveAfter = k % (trips.length - 1);
         const { events, starts, moveDay } = buildHistory(trips, moveAfter);
         const r = runImport(events);

@@ -133,3 +133,34 @@ describe('pinning a place by hand', () => {
     expect(e.trailIds).toEqual([t.id]);
   });
 });
+
+describe('pinning with distance', () => {
+  it('takes a typed "City, Country" and counts the trip from where you set off', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await go('/pin');
+    await user.type(await screen.findByLabelText('City'), 'Cologne, Germany');
+    expect(screen.getByRole('button', { name: /pin it/i })).toBeEnabled();
+    await user.type(screen.getByLabelText(/Where you stayed/), 'Mercure');
+
+    // Nothing saved yet, so it asks where you came from; an airport code works.
+    const getting = screen.getByRole('region', { name: 'Getting there' });
+    await user.type(within(getting).getByLabelText('Travelled from'), 'EWR');
+    expect(within(getting).getByRole('button', { name: 'Plane' })).toHaveAttribute('aria-pressed', 'true');
+    expect(within(getting).getByLabelText(/Round trip, back to New York/)).toBeChecked();
+    await user.click(screen.getByRole('button', { name: /pin it/i }));
+
+    await waitFor(async () => expect(await db.entries.count()).toBe(1));
+    const [e] = await db.entries.toArray();
+    expect([e.kind, e.name, e.city]).toEqual(['stay', 'Mercure', 'Cologne']);
+    const [trip] = await db.trails.toArray();
+    expect(trip.kind).toBe('trip');
+    expect(trip.name).toMatch(/^Cologne, /);
+    expect(e.trailIds).toEqual([trip.id]);
+    const legs = await db.legs.toArray();
+    expect(legs.map((l) => `${l.from.iata ?? l.from.city}-${l.to.city}`).sort()).toEqual(['Cologne-New York', 'EWR-Cologne'].sort());
+    expect(trip.km).toBe(legs.reduce((n, l) => n + l.km, 0));
+    expect(trip.km).toBeGreaterThan(12_000);
+    expect(trip.kmEstimated).toBe(true);
+  });
+});

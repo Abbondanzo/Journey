@@ -149,5 +149,14 @@ export interface ExistingIndex {
   fingerprints: Set<string>;
   dismissed: Set<string>;
   entries: { id: string; kind: 'city' | 'stay' | 'visit'; name: string; start: string; end: string; trailId?: string; fingerprints: string[] }[];
-  legs: { trailId?: string; fingerprints: string[] }[];
+  legs: {
+    trailId?: string;
+    fingerprints: string[];
+    from?: { lat: number; lon: number };
+    to?: { lat: number; lon: number };
+    departDate?: string;
+    number?: string;
+    /** Distance guessed for a hand-pinned place; a real leg replaces it. */
+    estimated?: boolean;
+  }[];
 }

@@ -34,6 +34,14 @@ Journey has no backend, so it needs a Google OAuth client ID of your own:
 
 While the consent screen is in Testing, Google asks you to re-approve access about once a week; that's fine for personal use. Publishing for other people requires Google's verification for the calendar scope.
 
+## Flighty
+
+Flighty can export your whole flight history: in Flighty, **Settings → Export Flights → CSV**. It emails you the file; save it to Files, then in Journey choose **Import → Use a Flighty export** (or add it alongside your calendar on the next screen). Flights are matched against your calendar and anything already saved, even when the two use different airline codes (`UA 962` vs `UAL 962`), so nothing is counted twice. Cancelled flights are skipped and diverted ones count where they actually landed.
+
+## Pinning a place by hand
+
+Pinning a city, stay or visit also counts the distance to get there. If you were somewhere else in the last couple of days, it continues that trip from there and moves the assumed trip home to after the new stop. Otherwise it starts from where you lived at the time, worked out from your saved flights. If nothing is saved yet, type where you set off from (a city, or an airport code like `EWR`). These are straight-line estimates, marked as such; when real flights for the same trip arrive from your calendar or Flighty, they replace the estimates.
+
 ## How the calendar import works
 
 `src/import/` is a pure, framework-free pipeline (`runImport(events, { existing })`):
@@ -41,7 +49,7 @@ While the consent screen is in Testing, Google asks you to re-approve access abo
 1. **Normalise** (`src/google/normalize.ts`): Google events become `CalEvent`s with local calendar days, using each event's own time zone, so an overnight flight lands on the right dates.
 2. **Extract** (`extract.ts`): each event becomes a flight / train / bus / ferry leg, a stay, a visit, or nothing. It understands Gmail's auto-added events (`Flight to Lisbon (TP 202)`, `Stay at …`, `Reservation at …`), TripIt-style titles (`UA123 EWR to SFO`), hand-made ones (`✈️ JFK → LIS`, `Hotel: Ace`, `Check-in: …`), several languages, and route details in descriptions. Reminders (`Book flight…`, `Online check-in opens`, `Pick up Mom from JFK`), recurring events, birthdays and out-of-office blocks are ignored.
 3. **Dedupe** (`dedupe.ts`): the same event in several calendars (by iCalUID), the same flight seen through Gmail and TripIt (flight number + day, or route + time), check-in/check-out pairs, overlapping hotel blocks, cancellations (unless re-booked later) and reschedules (same confirmation code, latest version wins).
-4. **Find where you lived** (`bases.ts`): there's no home airport setting. Legs joined by a change of planes (under 24 hours, no hotel; under 6 hours where you live) become one journey. Each place then collects evidence over time: nights there with no hotel booked, how many different places your journeys link it to, and the start and end of your history. Evidence fades over months, so a move (Boston, then New York) shows up as a new base, with or without a one-way flight in the calendar.
+4. **Find where you lived** (`bases.ts`): there's no home airport setting. Legs joined by a change of planes (under 18 hours with no hotel; under 6 hours where you live) become one journey. Each place then collects evidence over time: nights there with no hotel booked, how many different places your journeys link it to, and the start and end of your history. Evidence fades over months, so a move (Boston, then New York) shows up as a new base, with or without a one-way flight in the calendar.
 5. **Group into trips** (`trips.ts`): a trip starts when you leave where you were based and ends when you arrive where you're based next; connections are never origins or destinations; flying into one city and sleeping in another (KIX → Kyoto) counts the city you slept in; stays without flights become estimated ground trips; restaurant bookings at home are left out. Trips are named after where you spent your nights (`Lisbon, Oct ’26`, `Kyoto & Tokyo, Apr ’25`, `Portugal, May ’26`); a one-way move is `To New York, Jun ’21`.
 6. **Compare with what's saved**: every leg and entry has a fingerprint; re-importing adds only what's new, attaches it to the trail it belongs to, recognises things you logged by hand, and skips anything you dismissed.
 

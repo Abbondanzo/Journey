@@ -24,7 +24,8 @@ const TAU = 150 * DAY; // evidence half-fades over roughly five months
 const HORIZON = 540 * DAY; // ignore evidence more than ~18 months away
 const LINK_WEIGHT = 15;
 const EDGE_WEIGHT = 30;
-const CONNECTION_HOURS = 24;
+// Overnight changes of plane run to ~16h; a longer stop with no hotel was likely a day or two at home (just moved, say).
+const CONNECTION_HOURS = 18;
 
 export interface Journey {
   legs: LegCandidate[];
@@ -161,8 +162,11 @@ function modelFor(journeys: Journey[], stays: StayCandidate[], hint?: Place): Om
     const first = journeys[0];
     const last = journeys[journeys.length - 1];
     clusters[clusterOf(first.from)].evidence.push({ t: first.depart - 15 * DAY, w: EDGE_WEIGHT });
+    // You probably end your history at home, but only if it's somewhere you've set off from before:
+    // a last flight to somewhere new is as likely a trip still under way (flown out, not back yet).
+    const leftFromBefore = journeys.some((j) => sameMetro(j.from, last.to));
     const hotelAfter = stays.some((s) => s.place && sameMetro(s.place, last.to, 60) && s.checkIn >= last.arriveDate && daysBetween(last.arriveDate, s.checkIn) <= 1);
-    if (!hotelAfter) clusters[clusterOf(last.to)].evidence.push({ t: last.arrive + 15 * DAY, w: EDGE_WEIGHT });
+    if (leftFromBefore && !hotelAfter) clusters[clusterOf(last.to)].evidence.push({ t: last.arrive + 15 * DAY, w: EDGE_WEIGHT });
   }
   const hintIdx = hint ? clusterOf(hint) : -1;
   if (hint) use(hintIdx, hint, 0.5);
@@ -173,7 +177,8 @@ function modelFor(journeys: Journey[], stays: StayCandidate[], hint?: Place): Om
     let s = 0;
     for (const e of c.evidence) if (side(e.t)) s += e.w * decay(e.t);
     const partners = new Map<number, number>();
-    for (const l of c.links) if (side(l.t)) partners.set(l.other, Math.max(partners.get(l.other) ?? 0, decay(l.t)));
+    // Strictly before/after: the journey you're asking about doesn't vouch for its own ends.
+    for (const l of c.links) if (side(l.t) && l.t !== t) partners.set(l.other, Math.max(partners.get(l.other) ?? 0, decay(l.t)));
     for (const v of partners.values()) s += LINK_WEIGHT * v;
     if (c.order === hintIdx) s += 40;
     return s;

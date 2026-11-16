@@ -385,3 +385,9 @@ h2 {
   border-radius: 14px;
   padding: 10px 12px;
 }
+
+/* While the on-screen keyboard is up, fixed bars would float over the form (iOS). */
+html.kb-open .savebar,
+html.kb-open .tabbar {
+  display: none;
+}

@@ -26,6 +26,10 @@ import type { LegCandidate, StayCandidate } from './types';
 const MOVE_COST = 30; // about a month of nights
 const BOOKED_AWAY = 0.05;
 const HOTEL_AT_HOME = 1;
+// With a leg missing we don't know where the time went (an untracked trip home, a road trip, a few weeks
+// somewhere): charge at most a long trip's worth of nights for not being at either end, so a gap can't
+// on its own make home of the one place you were later seen flying out of.
+const MISSING_LEG_AWAY_CAP = 14;
 const EDGE_NIGHTS = 30; // assumed nights at home before the first journey (and after the last, if it's a return)
 // Overnight changes of plane run to ~16h; a longer stop with no hotel was likely a day or two at home (just moved, say).
 const CONNECTION_HOURS = 18;
@@ -195,8 +199,9 @@ function modelFor(journeys: Journey[], stays: StayCandidate[], hint: Place | und
       // spent at the other end counts as time away.
       const [h, n] = [homeness(s.at, s), homeness(s.next, s)];
       const shareHere = h + n ? h / (h + n) : 0.5;
-      x = (atHere ? 1 - shareHere : shareHere) * unbooked + (atHere ? booked * HOTEL_AT_HOME : 0);
+      x = (atHere ? 1 - shareHere : shareHere) * Math.min(unbooked, MISSING_LEG_AWAY_CAP) + (atHere ? booked * HOTEL_AT_HOME : 0);
     } else if (atHere) x = booked * HOTEL_AT_HOME;
+    else if (missingLeg) x = Math.min(unbooked, MISSING_LEG_AWAY_CAP) + booked * BOOKED_AWAY;
     else x = unbooked + booked * BOOKED_AWAY;
     if (hint && sameMetro(c, hint)) x -= 0.01 * Math.max(1, s.nights);
     return x;

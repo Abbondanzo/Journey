@@ -95,7 +95,10 @@ describe('flights-only histories', () => {
       f('EWR', 'SFO', '2022-01-13T18:00', '2022-01-13T21:00'),
       f('SFO', 'EWR', '2022-01-18T08:00', '2022-01-18T16:00'),
     ];
-    expect(names(run(rows))).toContain('To New York, Jun ’21');
+    // On flights alone, one flight out of Austin is a visit there, not a home.
+    const guess = run(rows);
+    expect(guess.trails.find((t) => t.start === '2021-06-23')!.entries.map((e) => e.city)).toEqual(['Austin']);
+    expect(homes(guess)).not.toContain('Austin');
     const r = run(rows, [{ place: placeForAirport('AUS')!, from: '2021-06-01', to: '2021-11-25' }]);
     expect(names(r)).toContain('New York, Jun ’21');
     const austin = r.homes.find((h) => h.place.city === 'Austin')!;

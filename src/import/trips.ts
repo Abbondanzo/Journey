@@ -100,6 +100,11 @@ function mergeDayVisits(trips: TripBuild[]): TripBuild[] {
 function segmentsFor(t: TripBuild, isBase: BaseModel['isBase']): Segment[] {
   const { legs, stays } = t;
   const segs: Segment[] = [];
+  // Setting off from somewhere that isn't home (the way there wasn't tracked): you were there, so it counts.
+  const origin = legs[0]?.from;
+  if (origin && t.startBase && !sameMetro(origin, t.startBase) && !(t.endBase && sameMetro(origin, t.endBase)) && !legs[0].fromInferred) {
+    segs.push({ place: origin, start: legs[0].departDate, end: legs[0].departDate });
+  }
   legs.forEach((leg, i) => {
     const p = leg.to;
     const isLast = i === legs.length - 1;
@@ -160,7 +165,11 @@ function nameTrip(t: TripBuild, cityEntries: ProposedEntry[]): string {
     .filter((c) => c.nights >= 2 || c.nights >= max * 0.5 || max === 0)
     .sort((a, b) => a.first.localeCompare(b.first) || b.nights - a.nights);
   const when = monthLabel(t.start);
-  if (!main.length && t.endsAtBase && t.endBase && t.startBase && !sameMetro(t.endBase, t.startBase)) return `To ${t.endBase.city}, ${when}`;
+  const moved = t.endsAtBase && t.endBase && t.startBase && !sameMetro(t.endBase, t.startBase);
+  // A move named for where it went, even when you set off from somewhere else (EWR → SJC while living in Boston).
+  const origin = t.legs[0]?.from;
+  const onlyOrigin = main.every((c) => origin && normalize(c.city) === normalize(origin.city) && c.country === origin.country);
+  if (moved && onlyOrigin) return `To ${t.endBase!.city}, ${when}`;
   if (!main.length) return `Trip, ${when}`;
   if (main.length === 1) return `${main[0].city}, ${when}`;
   if (main.length === 2) return `${main[0].city} & ${main[1].city}, ${when}`;
@@ -265,7 +274,7 @@ function toProposed(t: TripBuild): ProposedTrail {
     start: t.start,
     end: t.end,
     legs,
-    entries: [...cities, ...stays, ...visits].sort((a, b) => a.start.localeCompare(b.start) || a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name)),
+    entries: [...cities, ...stays, ...visits].sort((a, b) => a.start.localeCompare(b.start) || a.kind.localeCompare(b.kind) || a.end.localeCompare(b.end) || a.name.localeCompare(b.name)),
     km,
     kmEstimated,
   };

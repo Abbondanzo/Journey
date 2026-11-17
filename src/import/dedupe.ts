@@ -92,7 +92,12 @@ function mergeLegs(ls: LegCandidate[]): LegCandidate {
 
 /**
  * Flying A → B twice in a row, a day or two apart, without ever leaving B in between, can't happen:
- * one was missed, rebooked or only followed. Keep the one you booked (or else the later one).
+ * one was missed, rebooked or only followed.
+ * - Two different flights on the same day: you were rebooked onto the later one after missing or losing
+ *   the first (a late inbound, a cancellation). The original booking often still carries the record
+ *   locator, so the later flight wins.
+ * - Otherwise (the same flight on the next day, typically one you only tracked): keep the one you booked,
+ *   or else the later one.
  */
 function dropImpossibleRepeats(legs: LegCandidate[], skipped: Skipped[]): LegCandidate[] {
   const sorted = [...legs].sort((a, b) => instant(a.depart) - instant(b.depart) || a.sources[0].localeCompare(b.sources[0]));
@@ -107,7 +112,8 @@ function dropImpossibleRepeats(legs: LegCandidate[], skipped: Skipped[]): LegCan
       out.push(l);
       continue;
     }
-    const keepPrev = !!prev.booked && !l.booked;
+    const rebookedSameDay = prev.departDate === l.departDate && (prev.carrier ?? '') + (prev.number ?? '') !== (l.carrier ?? '') + (l.number ?? '');
+    const keepPrev = !rebookedSameDay && !!prev.booked && !l.booked;
     const [kept, dropped] = keepPrev ? [prev, l] : [l, prev];
     out[out.length - 1] = kept;
     skipped.push({ summary: legLabel(dropped), date: dropped.departDate, reason: 'rescheduled', sources: dropped.sources });

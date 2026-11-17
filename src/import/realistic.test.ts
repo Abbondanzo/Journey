@@ -21,7 +21,7 @@ const names = (r: ReturnType<typeof run>) => r.trails.map((t) => t.name).reverse
 const homes = (r: ReturnType<typeof run>) => r.homes.map((h) => h.place.city);
 
 describe('flights-only histories', () => {
-  it('merges codeshare twins and drops a rebooked repeat, keeping the booked one', () => {
+  it('merges codeshare twins, keeps the booked one of a flight tracked twice, and the later flight after a same-day rebooking', () => {
     const r = run([
       f('ORD', 'DEN', '2024-03-01T08:00', '2024-03-01T09:40', { airline: 'UAL', num: '500' }),
       f('DEN', 'ORD', '2024-03-05T10:00', '2024-03-05T13:30', { airline: 'UAL', num: '501' }),
@@ -30,11 +30,11 @@ describe('flights-only histories', () => {
       f('MIA', 'ORD', '2024-06-04T18:00', '2024-06-04T20:30', { airline: 'AAL', num: '21' }),
       f('MIA', 'ORD', '2024-06-05T18:00', '2024-06-05T20:30', { airline: 'AAL', num: '21', booked: false }), // tracked again the next day
       f('ORD', 'LHR', '2024-09-01T18:00', '2024-09-02T08:00', { airline: 'BAW', num: '1' }),
-      f('ORD', 'LHR', '2024-09-01T21:00', '2024-09-02T11:00', { airline: 'BAW', num: '3', booked: false }), // missed / rebooked
+      f('ORD', 'LHR', '2024-09-01T21:00', '2024-09-02T11:00', { airline: 'BAW', num: '3', booked: false }), // rebooked after missing BAW 1
       f('LHR', 'ORD', '2024-09-09T10:00', '2024-09-09T13:00', { airline: 'BAW', num: '2' }),
     ]);
     expect(names(r)).toEqual(['Denver, Mar ’24', 'Miami, Jun ’24', 'London, Sep ’24']);
-    expect(r.trails.flatMap((t) => t.legs).map((l) => `${l.carrier}${l.number}`).sort()).toEqual(['AAL20', 'AAL21', 'BAW1', 'BAW2', 'UAL500', 'UAL501']);
+    expect(r.trails.flatMap((t) => t.legs).map((l) => `${l.carrier}${l.number}`).sort()).toEqual(['AAL20', 'AAL21', 'BAW2', 'BAW3', 'UAL500', 'UAL501']);
     expect(r.trails.flatMap((t) => t.legs).find((l) => l.number === '21')!.departDate).toBe('2024-06-04');
   });
 

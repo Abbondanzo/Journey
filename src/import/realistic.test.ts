@@ -105,6 +105,24 @@ describe('flights-only histories', () => {
     expect(austin.from <= '2021-06-01' && austin.to >= '2021-11-25').toBe(true);
   });
 
+  it('a trip sets off from where you said you lived when it started, even mid-gap', () => {
+    const rows = [
+      f('BOS', 'SFO', '2021-03-01T09:00', '2021-03-01T12:00'),
+      f('SFO', 'BOS', '2021-03-06T09:00', '2021-03-06T18:00'),
+      f('BOS', 'HNL', '2021-04-16T09:00', '2021-04-16T18:00'), // no flight back tracked
+      f('AUS', 'JFK', '2021-06-23T13:00', '2021-06-23T18:00'), // two weeks in Austin, from New Jersey
+      f('EWR', 'SFO', '2022-01-13T18:00', '2022-01-13T21:00'),
+      f('SFO', 'EWR', '2022-01-18T08:00', '2022-01-18T16:00'),
+    ];
+    const P = (c: string) => placeForAirport(c)!;
+    const r = run(rows, [
+      { place: P('BOS'), from: '2020-09-01', to: '2021-05-31' },
+      { place: P('EWR'), from: '2021-06-01', to: '2022-08-31' },
+    ]);
+    expect(names(r)).toEqual(['San Francisco, Mar ’21', 'Honolulu, Apr ’21', 'Austin, Jun ’21', 'San Francisco, Jan ’22']);
+    expect(r.homes.map((h) => [h.place.city, h.from])).toEqual([['Boston', '2020-09-01'], ['New York', '2021-06-01']]);
+  });
+
   it('names the city an airport serves (Venice Marco Polo is Venice, Newark is New York)', () => {
     expect(placeForAirport('VCE')!.city).toBe('Venice');
     expect(placeForAirport('EWR')!.city).toBe('New York');

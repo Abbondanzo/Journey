@@ -185,6 +185,10 @@ function modelFor(journeys: Journey[], stays: StayCandidate[], hint: Place | und
   };
 
   const cost = (s: Stretch, c: Place): number => {
+    // Where you said you lived when this stretch ends (that's where the next trip sets off from) is fixed;
+    // failing that, anywhere you said you lived during it is allowed.
+    const atEnd = known.find((k) => k.from <= s.endDate && s.endDate <= k.to);
+    if (atEnd && Number.isFinite(s.end)) return sameMetro(atEnd.place, c) ? 0 : 1e6;
     const fixed = known.filter((k) => k.from <= s.endDate && s.startDate <= k.to);
     if (fixed.length) return fixed.some((k) => sameMetro(k.place, c)) ? 0 : 1e6;
     const atHere = sameMetro(c, s.at);
@@ -300,7 +304,7 @@ export function withKnown(periods: HomePeriod[], known: KnownBase[]): HomePeriod
       if (p.to < k.from || p.from > k.to) next.push(p);
       else {
         if (p.from < k.from) next.push({ ...p, to: k.from });
-        if (p.to > k.to) next.push({ ...p, from: k.to, approxFrom: undefined });
+        if (p.to > k.to) next.push({ ...p, from: addDays(k.to, 1), approxFrom: undefined });
       }
     }
     next.push({ place: k.place, from: k.from, to: k.to });

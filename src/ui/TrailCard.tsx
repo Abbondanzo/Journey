@@ -46,7 +46,7 @@ export function TrailCard({ trail, entries, legs, width }: { trail: Trail; entri
       <div className="stack" style={{ padding: '12px 14px', gap: 6 }}>
         <span className="row between">
           <span style={{ fontWeight: 800, fontSize: 16 }}>{trail.name}</span>
-          <span className="row muted" style={{ gap: 4, fontSize: 11, fontWeight: 600 }}>
+          <span className="row muted" style={{ gap: 4, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
             <Icon name="lock" size={11} stroke={2.4} />
             Only you
           </span>

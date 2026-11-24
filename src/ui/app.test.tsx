@@ -164,3 +164,28 @@ describe('pinning with distance', () => {
     expect(trip.kmEstimated).toBe(true);
   });
 });
+
+describe('desktop layout', () => {
+  const realMatchMedia = window.matchMedia;
+  beforeEach(() => {
+    window.matchMedia = ((query: string) => ({ matches: query.includes('min-width: 1024px'), media: query, addEventListener: () => {}, removeEventListener: () => {} })) as unknown as typeof window.matchMedia;
+  });
+  afterEach(() => {
+    window.matchMedia = realMatchMedia;
+  });
+
+  it('puts the app in a sidebar shell that follows the route and shows where you are based', async () => {
+    const user = userEvent.setup();
+    render(<App sourceFactory={sample} />);
+    await runSampleImport(user);
+    const side = screen.getByRole('complementary');
+    expect(within(side).getByRole('link', { name: 'Import' })).toHaveAttribute('aria-current', 'page');
+
+    await user.click(screen.getByRole('button', { name: /save 4 trails/i }));
+    await user.click(await screen.findByRole('button', { name: /see your atlas/i }));
+    await screen.findByRole('heading', { name: 'Atlas' });
+    expect(within(side).getByRole('link', { name: 'Atlas' })).toHaveAttribute('aria-current', 'page');
+    expect(within(side).getByRole('link', { name: /pin a place/i })).toHaveAttribute('href', '#/pin');
+    expect(await within(side).findByText('New York')).toBeInTheDocument();
+  });
+});

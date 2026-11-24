@@ -70,6 +70,12 @@ export const ICON_PATHS = {
   ),
   moon: p('M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z'),
   mountain: p('M3 20l6-12 4 7 3-4 5 9z'),
+  home: (
+    <>
+      {p('M4 11l8-6 8 6v9H4z')}
+      {p('M10 20v-5h4v5')}
+    </>
+  ),
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;
@@ -113,7 +119,7 @@ export function TopoHeader({ children, moon = true, radius = true }: { children:
         ))}
       </svg>
       {moon && (
-        <svg width="34" height="34" viewBox="0 0 24 24" aria-hidden="true" style={{ position: 'absolute', right: 22, top: 'calc(env(safe-area-inset-top, 0px) + 96px)' }}>
+        <svg className="topo-moon" width="34" height="34" viewBox="0 0 24 24" aria-hidden="true" style={{ position: 'absolute', right: 22, top: 'calc(env(safe-area-inset-top, 0px) + 96px)' }}>
           <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="#D8A31A" />
         </svg>
       )}
@@ -192,7 +198,7 @@ export function TabBar({ active }: { active: 'atlas' | 'trails' | 'patches' | 's
 
 export function BrandRow({ right }: { right?: ReactNode }) {
   return (
-    <div className="row between">
+    <div className="row between brand-row">
       <span className="row" style={{ gap: 8, fontWeight: 800, fontSize: 17 }}>
         <Icon name="mountain" size={22} />
         Field notes

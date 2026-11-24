@@ -13,7 +13,7 @@ describe('account card', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('offers Google and GitHub sign-in on a signed-out device', () => {
+  it('offers Google sign-in on a signed-out device', () => {
     setAccountStateForTests({ status: 'local' });
     render(
       <>
@@ -22,7 +22,8 @@ describe('account card', () => {
       </>,
     );
     expect(screen.getByRole('button', { name: /continue with google/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /continue with github/i })).toBeInTheDocument();
+    // GitHub waits for its OAuth app (VITE_FIREBASE_GITHUB).
+    expect(screen.queryByRole('button', { name: /continue with github/i })).toBeNull();
     expect(screen.getByText('Kept on this device')).toBeInTheDocument();
   });
 

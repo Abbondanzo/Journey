@@ -5,7 +5,17 @@ import type { FirebaseOptions } from 'firebase/app';
  * and the security rules in firestore.rules decide who can read and write what.
  * Leave it null and the app runs exactly as before, on this device only.
  */
-const PROJECT: FirebaseOptions | null = null;
+const PROJECT: FirebaseOptions | null = {
+  apiKey: 'AIzaSyCcipmkxK1RTBimQt8iCbP5WBw5bFCi4UQ',
+  authDomain: 'journey-a2a8f.firebaseapp.com',
+  projectId: 'journey-a2a8f',
+  storageBucket: 'journey-a2a8f.firebasestorage.app',
+  messagingSenderId: '945509412272',
+  appId: '1:945509412272:web:1615adaece950949037a75',
+};
+
+/** GitHub sign-in needs a GitHub OAuth app connected in Firebase first. */
+export const githubSignIn = import.meta.env.VITE_FIREBASE_GITHUB === '1';
 
 function fromEnv(): FirebaseOptions | null {
   const raw = import.meta.env.VITE_FIREBASE_CONFIG;

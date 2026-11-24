@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Invite } from '../cloud/account';
+import { githubSignIn } from '../cloud/config';
 import type { Provider } from '../cloud/firebase';
 import {
   inviteLink,
@@ -54,10 +55,12 @@ export function SignInButtons({ onPick, busy }: { onPick: (p: Provider) => void;
         {GOOGLE}
         Continue with Google
       </button>
-      <button type="button" className="btn ghost signin" disabled={busy} onClick={() => onPick('github')}>
-        {GITHUB}
-        Continue with GitHub
-      </button>
+      {githubSignIn && (
+        <button type="button" className="btn ghost signin" disabled={busy} onClick={() => onPick('github')}>
+          {GITHUB}
+          Continue with GitHub
+        </button>
+      )}
     </div>
   );
 }
@@ -235,7 +238,7 @@ function SignedIn({ a }: { a: AccountState }) {
                 <Icon name="users" size={16} /> Invite someone
               </button>
               <span className="muted" style={{ fontSize: 12 }}>
-                Anyone with the link can join and edit this atlas for the next 14 days. They sign in with Google or GitHub; no setup.
+                Anyone with the link can join and edit this atlas for the next 14 days. They sign in with Google; no setup.
               </span>
               {link && <input className="input" readOnly value={link} aria-label="Invite link" onFocus={(e) => e.currentTarget.select()} style={{ fontSize: 13 }} />}
               <span role="status" className="muted" style={{ fontSize: 12 }}>

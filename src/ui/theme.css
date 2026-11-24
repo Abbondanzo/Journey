@@ -1,0 +1,593 @@
+@import '@fontsource-variable/bricolage-grotesque';
+@import '@fontsource/caveat/600.css';
+@import '@fontsource/caveat/700.css';
+
+:root {
+  --ink: #23301f;
+  --paper: #ece7d8;
+  --card: #f7f4ea;
+  --muted: #5c6455;
+  --orange: #ff6a2b;
+  --orange-text: #a93a0c;
+  --blue: #3f6e94;
+  --mustard: #d8a31a;
+  --night: #172015;
+  --night-card: #1f2b1c;
+  --night-muted: #a9b19e;
+  --night-line: #34432f;
+  --sand: #e2dcc8;
+  --note: #fbf4d9;
+  --font: 'Bricolage Grotesque Variable', system-ui, sans-serif;
+  --hand: 'Caveat', cursive;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+/*
+ * App shell: the document itself never scrolls; <body> does. iOS 26 Safari
+ * shrinks its toolbar when the document scrolls but leaves position: fixed
+ * bars where the toolbar used to end, so page content shows through a gap
+ * underneath them. Scrolling inside body keeps the toolbar (and the bars) put.
+ */
+html {
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: none;
+}
+html,
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+#root {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100%;
+  position: relative;
+}
+a {
+  color: inherit;
+}
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 3px solid var(--orange);
+  outline-offset: 2px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.screen {
+  padding-bottom: 120px;
+}
+.pad {
+  padding: 0 16px;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.between {
+  justify-content: space-between;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.topo {
+  position: relative;
+  overflow: hidden;
+  background: var(--night);
+  color: var(--paper);
+  border-radius: 0 0 28px 28px;
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) 16px 22px;
+}
+.topo > .topo-in {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.topo .muted {
+  color: var(--night-muted);
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.topo .eyebrow {
+  color: var(--night-muted);
+}
+.big {
+  font-weight: 800;
+  letter-spacing: -2.5px;
+  line-height: 1;
+}
+.hand {
+  font-family: var(--hand);
+  font-weight: 700;
+}
+.muted {
+  color: var(--muted);
+}
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 800;
+}
+h2 {
+  font-size: 22px;
+}
+
+.card {
+  background: var(--card);
+  border: 1.5px solid var(--ink);
+  border-radius: 20px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.card.ink {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.card.orange {
+  background: var(--orange);
+}
+.card.blue {
+  background: var(--blue);
+  color: var(--card);
+}
+
+.chip {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  border: 1.5px solid var(--ink);
+  background: transparent;
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.chip[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--card);
+}
+.chip.shared[aria-pressed='true'] {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.chip.dashed {
+  border-style: dashed;
+}
+
+.btn {
+  height: 52px;
+  padding: 0 24px;
+  border-radius: 26px;
+  border: 1.5px solid var(--ink);
+  font-weight: 800;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.btn.primary {
+  background: var(--orange);
+  color: var(--ink);
+  box-shadow: 0 3px 0 var(--ink);
+}
+.btn.dark {
+  background: var(--ink);
+  color: var(--paper);
+}
+.btn.ghost {
+  background: transparent;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn.small {
+  height: 40px;
+  font-size: 14px;
+  padding: 0 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.field > span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.input {
+  height: 48px;
+  border-radius: 14px;
+  border: 1.5px solid var(--ink);
+  background: var(--card);
+  padding: 0 14px;
+  font-size: 16px;
+}
+.note-box {
+  border-radius: 14px;
+  background: var(--note);
+  border: 1px solid #e4d7a6;
+  padding: 6px 12px 2px;
+}
+.note-box textarea {
+  width: 100%;
+  resize: none;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  font-family: var(--hand);
+  font-size: 22px;
+  line-height: 30px;
+  background: transparent repeating-linear-gradient(transparent 0, transparent 29px, #e4d7a6 29px, #e4d7a6 30px);
+}
+
+.kinds {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.kind {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1.5px solid var(--ink);
+  font-weight: 800;
+  text-align: left;
+}
+.kind[aria-checked='true'] {
+  background: var(--ink);
+  color: var(--paper);
+}
+.kind small {
+  font-weight: 500;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.tabbar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  bottom: 0;
+  height: calc(76px + env(safe-area-inset-bottom, 0px));
+  background: var(--paper);
+  border-top: 1.5px solid var(--ink);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: start;
+  z-index: 10;
+}
+.tabbar a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding-top: 10px;
+  min-height: 44px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.tabbar a[aria-current='page'] {
+  color: var(--ink);
+  font-weight: 800;
+}
+.fab {
+  width: 62px;
+  height: 62px;
+  border-radius: 31px;
+  background: var(--orange);
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 0 var(--ink);
+  margin: -22px auto 0;
+}
+
+.savebar {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  bottom: 0;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: var(--paper);
+  border-top: 1.5px solid var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 10;
+}
+
+.scroll-x {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  margin-right: -16px;
+  padding-right: 16px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.scroll-x > * {
+  scroll-snap-align: start;
+}
+
+.bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--sand);
+  overflow: hidden;
+}
+.bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--orange);
+}
+
+.check {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--ink);
+  flex: 0 0 auto;
+}
+.error {
+  background: #fde3d7;
+  border: 1.5px solid var(--orange-text);
+  color: #6e2507;
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+/* While the on-screen keyboard is up, fixed bars would float over the form (iOS). */
+html.kb-open .savebar,
+html.kb-open .tabbar {
+  display: none;
+}
+
+/* Atlas sections: patches then trails on a phone; side by side on desktop. */
+.home-lower {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.desk-title {
+  display: none;
+}
+
+/*
+ * Desktop (D1 · Sidebar atlas): a night sidebar replaces the tab bar, and the
+ * Atlas spreads out. Other screens keep their phone layout in a centred column.
+ */
+@media (min-width: 1024px) {
+  #root {
+    max-width: none;
+  }
+  .shell {
+    display: grid;
+    grid-template-columns: 236px minmax(0, 1fr);
+    min-height: 100vh;
+  }
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    background: var(--night);
+    color: var(--paper);
+    padding: 28px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .sidebar nav a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+  }
+  .sidebar nav a:hover {
+    background: rgba(236, 231, 216, 0.06);
+  }
+  .sidebar nav a[aria-current='page'] {
+    background: rgba(236, 231, 216, 0.12);
+    font-weight: 800;
+  }
+  .sidebar .btn {
+    color: var(--ink);
+  }
+  .sidebar .eyebrow {
+    color: var(--night-muted);
+  }
+  .sidebar .pill {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 17px;
+    border: 1.5px solid #4a5a44;
+    background: rgba(236, 231, 216, 0.08);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .shell .tabbar,
+  .shell .brand-row {
+    display: none;
+  }
+  .shell-main > .screen {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 32px 48px !important;
+  }
+  .shell-main > .screen.wide {
+    max-width: 1320px;
+  }
+  .shell-main > .screen > .pad,
+  .shell-main > .screen > main.pad {
+    padding: 0;
+  }
+  .shell .topo {
+    border-radius: 28px;
+    padding: 28px;
+  }
+  .shell .savebar {
+    position: sticky;
+    left: auto;
+    transform: none;
+    max-width: none;
+    margin-top: 24px;
+    border: 1.5px solid var(--ink);
+    border-radius: 20px;
+    padding: 12px 16px;
+    bottom: 16px;
+  }
+
+  /* The Atlas */
+  .home .desk-title {
+    display: block;
+    font-size: 30px;
+    margin-bottom: 20px;
+  }
+  .home .topo {
+    padding: 32px;
+  }
+  .home .topo-moon {
+    top: 24px !important;
+    right: 28px !important;
+  }
+  .home .topo-in {
+    display: grid;
+    grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+    grid-template-areas: 'text map' 'leg map';
+    column-gap: 40px;
+    row-gap: 14px;
+    align-items: center;
+  }
+  .home .hero-text {
+    grid-area: text;
+    align-self: end;
+  }
+  .home .hero-text .big {
+    font-size: 84px !important;
+    letter-spacing: -3px;
+  }
+  .home .hero-text .hand {
+    font-size: 28px !important;
+  }
+  .home .hero-map {
+    grid-area: map;
+  }
+  .home .hero-leg {
+    grid-area: leg;
+    align-self: start;
+    padding-top: 14px;
+    border-top: 1px solid var(--night-line);
+    font-size: 13px !important;
+  }
+  .home main {
+    padding-top: 28px !important;
+    gap: 28px !important;
+  }
+  .home .tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .home .tiles .card {
+    padding: 16px;
+  }
+  .home-lower {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+    grid-template-areas: 'trails patches';
+    gap: 32px;
+    align-items: start;
+  }
+  .home-trails {
+    grid-area: trails;
+  }
+  .home-patches {
+    grid-area: patches;
+  }
+  .home .trail-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 14px;
+    overflow: visible;
+    margin-right: 0;
+    padding-right: 0;
+  }
+  .home-patches > .row {
+    flex-wrap: wrap;
+  }
+}

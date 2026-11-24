@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { exportAll, getSetting, setSetting, wipeAll } from '../../db/repo';
 import type { KnownBase } from '../../import/bases';
 import type { Journey } from '../data';
+import { useAccount } from '../../cloud/session';
+import { AccountCard } from '../Account';
 import { KnownBasesEditor } from '../KnownBases';
 import { BrandRow, Icon, TabBar, TopoHeader } from '../kit';
 import { href } from '../router';
@@ -11,6 +13,8 @@ export function Settings(_props: { j: Journey }) {
   const [known, setKnown] = useState<KnownBase[]>([]);
   const [confirmWipe, setConfirmWipe] = useState(false);
   const [saved, setSaved] = useState('');
+  const account = useAccount();
+  const synced = account.status === 'synced';
   useEffect(() => {
     getSetting<string>('googleClientId', '').then(setClientId);
     getSetting<KnownBase[]>('knownBases', []).then(setKnown);
@@ -20,9 +24,16 @@ export function Settings(_props: { j: Journey }) {
       <TopoHeader moon={false}>
         <BrandRow />
         <h1 style={{ fontSize: 30 }}>Settings</h1>
-        <span className="muted">Everything lives in this browser’s storage. There is no account and no server.</span>
+        <span className="muted">
+          {account.status === 'off'
+            ? 'Everything lives in this browser’s storage. There is no account and no server.'
+            : synced
+              ? 'Saved on this device and synced to your account, so it works offline too.'
+              : 'Everything lives on this device until you sign in.'}
+        </span>
       </TopoHeader>
       <main className="pad stack" style={{ paddingTop: 18, gap: 16 }}>
+        <AccountCard />
         <form
           className="card"
           onSubmit={async (e) => {
@@ -80,7 +91,13 @@ export function Settings(_props: { j: Journey }) {
             setClientId('');
           }}
         >
-          {confirmWipe ? 'Tap again to delete all data on this phone' : 'Delete all data'}
+          {synced
+            ? confirmWipe
+              ? `Tap again to delete everything in ${account.atlas?.name ?? 'this atlas'}, on every device`
+              : 'Delete everything in this atlas'
+            : confirmWipe
+              ? 'Tap again to delete all data on this phone'
+              : 'Delete all data'}
         </button>
       </main>
       <TabBar active="settings" />

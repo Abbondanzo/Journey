@@ -1,0 +1,110 @@
+rules_version = '2';
+
+// Journey's data model
+//
+//   users/{uid}                    name, photo, home atlas id; only you can read it
+//   atlases/{atlas}                name, owner, members {uid: role}, memberIds [uid], names {uid: name}
+//   atlases/{atlas}/{table}/{key}  one doc per local row: k (key), j (row as JSON) or x (deleted), t, by
+//   invites/{token}                atlas, atlasName, role, by, byName, expires
+//
+// An atlas is one shared travel log. Everyone gets their own on first sign-in;
+// joining someone else's (an invite link) is how two people share one.
+// Roles: owner (one, can invite and remove), editor (reads and writes), viewer (reads).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    function atlasDoc(a) {
+      return get(/databases/$(database)/documents/atlases/$(a)).data;
+    }
+    function roleIn(a) {
+      return atlasDoc(a).members.get(request.auth.uid, null);
+    }
+
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /atlases/{a} {
+      allow read: if signedIn() && request.auth.uid in resource.data.memberIds;
+
+      // A new atlas belongs to whoever makes it, and only them.
+      allow create: if signedIn()
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.members.keys().hasOnly([request.auth.uid])
+        && request.resource.data.members[request.auth.uid] == 'owner'
+        && request.resource.data.memberIds == [request.auth.uid]
+        && request.resource.data.get('names', {}).keys().hasOnly([request.auth.uid]);
+
+      allow update: if signedIn() && (ownerEdit() || joining() || leaving());
+      allow delete: if signedIn() && resource.data.owner == request.auth.uid;
+
+      // The owner can rename and change members, but not hand over or drop ownership.
+      function ownerEdit() {
+        let d = request.resource.data;
+        return resource.data.owner == request.auth.uid
+          && d.owner == resource.data.owner
+          && d.members[request.auth.uid] == 'owner'
+          && d.memberIds.toSet() == d.members.keys().toSet();
+      }
+
+      // Anyone holding a live invite can add themselves, with the invite's role.
+      function joining() {
+        let d = request.resource.data;
+        let inv = get(/databases/$(database)/documents/invites/$(d.invite)).data;
+        return !(request.auth.uid in resource.data.members)
+          && inv.atlas == a
+          && inv.expires > request.time
+          && d.diff(resource.data).affectedKeys().hasOnly(['members', 'memberIds', 'invite', 'names'])
+          && d.get('names', {}).diff(resource.data.get('names', {})).affectedKeys().hasOnly([request.auth.uid])
+          && d.members.diff(resource.data.members).affectedKeys().hasOnly([request.auth.uid])
+          && d.members[request.auth.uid] == inv.role
+          && d.memberIds.toSet() == resource.data.memberIds.toSet().union([request.auth.uid].toSet())
+          && d.memberIds.size() == resource.data.memberIds.size() + 1;
+      }
+
+      // Members other than the owner can leave.
+      function leaving() {
+        let d = request.resource.data;
+        return request.auth.uid in resource.data.members
+          && resource.data.owner != request.auth.uid
+          && d.diff(resource.data).affectedKeys().hasOnly(['members', 'memberIds', 'names'])
+          && d.get('names', {}).diff(resource.data.get('names', {})).affectedKeys().hasOnly([request.auth.uid])
+          && d.members.keys().toSet() == resource.data.members.keys().toSet().difference([request.auth.uid].toSet())
+          && d.memberIds.toSet() == resource.data.memberIds.toSet().difference([request.auth.uid].toSet());
+      }
+
+      match /{table}/{key} {
+        allow read: if signedIn() && roleIn(a) != null;
+        allow write: if signedIn()
+          && table in ['trails', 'entries', 'legs', 'dismissed', 'settings']
+          && roleIn(a) in ['owner', 'editor']
+          && (request.resource == null || validRow());
+
+        function validRow() {
+          let d = request.resource.data;
+          return d.k is string
+            && d.by == request.auth.uid
+            && d.t == request.time
+            && ((d.keys().hasOnly(['k', 'j', 't', 'by']) && d.j is string && d.j.size() < 900000)
+              || (d.keys().hasOnly(['k', 'x', 't', 'by']) && d.x == true));
+        }
+      }
+    }
+
+    match /invites/{token} {
+      // Knowing the token is the permission (it shows the invite before sign-in); invites can't be listed.
+      allow get: if true;
+      allow create: if signedIn()
+        && request.resource.data.by == request.auth.uid
+        && atlasDoc(request.resource.data.atlas).owner == request.auth.uid
+        && request.resource.data.role in ['editor', 'viewer']
+        && request.resource.data.expires > request.time
+        && request.resource.data.expires < request.time + duration.value(31, 'd')
+        && token.size() >= 20;
+      allow delete: if signedIn() && resource.data.by == request.auth.uid;
+    }
+  }
+}

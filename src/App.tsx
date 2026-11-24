@@ -6,6 +6,7 @@ import type { SourceFactory } from './ui/screens/ImportFlow';
 import { Patches, Trails } from './ui/screens/Lists';
 import { TrailView } from './ui/screens/TrailView';
 import { Sidebar, useDesktop } from './ui/Sidebar';
+import { JoinScreen } from './ui/Account';
 
 // Screens that need the airport and city tables load them on demand.
 const ImportFlow = lazy(() => import('./ui/screens/ImportFlow').then((m) => ({ default: m.ImportFlow })));
@@ -38,6 +39,8 @@ function Routes({ sourceFactory }: { sourceFactory?: SourceFactory }) {
 }
 
 function Screen({ path, j, sourceFactory }: { path: string; j: Journey | undefined; sourceFactory?: SourceFactory }) {
+  const join = /^\/join\/(.+)$/.exec(path);
+  if (join) return <JoinScreen token={decodeURIComponent(join[1])} />;
   if (path === '/import') return <ImportFlow factory={sourceFactory} />;
   if (!j) return loading;
   if (path === '/pin') return <Pin j={j} />;

@@ -1,4 +1,5 @@
 import { EARTH_CIRCUMFERENCE_KM } from '../../geo/geo';
+import { useAccount } from '../../cloud/session';
 import { daysBetween } from '../../import/dates';
 import type { Journey } from '../data';
 import { BrandRow, fmtKm, Icon, PatchBadge, Ring, SectionHead, TabBar, TopoHeader } from '../kit';
@@ -9,6 +10,7 @@ import { WorldMap } from '../WorldMap';
 export function Home({ j }: { j: Journey }) {
   const { stats, trails, entries, legs, patches } = j;
   const empty = !entries.length && !legs.length;
+  const account = useAccount();
   const nextLap = Math.floor(stats.laps) + 1;
   const lapPct = (stats.laps - Math.floor(stats.laps)) * 100;
   const toNext = nextLap * EARTH_CIRCUMFERENCE_KM - stats.km;
@@ -84,7 +86,7 @@ export function Home({ j }: { j: Journey }) {
           <section className="card" aria-label="Get started">
             <h2>Start your atlas</h2>
             <p className="muted" style={{ margin: 0 }}>
-              Pull flights, hotels and reservations from your calendar, or pin places by hand. Everything stays on this phone.
+              Pull flights, hotels and reservations from your calendar, or pin places by hand. {account.status === 'synced' ? 'Everything syncs to your account.' : 'Everything stays on this phone.'}
             </p>
             <div className="row" style={{ flexWrap: 'wrap', marginTop: 6 }}>
               <a className="btn primary" href={href('/import')}>
@@ -95,6 +97,11 @@ export function Home({ j }: { j: Journey }) {
                 Pin a place
               </a>
             </div>
+            {account.status === 'local' && (
+              <a href={href('/settings')} style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
+                Already use Journey on another device? Sign in
+              </a>
+            )}
           </section>
         )}
 

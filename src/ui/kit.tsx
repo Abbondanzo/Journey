@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react';
 import type { Patch as PatchData, PatchId } from '../stats/stats';
 import { href } from './router';
+import { StorageLabel } from './Account';
 
 const p = (d: string) => <path d={d} />;
 export const ICON_PATHS = {
@@ -70,6 +71,14 @@ export const ICON_PATHS = {
   ),
   moon: p('M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z'),
   mountain: p('M3 20l6-12 4 7 3-4 5 9z'),
+  cloud: p('M7 18h10.5a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.34 9.1 4.5 4.5 0 0 0 7 18z'),
+  users: (
+    <>
+      {p('M3 20a6 6 0 0 1 12 0')}
+      <circle cx="9" cy="8" r="3.5" />
+      {p('M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.5a6 6 0 0 1 3 5.5')}
+    </>
+  ),
   home: (
     <>
       {p('M4 11l8-6 8 6v9H4z')}
@@ -205,8 +214,7 @@ export function BrandRow({ right }: { right?: ReactNode }) {
       </span>
       {right ?? (
         <a href={href('/settings')} className="row" style={{ gap: 6, height: 32, padding: '0 12px', borderRadius: 16, border: '1.5px solid #4A5A44', background: 'rgba(236,231,216,0.08)', fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
-          <Icon name="lock" size={12} stroke={2.4} />
-          Kept on this phone
+          <StorageLabel short />
         </a>
       )}
     </div>

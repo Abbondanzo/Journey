@@ -591,3 +591,9 @@ html.kb-open .tabbar {
     flex-wrap: wrap;
   }
 }
+
+.btn.signin {
+  justify-content: center;
+  gap: 10px;
+  background: var(--card);
+}

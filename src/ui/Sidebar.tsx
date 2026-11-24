@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getSetting } from '../db/repo';
 import type { KnownBase } from '../import/bases';
 import type { Journey } from './data';
+import { StorageLabel } from './Account';
 import { Icon, type IconName } from './kit';
 import { href } from './router';
 
@@ -79,8 +80,7 @@ export function Sidebar({ path, j }: { path: string; j: Journey | undefined }) {
           </>
         )}
         <a href={href('/settings')} className="pill">
-          <Icon name="lock" size={12} stroke={2.4} />
-          Kept on this device
+          <StorageLabel />
         </a>
       </div>
     </aside>

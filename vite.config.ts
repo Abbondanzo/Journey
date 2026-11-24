@@ -10,5 +10,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     testTimeout: 120_000,
+    // Emulator tests run separately (pnpm test:emu, in CI).
+    exclude: ['**/node_modules/**', '**/*.emu.test.ts'],
   },
 });

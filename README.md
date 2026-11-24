@@ -62,9 +62,20 @@ Everything left out is listed on the review screen with the reason (duplicate, c
 - `src/import/properties.test.ts`: property-based tests with fast-check over generated travel histories. The import must be independent of event order, unchanged by copies in other calendars or reworded duplicates, unaffected by everyday events, idempotent after saving, and never propose the same item twice. Run more cases with `VITE_PROPERTY_RUNS=2000 pnpm test`.
 - `src/ui/app.test.tsx`: the import and pin flows end to end against IndexedDB.
 
+## Accounts and sync
+
+Optional. With no Firebase project configured, Journey works entirely on the device, as above. With one, people can sign in with Google or GitHub and their trips follow them to every device.
+
+- **Local first, still.** The app only ever reads the database on the device. `src/cloud/sync.ts` pushes each committed local change to Firestore and writes remote changes back, so the app works offline and catches up when it reconnects. Deletes travel as tombstones; the server's order settles conflicts (last write wins).
+- **Atlases.** An atlas is one travel log. Everyone gets their own on first sign-in. The owner can share it with an invite link (Settings → Invite someone); whoever opens it sees who invited them, signs in, and joins. Roles are owner, editor and viewer. Each atlas has its own database on the device, and signing out removes the account's copies from that device.
+- **First sign-in.** Trips already on the device move into the account. If the account already has trips from another device, Journey asks whether to add this device's too.
+- **Rules.** `firestore.rules` enforces who can read and write what, including the invite flow. `src/cloud/cloud.emu.test.ts` checks it, and sync between two people, against the Firebase emulators in CI (`pnpm test:emu` under `firebase emulators:exec`).
+
+To use your own project: create a Firebase project with Firestore and Google sign-in, add your site to Auth's authorized domains, deploy `firestore.rules`, and put the web app's config in `src/cloud/config.ts` (or a `FIREBASE_CONFIG` repository variable for the deploy workflow). GitHub sign-in also needs a GitHub OAuth app whose callback is `https://<project>.firebaseapp.com/__/auth/handler`.
+
 ## Not built yet
 
-Sync and sharing with friends, photos on lists, .ics feeds (Apple / Outlook / TripIt subscriptions) and per-note privacy are designed but not in this version.
+Sharing a single trail (rather than a whole atlas), photos on lists, .ics feeds (Apple / Outlook / TripIt subscriptions) and per-note privacy are designed but not in this version.
 
 ## Data
 

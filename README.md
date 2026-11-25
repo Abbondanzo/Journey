@@ -23,16 +23,16 @@ pnpm build        # static site in dist/ (deploy to Cloudflare Pages or any stat
 
 No Google setup is needed to try the importer: **Import from calendar → Try it with a sample calendar** runs the full flow on a built-in messy calendar (duplicates, a cancelled trip, a rescheduled flight, everyday noise).
 
-## Connecting Google Calendar (one-time, ~2 minutes)
+## Connecting Google Calendar
 
-Journey has no backend, so it needs a Google OAuth client ID of your own:
+With accounts on (the deployed site), there's nothing to set up: **Import → Sign in with Google to connect** signs you in and asks for read-only calendar access in the same Google window. Later imports ask Google for a fresh token (they last an hour and stay in memory only). The Firebase project needs the Google Calendar API enabled and the `https://www.googleapis.com/auth/calendar.readonly` scope on its OAuth consent screen. Until Google verifies the app for that scope, people see a "Google hasn't verified this app" screen they can continue past.
+
+A copy of Journey without accounts uses its own OAuth client instead:
 
 1. In [Google Cloud Console](https://console.cloud.google.com/), create a project and **enable the Google Calendar API**.
-2. **OAuth consent screen:** choose External, keep it in *Testing*, and add your Google account as a test user. Add the scope `https://www.googleapis.com/auth/calendar.readonly`.
-3. **Credentials → Create credentials → OAuth client ID → Web application.** Under *Authorized JavaScript origins* add `https://abbondanzo.github.io` (and `http://localhost:5173` for local development).
-4. Paste the client ID into **Settings → Google OAuth client ID** in the app. To bake it into the deployed site instead, add it as a repository variable named `GOOGLE_CLIENT_ID` (Settings → Secrets and variables → Actions → Variables); the next deploy picks it up. A client ID is not a secret.
-
-While the consent screen is in Testing, Google asks you to re-approve access about once a week; that's fine for personal use. Publishing for other people requires Google's verification for the calendar scope.
+2. **OAuth consent screen:** choose External, keep it in *Testing*, add your Google account as a test user, and add the calendar.readonly scope.
+3. **Credentials → Create credentials → OAuth client ID → Web application**, with your site under *Authorized JavaScript origins* (and `http://localhost:5173` for development).
+4. Paste the client ID into **Settings → Google OAuth client ID**, or set it as the `GOOGLE_CLIENT_ID` repository variable for the deploy workflow.
 
 ## Flighty
 

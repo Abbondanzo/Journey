@@ -18,7 +18,7 @@ export interface CalendarSource {
   disconnect(): void;
 }
 
-const SCOPE = 'https://www.googleapis.com/auth/calendar.readonly';
+export const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.readonly';
 const API = 'https://www.googleapis.com/calendar/v3';
 
 interface TokenResponse {
@@ -59,6 +59,35 @@ function loadGis(): Promise<void> {
   return gisLoading;
 }
 
+export interface AccessToken {
+  token: string;
+  /** Seconds until it expires. */
+  expiresIn?: number;
+}
+/** Hands out a Calendar access token, opening Google's consent window if needed. */
+export type TokenProvider = () => Promise<AccessToken>;
+
+/** Tokens from Google Identity Services with your own OAuth client ID (when accounts are off). */
+export function gisTokens(clientId: () => Promise<string>): TokenProvider {
+  return async () => {
+    const id = await clientId();
+    if (!id) throw new Error('Add a Google OAuth client ID in Settings first.');
+    await loadGis();
+    return new Promise<AccessToken>((resolve, reject) => {
+      const client = window.google!.accounts.oauth2.initTokenClient({
+        client_id: id,
+        scope: CALENDAR_SCOPE,
+        callback: (r) => {
+          if (r.error || !r.access_token) return reject(new Error(r.error === 'access_denied' ? 'Calendar access was not granted.' : `Google sign-in failed (${r.error ?? 'no token'}).`));
+          resolve({ token: r.access_token, expiresIn: r.expires_in });
+        },
+        error_callback: (e) => reject(new Error(e.type === 'popup_closed' ? 'The Google window was closed.' : `Google sign-in failed (${e.type}).`)),
+      });
+      client.requestAccessToken({ prompt: '' });
+    });
+  };
+}
+
 /**
  * Read-only Google Calendar access straight from the browser. The access token
  * lives in memory only; events are parsed on this device and never sent anywhere.
@@ -68,28 +97,18 @@ export class GoogleCalendarSource implements CalendarSource {
   private token?: string;
   private expires = 0;
   private fetchImpl: typeof fetch;
+  private tokens: TokenProvider;
 
-  constructor(private clientId: string, fetchImpl?: typeof fetch) {
+  constructor(tokens: TokenProvider | string, fetchImpl?: typeof fetch) {
+    this.tokens = typeof tokens === 'string' ? gisTokens(async () => tokens) : tokens;
     this.fetchImpl = fetchImpl ?? ((...a) => fetch(...a));
   }
 
+  /** Call straight from a tap: the consent window is a popup. */
   async connect(): Promise<void> {
-    if (!this.clientId) throw new Error('Add a Google OAuth client ID in Settings first.');
-    await loadGis();
-    await new Promise<void>((resolve, reject) => {
-      const client = window.google!.accounts.oauth2.initTokenClient({
-        client_id: this.clientId,
-        scope: SCOPE,
-        callback: (r) => {
-          if (r.error || !r.access_token) return reject(new Error(r.error === 'access_denied' ? 'Calendar access was not granted.' : `Google sign-in failed (${r.error ?? 'no token'}).`));
-          this.token = r.access_token;
-          this.expires = Date.now() + (r.expires_in ?? 3600) * 1000 - 60_000;
-          resolve();
-        },
-        error_callback: (e) => reject(new Error(e.type === 'popup_closed' ? 'The Google window was closed.' : `Google sign-in failed (${e.type}).`)),
-      });
-      client.requestAccessToken({ prompt: '' });
-    });
+    const t = await this.tokens();
+    this.token = t.token;
+    this.expires = Date.now() + (t.expiresIn ?? 3600) * 1000 - 60_000;
   }
 
   private async get<T>(path: string, params: Record<string, string> = {}): Promise<T> {
@@ -100,6 +119,14 @@ export class GoogleCalendarSource implements CalendarSource {
     if (res.status === 401) {
       this.token = undefined;
       return this.get(path, params);
+    }
+    if (res.status === 403) {
+      const body = (await res.json().catch(() => null)) as { error?: { errors?: { reason?: string }[]; message?: string } } | null;
+      const reason = body?.error?.errors?.[0]?.reason ?? '';
+      if (reason === 'accessNotConfigured') throw new Error('The Google Calendar API isn’t switched on for this app’s Google project yet.');
+      if (reason === 'insufficientPermissions' || /scope/i.test(body?.error?.message ?? ''))
+        throw new Error('Journey didn’t get permission to see your calendars. Connect again and tick the calendar box.');
+      throw new Error('Google Calendar refused the request (403).');
     }
     if (!res.ok) throw new Error(`Google Calendar returned ${res.status}.`);
     return (await res.json()) as T;

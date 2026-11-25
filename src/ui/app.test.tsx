@@ -103,13 +103,14 @@ describe('calendar import, end to end', () => {
     expect(screen.getByText(/Via Carota/)).toBeInTheDocument();
   });
 
-  it('explains how to fix a missing Google client ID', async () => {
-    const user = userEvent.setup();
+  it('connects Google Calendar through the account sign-in, with no client ID to set up', async () => {
     render(<App />);
     await go('/import');
-    await user.click(await screen.findByRole('button', { name: /connect google calendar/i }));
-    expect(await screen.findByRole('alert')).toHaveTextContent(/client ID/);
-    expect(screen.getByRole('link', { name: /open settings/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /sign in with google to connect/i })).toBeInTheDocument();
+    expect(screen.queryByText(/client ID/i)).toBeNull();
+    await go('/settings');
+    expect(await screen.findByRole('button', { name: /continue with google/i })).toBeInTheDocument();
+    expect(screen.queryByText(/OAuth client ID/i)).toBeNull();
   });
 });
 

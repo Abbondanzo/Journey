@@ -1,4 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { firebaseConfig } from '../../cloud/config';
+import { calendarToken, prepare, signIn, useAccount } from '../../cloud/session';
+import { AccountCard } from '../Account';
 import { existingIndex, getSetting, saveImport, setSetting } from '../../db/repo';
 import { monthLabel, rangeLabel } from '../../import/dates';
 import type { KnownBase } from '../../import/bases';
@@ -6,7 +9,7 @@ import { KnownBasesEditor } from '../KnownBases';
 import { looksLikeFlighty, parseFlightyCsv, type FlightyParse } from '../../import/flighty';
 import { runImport } from '../../import/pipeline';
 import type { CalEvent, ImportResult, ProposedTrail, SkipReason } from '../../import/types';
-import { GoogleCalendarSource, type CalendarInfo, type CalendarSource } from '../../google/source';
+import { CALENDAR_SCOPE, gisTokens, GoogleCalendarSource, type CalendarInfo, type CalendarSource } from '../../google/source';
 import { SampleCalendarSource } from '../../google/sample';
 import { fmtKm, Icon, TopoHeader } from '../kit';
 import { href, navigate } from '../router';
@@ -15,8 +18,13 @@ import { WorldMap } from '../WorldMap';
 type Step = 'intro' | 'calendars' | 'scanning' | 'review' | 'done';
 type FlightyFile = FlightyParse & { name: string };
 
-export type SourceFactory = (kind: 'google' | 'sample', clientId: string) => CalendarSource;
-const defaultFactory: SourceFactory = (kind, clientId) => (kind === 'sample' ? new SampleCalendarSource() : new GoogleCalendarSource(clientId));
+export type SourceFactory = (kind: 'google' | 'sample') => CalendarSource;
+
+// With accounts on, the calendar token comes from the same Google sign-in, so there's
+// nothing to set up. Without them, it needs your own OAuth client ID (Settings).
+const clientId = async () => (await getSetting<string>('googleClientId', '')) || (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) || '';
+const defaultFactory: SourceFactory = (kind) =>
+  kind === 'sample' ? new SampleCalendarSource() : new GoogleCalendarSource(firebaseConfig ? () => calendarToken(CALENDAR_SCOPE) : gisTokens(clientId));
 
 const REASONS: Record<SkipReason, string> = {
   duplicate: 'Duplicates merged',
@@ -54,12 +62,18 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
   const [fixing, setFixing] = useState(false);
   const [inputs, setInputs] = useState<{ events: CalEvent[]; flighty?: FlightyFile }>();
 
+  const account = useAccount();
+  const signedIn = account.status === 'synced' || account.status === 'starting';
+  useEffect(() => {
+    if (firebaseConfig) prepare().catch(() => {});
+  }, []);
+
   async function connect(kind: 'google' | 'sample') {
     setError(undefined);
     setBusy(true);
     try {
-      const clientId = (await getSetting<string>('googleClientId', '')) || (import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined) || '';
-      const src = factory(kind, clientId);
+      // Nothing may be awaited before connect(): it opens Google's consent popup, which needs the tap.
+      const src = factory(kind);
       await src.connect();
       const list = await src.calendars();
       setSource(src);
@@ -183,15 +197,29 @@ export function ImportFlow({ factory = defaultFactory }: { factory?: SourceFacto
             <p className="muted" style={{ margin: 0 }}>Flights, hotel stays, train tickets and reservations become trails. Duplicates are merged and cancelled bookings dropped.</p>
             <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
               <li>Read-only access. Journey never changes your calendar.</li>
-              <li>Events are read and sorted on this phone. Nothing is uploaded.</li>
+              <li>Events are read and sorted on this device; only the trails you save are kept.</li>
               <li>You review every trail before anything is saved.</li>
             </ul>
           </div>
           {error && <div className="error" role="alert">{error}{/client ID/.test(error) && <> <a href={href('/settings')}>Open Settings</a></>}</div>}
-          <button className="btn primary" disabled={busy} onClick={() => connect('google')}>
-            <Icon name="calendar" size={18} />
-            Connect Google Calendar
-          </button>
+          {account.merge && <AccountCard />}
+          {firebaseConfig && !signedIn ? (
+            <>
+              <button className="btn primary" disabled={busy || account.busy} onClick={() => signIn('google', { scopes: [CALENDAR_SCOPE], then: '/import' })}>
+                <Icon name="calendar" size={18} />
+                Sign in with Google to connect
+              </button>
+              <span className="muted" style={{ fontSize: 12, marginTop: -8 }}>
+                One sign-in gives you an account, so your trips sync across devices, and read-only access to your calendar.
+              </span>
+              {account.error && <div className="error" role="alert">{account.error}</div>}
+            </>
+          ) : (
+            <button className="btn primary" disabled={busy} onClick={() => connect('google')}>
+              <Icon name="calendar" size={18} />
+              Connect Google Calendar
+            </button>
+          )}
           {flightyPicker(true, 'Use a Flighty export (.csv)')}
           <span className="muted" style={{ fontSize: 12, marginTop: -8 }}>
             In Flighty: Settings → Export Flights → CSV. Save the emailed file to Files, then pick it here. You can add it alongside your calendar too.

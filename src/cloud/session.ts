@@ -95,9 +95,9 @@ export async function refreshAtlases() {
   set({ atlases, atlas: atlases.find((a) => a.id === activeAtlas()) });
 }
 
-function activate(id: string) {
+function activate(id: string, path = '/') {
   storage()?.setItem(ACTIVE, id);
-  location.hash = '#/';
+  location.hash = `#${path}`;
   location.reload();
 }
 
@@ -125,10 +125,10 @@ async function moveLocalInto(atlasId: string, me: Me) {
   local.close();
 }
 
-async function signInWith(provider: Provider) {
+async function signInWith(provider: Provider, scopes: string[] = []) {
   const m = mods ?? (await prepare());
   const { auth, fs } = m.fb.getServices();
-  const cred = await m.fb.popupSignIn(auth, provider);
+  const cred = await m.fb.popupSignIn(auth, provider, scopes);
   const me = m.fb.meOf(cred.user);
   set({ me });
   const home = await m.acc.ensureHome(fs, me);
@@ -141,19 +141,19 @@ function failed(e: unknown) {
 }
 
 /** Sign in from a signed-out device. Trips already here go to the new account, or the user is asked. */
-export async function signIn(provider: Provider) {
+export async function signIn(provider: Provider, opts: { scopes?: string[]; then?: string } = {}) {
   set({ busy: true, error: undefined });
   try {
-    const { me, home, fs, acc } = await signInWith(provider);
+    const { me, home, fs, acc } = await signInWith(provider, opts.scopes);
     // Signing back in on a device that already shows an atlas: just pick up syncing.
     const current = activeAtlas();
-    if (current) return activate(current);
+    if (current) return activate(current, opts.then);
     const local = await localCounts();
     if (local.any) {
       if (await acc.atlasHasData(fs, home)) return set({ busy: false, merge: { atlasId: home, trails: local.trails } });
       await moveLocalInto(home, me);
     }
-    activate(home);
+    activate(home, opts.then);
   } catch (e) {
     failed(e);
   }
@@ -169,6 +169,20 @@ export async function resolveMerge(addThem: boolean) {
     activate(m.atlasId);
   } catch (e) {
     failed(e);
+  }
+}
+
+/**
+ * A read-only Google Calendar token for the signed-in user. Load Firebase first
+ * (prepare) so the consent popup opens straight from the tap.
+ */
+export async function calendarToken(scope: string): Promise<{ token: string; expiresIn: number }> {
+  const m = mods ?? (await prepare());
+  try {
+    return await m.fb.calendarPopup(m.fb.getServices().auth, scope);
+  } catch (e) {
+    const msg = m.fb.signInError(e);
+    throw new Error(msg || 'The Google window was closed.');
   }
 }
 

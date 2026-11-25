@@ -34,24 +34,27 @@ export function Settings(_props: { j: Journey }) {
       </TopoHeader>
       <main className="pad stack" style={{ paddingTop: 18, gap: 16 }}>
         <AccountCard />
-        <form
-          className="card"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            await setSetting('googleClientId', clientId.trim());
-            setSaved('Saved');
-          }}
-        >
-          <label className="field">
-            <span>Google OAuth client ID</span>
-            <input className="input" value={clientId} onChange={(e) => setClientId(e.target.value)} placeholder="1234-abc.apps.googleusercontent.com" autoComplete="off" spellCheck={false} />
-          </label>
-          <span className="muted" style={{ fontSize: 12 }}>Needed once to connect Google Calendar. See the README for the two-minute setup.</span>
-          <div className="row" style={{ marginTop: 8 }}>
-            <button className="btn small dark">Save</button>
-            <span role="status" className="muted">{saved}</span>
-          </div>
-        </form>
+        {/* With accounts on, Google Calendar uses the same sign-in; only a copy without them needs its own client ID. */}
+        {account.status === 'off' && (
+          <form
+            className="card"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await setSetting('googleClientId', clientId.trim());
+              setSaved('Saved');
+            }}
+          >
+            <label className="field">
+              <span>Google OAuth client ID</span>
+              <input className="input" value={clientId} onChange={(e) => setClientId(e.target.value)} placeholder="1234-abc.apps.googleusercontent.com" autoComplete="off" spellCheck={false} />
+            </label>
+            <span className="muted" style={{ fontSize: 12 }}>Needed once to connect Google Calendar. See the README for the two-minute setup.</span>
+            <div className="row" style={{ marginTop: 8 }}>
+              <button className="btn small dark">Save</button>
+              <span role="status" className="muted">{saved}</span>
+            </div>
+          </form>
+        )}
         <section className="card stack" aria-label="Where you lived" style={{ gap: 8 }}>
           <span className="eyebrow">Where you lived</span>
           <span className="muted" style={{ fontSize: 12 }}>
